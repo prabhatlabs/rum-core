@@ -7,6 +7,7 @@ export const ENV = {
   GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID!,
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET!,
   FRONTEND_URL: process.env.FRONTEND_URL!,
+  BACKEND_URL: process.env.BACKEND_URL!,
   REDIS_URL: process.env.REDIS_URL!,
   TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL!,
   TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN!,
