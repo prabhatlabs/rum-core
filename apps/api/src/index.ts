@@ -2,7 +2,7 @@ import { cors } from '@elysiajs/cors'
 import { Elysia } from 'elysia'
 import { ENV } from './constants/envvars'
 import { failResponse } from './lib/response'
-import { authRoutes } from './routes/auth'
+import { authRoutes } from './routes/auth.route'
 
 const app = new Elysia()
     .use(cors({

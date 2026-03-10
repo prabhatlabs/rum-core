@@ -7,7 +7,7 @@ import { db } from '../db'
 import { users } from '../db/schema'
 import { github, google } from '../lib/oauth'
 import { failResponse, ok } from '../lib/response'
-import { cookieConfig, jwtConfig } from '../middleware/auth'
+import { cookieConfig, jwtConfig } from '../middleware/auth.middleware'
 import { upsertUser } from '../services/auth.service'
 
 export const authRoutes = new Elysia({ prefix: '/auth' })
@@ -192,7 +192,11 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         return ok(user)
     })
 
-    .post('/logout', ({ cookie, redirect }) => {
-        cookie.auth.remove()
-        return redirect(`${ENV.FRONTEND_URL}/login`)
+    .post('/logout', ({ cookie }) => {
+        cookie.auth.set({
+            value: '',
+            httpOnly: true,
+            maxAge: 0,
+        })
+        return ok(null, 'Logged out successfully')
     })
