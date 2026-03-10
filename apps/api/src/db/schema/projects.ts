@@ -1,0 +1,11 @@
+import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { users } from './users';
+
+export const projects = pgTable('projects', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    project_key: varchar('project_key', { length: 64 }).unique().notNull(),
+    origin: text('origin').notNull(),
+    created_at: timestamp('created_at').defaultNow(),
+});
