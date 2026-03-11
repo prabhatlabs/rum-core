@@ -155,7 +155,7 @@ Project → Session → Request
 ## 9. Upstash Redis — Planned Usage
 
 Redis is **not** needed for geo enrichment (handled natively by Cloudflare). Planned usage:
-- Daily call counter per user (enforce plan limits without hammering Neon)
+- Daily call counter per user per project (enforce plan limits, power usage dashboard)
 - API key rate limiting
 - Dashboard query caching (main server side)
 
@@ -306,20 +306,22 @@ DELETE FROM usage WHERE date < NOW() - INTERVAL '92 days'
 ```
 Batch arrives at worker (e.g. 150 events)
      ↓
-Increment Redis counter by 150
+Increment Redis counter by 150 (per project)
      ↓
-If counter > plan limit → drop remaining events
+If SUM of all project counters for user > plan limit → drop remaining events
      ↓
 Write accepted events to Turso
 ```
 
 Redis key structure:
 ```
-key:    usage:{user_id}:{date}       → running daily call count
-key:    project:{project_key}        → { user_id, origin }
+key:    usage:{user_id}:{date}:{project_key}  → daily call count per project
+key:    project:{project_key}                 → { user_id, origin }
 expiry: usage keys — 25 hours (auto cleanup)
 expiry: project keys — no expiry (or 30 days, refreshed on access)
 ```
+
+> No separate total counter — user total is always derived as `SUM` across all project keys for that `user_id + date`. With a max of 8 projects (Pro plan), this is trivial to compute anywhere — Redis, Neon, or frontend.
 
 Worker validation flow on every batch:
 ```
@@ -328,10 +330,10 @@ Batch arrives at worker
 Check Origin header → match against project:{project_key}.origin in Redis
      ↓ mismatch → reject 403
      ↓
-Check usage:{user_id}:{date} → compare against plan limit
+Check SUM of usage:{user_id}:{date}:* → compare against plan limit
      ↓ over limit → reject 429
      ↓
-Increment usage counter by batch.events.length
+Increment usage:{user_id}:{date}:{project_key} by batch.events.length
      ↓
 Enrich all events with request.cf geo data
      ↓
@@ -394,17 +396,20 @@ created_at    TIMESTAMP     DEFAULT NOW()
 updated_at    TIMESTAMP     DEFAULT NOW()
 ```
 
-**usage** (daily, kept 92 days, shown 60 days in UI)
+**usage** (daily per project, kept 92 days, shown 90 days in UI)
 ```sql
 id            UUID          PRIMARY KEY DEFAULT gen_random_uuid()
 user_id       UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE
+project_key   VARCHAR(64)   NOT NULL  -- which project this usage belongs to
 date          DATE          NOT NULL
 calls_used    INTEGER       NOT NULL DEFAULT 0
 created_at    TIMESTAMP     DEFAULT NOW()
 updated_at    TIMESTAMP     DEFAULT NOW()
 
-UNIQUE(user_id, date)
+UNIQUE(user_id, project_key, date)
 ```
+
+> No separate total row — user total for any given day is always `SUM(calls_used)` across all project_key rows for that user + date. With a max of 8 projects (Pro), this is trivial to compute.
 
 **monthly_usage** (internal only, kept forever, unit in millions)
 ```sql
@@ -422,6 +427,7 @@ UNIQUE(user_id, month)
 CREATE INDEX idx_projects_user_id ON projects(user_id);
 CREATE INDEX idx_projects_project_key ON projects(project_key);
 CREATE INDEX idx_usage_user_date ON usage(user_id, date);
+CREATE INDEX idx_usage_user_project_date ON usage(user_id, project_key, date);
 CREATE INDEX idx_monthly_usage_user_month ON monthly_usage(user_id, month);
 ```
 
