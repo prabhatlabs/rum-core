@@ -7,5 +7,5 @@ export const users = pgTable('users', {
     avatar_url: text('avatar_url'),
     provider: varchar('provider', { length: 20 }).notNull(),
     provider_id: varchar('provider_id', { length: 255 }).notNull(),
-    created_at: timestamp('created_at').defaultNow(),
+    created_at: timestamp('created_at').defaultNow().notNull(),
 });

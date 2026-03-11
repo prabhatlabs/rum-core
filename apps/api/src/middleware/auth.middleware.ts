@@ -1,9 +1,9 @@
-import { jwt } from '@elysiajs/jwt'
-import { eq } from 'drizzle-orm'
-import { Elysia, t } from 'elysia'
-import { ENV } from '../constants/envvars'
-import { db } from '../db'
-import { users } from '../db/schema'
+import { jwt } from '@elysiajs/jwt';
+import { Elysia, t } from 'elysia';
+import { ENV } from '../constants/envvars';
+import { PLAN_LIMITS } from '../constants/plans';
+import APIErrorResponse from '../lib/error';
+import { getUserWithPlan } from '../services/auth.service';
 
 export const jwtConfig = jwt({
     name: 'jwt',
@@ -15,39 +15,36 @@ export const jwtConfig = jwt({
 
 export const cookieConfig = {
     cookie: t.Object({
-        auth: t.Optional(t.String()),
+        auth: t.String(),
         google_state: t.Optional(t.String()),
         google_verifier: t.Optional(t.String()),
         github_state: t.Optional(t.String()),
     })
 }
 
-export const authMiddleware = new Elysia()
+export const authMiddleware = (app: Elysia) => app
     .use(jwtConfig)
     .guard(cookieConfig)
-    .derive(async ({ jwt, cookie, set }) => {
-        const token = cookie.auth.value
-
+    .derive(async ({ jwt, cookie }) => {
+        const token = cookie.auth?.value;
         if (!token) {
-            set.status = 401
-            throw new Error('Unauthorized')
+            throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
         }
 
         const payload = await jwt.verify(token)
-
         if (!payload) {
-            set.status = 401
-            throw new Error('Unauthorized')
+            throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
         }
-
-        const user = await db.query.users.findFirst({
-            where: eq(users.id, payload.sub)
-        })
-
+        const user_id = payload.sub;
+        const user = await getUserWithPlan(user_id);
         if (!user) {
-            set.status = 401
-            throw new Error('Unauthorized')
+            throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token or user not found', 401)
         }
 
-        return { user }
+        const user_plan_limit = PLAN_LIMITS[user.plan.type as keyof typeof PLAN_LIMITS];
+        if (!user_plan_limit) {
+            throw new APIErrorResponse('InternalServerError', 'Internal Server Error', 'Invalid plan type', 500)
+        }
+
+        return { user, user_plan_limit }
     })

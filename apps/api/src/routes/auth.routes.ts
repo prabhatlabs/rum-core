@@ -3,11 +3,11 @@ import { generateCodeVerifier, generateState } from 'arctic'
 import { Elysia } from 'elysia'
 import { ENV } from '../constants/envvars'
 import { github, google } from '../lib/oauth'
-import { failResponse, ok } from '../lib/response'
+import { failResponse, okResponse } from '../lib/response'
 import { cookieConfig, jwtConfig } from '../middleware/auth.middleware'
 import { getUserWithPlan, upsertUser } from '../services/auth.service'
 
-export const authRoutes = new Elysia({ prefix: '/auth' })
+const authRoutes = new Elysia({ prefix: '/auth' })
     .use(jwtConfig)
     .guard(cookieConfig)
     .use(cookie())
@@ -184,7 +184,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
             return failResponse('Unauthorized')
         }
 
-        return ok(user)
+        return okResponse(user)
     })
 
     .post('/logout', ({ cookie }) => {
@@ -193,5 +193,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
             httpOnly: true,
             maxAge: 0,
         })
-        return ok(null, 'Logged out successfully')
+        return okResponse(null, 'Logged out successfully')
     })
+
+export default authRoutes;

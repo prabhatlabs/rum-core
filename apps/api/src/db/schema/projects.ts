@@ -7,5 +7,5 @@ export const projects = pgTable('projects', {
     name: varchar('name', { length: 255 }).notNull(),
     project_key: varchar('project_key', { length: 64 }).unique().notNull(),
     origin: text('origin').notNull(),
-    created_at: timestamp('created_at').defaultNow(),
+    created_at: timestamp('created_at').defaultNow().notNull(),
 });

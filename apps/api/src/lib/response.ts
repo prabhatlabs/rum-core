@@ -5,7 +5,7 @@ interface ApiResponse<T = null> {
   error: string | null
 }
 
-export function ok<T>(data: T, message = 'Success'): ApiResponse<T> {
+export function okResponse<T>(data: T, message = 'Success'): ApiResponse<T> {
   return {
     success: true,
     message,
