@@ -1,6 +1,6 @@
 "use client";
 
-import { dashboardPagesArray } from "@/components/dashboard/pages";
+import { dashboardPagesArray, type TabType } from "@/components/dashboard/pages";
 import {
     Sidebar,
     SidebarContent,
@@ -16,8 +16,14 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const dashboardTabs: TabType[] = ["overview", "performance", "errors", "geography", "environment"];
+const userTabs: TabType[] = ["profile", "projects", "usage", "billing"];
+
 export function DashboardSidebar() {
     const pathname = usePathname();
+
+    const dashboardPages = dashboardPagesArray.filter((page) => dashboardTabs.includes(page.tab as TabType));
+    const userPages = dashboardPagesArray.filter((page) => userTabs.includes(page.tab as TabType));
 
     return (
         <Sidebar collapsible="offcanvas">
@@ -30,7 +36,29 @@ export function DashboardSidebar() {
                 <SidebarGroup>
                     <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
                     <SidebarMenu>
-                        {dashboardPagesArray.map((page) => {
+                        {dashboardPages.map((page) => {
+                            const url = `/dashboard/${page.tab}`;
+                            const isActive = pathname === url;
+                            return (
+                                <SidebarMenuItem key={page.tab}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={isActive}
+                                    >
+                                        <Link href={url} className="flex items-center gap-3">
+                                            <page.icon className="h-4 w-4" />
+                                            <span>{page.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            );
+                        })}
+                    </SidebarMenu>
+                </SidebarGroup>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Account</SidebarGroupLabel>
+                    <SidebarMenu>
+                        {userPages.map((page) => {
                             const url = `/dashboard/${page.tab}`;
                             const isActive = pathname === url;
                             return (

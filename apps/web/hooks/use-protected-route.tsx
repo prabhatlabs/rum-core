@@ -1,7 +1,7 @@
 'use client'
 
 import { LoadingPage } from '@/components/Loading'
-import { useAuth } from '@/hooks/auth'
+import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 

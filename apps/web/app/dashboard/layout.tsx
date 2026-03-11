@@ -1,6 +1,7 @@
-import { DashboardSidebar, DashboardSidebarTrigger } from "@/components/dashboard/DashboardSidebar";
+import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ProtectedRoute } from "@/hooks/useProtectedRoute";
+import { ProtectedRoute } from "@/hooks/use-protected-route";
 
 export default function DashboardLayout({
     children,
@@ -12,12 +13,12 @@ export default function DashboardLayout({
             <ProtectedRoute>
                 <div className="flex h-dvh w-screen">
                     <DashboardSidebar />
-                    <main className="flex-1 overflow-auto p-6 w-full">
-                        <div className="mb-4 lg:hidden">
-                            <DashboardSidebarTrigger />
-                        </div>
-                        {children}
-                    </main>
+                    <div className="flex flex-1 flex-col overflow-hidden">
+                        <DashboardNavbar />
+                        <main className="flex-1 overflow-auto px-6 py-4 w-full">
+                            {children}
+                        </main>
+                    </div>
                 </div>
             </ProtectedRoute>
         </SidebarProvider>

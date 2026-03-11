@@ -8,7 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { useLogin } from "@/hooks/auth";
+import { useLogin } from "@/hooks/use-auth";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
 export default function Login() {

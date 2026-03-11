@@ -16,6 +16,5 @@ const app = new Elysia()
     })
     .use(authRoutes)
     .get('/health', () => ({ status: 'ok' }))
-    .listen(ENV.PORT)
-
-console.log(`[INFO] rum-core api running on port 5000`)
+    .listen(ENV.PORT, () => console.log(`[INFO] rum-core api running on port ${ENV.PORT}`))
+    

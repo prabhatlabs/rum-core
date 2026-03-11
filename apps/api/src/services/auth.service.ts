@@ -56,3 +56,30 @@ export async function upsertUser(params: UpsertUserParams) {
 
     return user ?? null
 }
+
+export async function getUserWithPlan(user_id: string) {
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, user_id),
+        with: {
+            plan: true
+        }
+    })
+
+    // nearly impossible 
+    if (!user || !user.plan) {
+        await db.insert(plans).values({
+            user_id: user_id,
+            type: 'free' as const,
+            status: 'active',
+        });
+
+        return await db.query.users.findFirst({
+            where: eq(users.id, user_id),
+            with: {
+                plan: true
+            }
+        })
+    }
+
+    return user
+}

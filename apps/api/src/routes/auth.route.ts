@@ -1,14 +1,11 @@
 import { cookie } from '@elysiajs/cookie'
 import { generateCodeVerifier, generateState } from 'arctic'
-import { eq } from 'drizzle-orm'
 import { Elysia } from 'elysia'
 import { ENV } from '../constants/envvars'
-import { db } from '../db'
-import { users } from '../db/schema'
 import { github, google } from '../lib/oauth'
 import { failResponse, ok } from '../lib/response'
 import { cookieConfig, jwtConfig } from '../middleware/auth.middleware'
-import { upsertUser } from '../services/auth.service'
+import { getUserWithPlan, upsertUser } from '../services/auth.service'
 
 export const authRoutes = new Elysia({ prefix: '/auth' })
     .use(jwtConfig)
@@ -180,9 +177,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
             return failResponse('Unauthorized')
         }
 
-        const user = await db.query.users.findFirst({
-            where: eq(users.id, payload.sub as string)
-        })
+        const user = await getUserWithPlan(payload.sub as string)
 
         if (!user) {
             set.status = 401
