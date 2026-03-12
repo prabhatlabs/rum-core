@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { IconType } from 'react-icons'
 import { FaChartBar, FaChartLine, FaCreditCard, FaFolder, FaGlobe, FaServer, FaTable } from 'react-icons/fa'
 import { FaShieldHalved } from 'react-icons/fa6'
 import { BillingPage } from './BillingPage'
@@ -13,21 +14,21 @@ import { UsagePage } from './UsagePage'
 export type TabType = "overview" | "performance" | "errors" | "geography" | "environment" | "usage" | "billing" | "projects"
 
 export type DashboardPage = {
-    component: () => ReactNode
+    component: ReactNode
     tab: TabType
     title: string
-    icon: any
+    icon: IconType
 }
 
 export const dashboardPagesObj: Record<TabType, DashboardPage> = {
-    overview: { component: OverviewPage, tab: "overview", title: "Overview", icon: FaChartLine },
-    performance: { component: PerformancePage, tab: "performance", title: "Performance", icon: FaServer },
-    errors: { component: ErrorsPage, tab: "errors", title: "Errors", icon: FaShieldHalved },
-    geography: { component: GeographyPage, tab: "geography", title: "Geography", icon: FaGlobe },
-    environment: { component: EnvironmentPage, tab: "environment", title: "Environment", icon: FaTable },
-    projects: { component: ProjectsPage, tab: "projects", title: "Projects", icon: FaFolder },
-    usage: { component: UsagePage, tab: "usage", title: "Usage", icon: FaChartBar },
-    billing: { component: BillingPage, tab: "billing", title: "Billing", icon: FaCreditCard },
+    overview: { component: <OverviewPage />, tab: "overview", title: "Overview", icon: FaChartLine },
+    performance: { component: <PerformancePage />, tab: "performance", title: "Performance", icon: FaServer },
+    errors: { component: <ErrorsPage />, tab: "errors", title: "Errors", icon: FaShieldHalved },
+    geography: { component: <GeographyPage />, tab: "geography", title: "Geography", icon: FaGlobe },
+    environment: { component: <EnvironmentPage />, tab: "environment", title: "Environment", icon: FaTable },
+    projects: { component: <ProjectsPage />, tab: "projects", title: "Projects", icon: FaFolder },
+    usage: { component: <UsagePage />, tab: "usage", title: "Usage", icon: FaChartBar },
+    billing: { component: <BillingPage />, tab: "billing", title: "Billing", icon: FaCreditCard },
 }
 
 export const dashboardPagesArray = Object.values(dashboardPagesObj);

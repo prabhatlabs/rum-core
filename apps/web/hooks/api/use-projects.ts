@@ -21,7 +21,7 @@ export function useProjects() {
         } catch (e) {
             console.error(e);
         }
-        return !!created;
+        return created;
     }
 
     async function updateProject(id: string, body: ProjectInput) {
@@ -34,7 +34,7 @@ export function useProjects() {
         } catch (e) {
             console.error(e);
         }
-        return !!updated;
+        return updated;
     }
 
     async function deleteProject(id: string) {
@@ -52,6 +52,13 @@ export function useProjects() {
     function getProject(id: string) {
         return data?.find(p => p.id === id) || null;
     }
+
+    useEffect(() => {
+        if (projectId) return;
+        if (data && data.length > 0) {
+            setProjectId(data[0].id);
+        }
+    }, [data, projectId]);
 
     return {
         projects: data,

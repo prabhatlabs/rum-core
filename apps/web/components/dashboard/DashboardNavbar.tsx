@@ -59,7 +59,7 @@ function ProjectSelector() {
                 setCurrentProject(value);
             }}
         >
-            <SelectTrigger className="w-50" disabled={isLoading}>
+            <SelectTrigger className="max-w-50 w-full" disabled={isLoading}>
                 <SelectValue placeholder="Select Project">
                     <div className="flex items-center gap-2">
                         <Folder className="size-4 text-primary" />
@@ -74,7 +74,7 @@ function ProjectSelector() {
                     </div>
                 </SelectValue>
             </SelectTrigger>
-            <SelectContent side="bottom" align="start" position="popper">
+            <SelectContent side="bottom" align="start" position="popper" className="max-w-64 w-full">
                 {projects?.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                         <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ function ProjectSelector() {
                                 <span className="text-sm font-medium">
                                     {project.name}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-muted-foreground truncate w-50">
                                     {project.origin}
                                 </span>
                             </div>

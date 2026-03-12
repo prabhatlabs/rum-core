@@ -20,20 +20,22 @@ import { toast } from "sonner";
 
 const MAX_NAME_LENGTH = 100;
 const MAX_ORIGIN_LENGTH = 150;
+const initialState: ProjectInput = {
+    name: "",
+    origin: "",
+};
 
-export function AddEditProject() {
+export default function AddEditProject() {
     const {
         closeAddEditProject,
         addEditProject: { isOpen, projectId },
+        openShowProjectKey
     } = useDialog();
     const isEdit = !!projectId;
 
     const { getProject, createProject, updateProject } = useProjects();
 
-    const [fields, setFields] = useState<ProjectInput>({
-        name: "",
-        origin: "",
-    });
+    const [fields, setFields] = useState<ProjectInput>(initialState);
     const [isLoading, setIsLoading] = useState(false);
 
     function handleFieldChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -62,13 +64,13 @@ export function AddEditProject() {
         try {
             new URL(fields.origin);
             isValidUrl = true;
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (isValidName && isValidUrl) return;
-        
+
         let description = "";
-        if (!isValidName) description += "Name must be between 1 and 100 characters\n";
+        if (!isValidName)
+            description += "Name must be between 1 and 100 characters\n";
         if (!isValidUrl) description += "Origin must be a valid URL.";
 
         toast.error("Invalid input", {
@@ -85,7 +87,11 @@ export function AddEditProject() {
             const isSuccess = isEdit
                 ? await updateProject(projectId, fields)
                 : await createProject(fields);
-            if (isSuccess) closeAddEditProject();
+            if (isSuccess) {
+                setFields(initialState);
+                closeAddEditProject();
+                if (!isEdit) openShowProjectKey(isSuccess.id);
+            }
         } catch (error) {
             console.error(error);
         } finally {
