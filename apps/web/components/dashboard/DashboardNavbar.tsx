@@ -22,6 +22,7 @@ import {
 } from "@/hooks/api/use-projects";
 import { useAuth } from "@/hooks/use-auth";
 import { useDialog } from "@/hooks/use-dialog";
+import { cn } from "@/lib/utils";
 import { Folder, Plus } from "lucide-react";
 import Image from "next/image";
 import { Suspense } from "react";
@@ -29,7 +30,7 @@ import { ThemeToggle } from "../ui/theme-toggle";
 
 export function DashboardNavbar() {
     return (
-        <nav className="flex h-14 items-center justify-between border-b px-4">
+        <nav className="flex h-14 items-center justify-between border-b px-2 sm:px-4">
             <div className="flex items-center gap-2">
                 <div className="lg:hidden">
                     <DashboardSidebarTrigger />
@@ -37,8 +38,9 @@ export function DashboardNavbar() {
                 <Suspense>
                     <ProjectSelector />
                 </Suspense>
+                <TotalCallUsage />
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <UserDropdown />
             </div>
@@ -51,7 +53,7 @@ function ProjectSelector() {
         useProjects();
     const { openAddEditProject } = useDialog();
     useKeepCurrentProjectInSync();
-    
+
     return (
         <Select
             value={currentProject?.id}
@@ -74,7 +76,12 @@ function ProjectSelector() {
                     </div>
                 </SelectValue>
             </SelectTrigger>
-            <SelectContent side="bottom" align="start" position="popper" className="max-w-64 w-full">
+            <SelectContent
+                side="bottom"
+                align="start"
+                position="popper"
+                className="max-w-64 w-full"
+            >
                 {projects?.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                         <div className="flex items-center gap-2">
@@ -103,6 +110,29 @@ function ProjectSelector() {
                 </Button>
             </SelectContent>
         </Select>
+    );
+}
+
+function TotalCallUsage() {
+    const { user } = useAuth();
+    const { projects } = useProjects();
+    const totalCalls =
+        projects?.reduce(
+            (acc, project) => acc + project.usage[0]?.calls_used || 0,
+            0,
+        ) || 0;
+    const maxCalls = user?.plan_limits.calls_per_day || 0;
+    const percentage = (totalCalls / (maxCalls || 1)) * 100;
+    const borderClass =
+        percentage >= 90
+            ? "border-destructive"
+            : percentage >= 70
+            ? "border-warning"
+        : "border-success";
+    return (
+        <Button variant="outline" className={borderClass}>
+            <span className={cn("border-b", borderClass)}>{`${totalCalls} / ${maxCalls}`}</span>
+        </Button>
     );
 }
 

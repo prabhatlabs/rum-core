@@ -3,7 +3,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
-import { SWRConfig } from "swr";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -46,10 +45,7 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    {/* Auth call only needs revalidation on focus  */}
-                    <SWRConfig value={{ revalidateOnFocus: false }}>
-                        {children}
-                    </SWRConfig>
+                    {children}
                     <Toaster />
                 </ThemeProvider>
             </body>

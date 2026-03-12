@@ -5,7 +5,25 @@ export interface ApiResponse<T = null> {
     error: string | null
 }
 
+export type PlanLimits = {
+    readonly projects: 2;
+    readonly calls_per_day: 50000;
+    readonly retention_days: 7;
+    readonly time_ranges: readonly ["12h", "24h", "7d"];
+} | {
+    readonly projects: 8;
+    readonly calls_per_day: 500000;
+    readonly retention_days: 30;
+    readonly time_ranges: readonly["12h", "24h", "7d", "30d"];
+} | {
+    readonly projects: number;
+    readonly calls_per_day: number;
+    readonly retention_days: number;
+    readonly time_ranges: readonly["12h", "24h", "7d", "30d"];
+}
+
 export interface User {
+    plan_limits: PlanLimits,
     id: string
     name: string
     email: string

@@ -1,22 +1,23 @@
 "use client";
 
 import {
-    dashboardPagesArray,
-    type DashboardPage,
-    type TabType,
+  dashboardPagesArray,
+  type DashboardPage,
+  type TabType,
 } from "@/components/dashboard/pages";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarTrigger,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useProjects } from "@/hooks/api/use-projects";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -31,6 +32,7 @@ const userTabs: TabType[] = ["projects", "usage", "billing"];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const {currentProject} = useProjects();
 
   const currTab = (pathname.split("/")[2] || "overview") as TabType;
 
@@ -42,7 +44,7 @@ export function DashboardSidebar() {
   );
 
   function renderMenuItem(page: DashboardPage) {
-    const url = `/dashboard/${page.tab}?project_id=${page.tab}`;
+    const url = `/dashboard/${page.tab}${currentProject ? `?project_id=${currentProject.id}` : ''}`;
     const isActive = currTab === page.tab;
     return (
       <SidebarMenuItem key={page.tab}>

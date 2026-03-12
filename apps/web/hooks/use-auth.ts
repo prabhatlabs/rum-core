@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 
 export function useAuth() {
-    const { data, isLoading, error } = useSWR<User | null>('/auth/me', fetcher, {
-        revalidateOnFocus: true
+    const { data, isLoading, error } = useSWR<User | null>('/auth/me', {
+        revalidateOnFocus: true,
+        dedupingInterval: 10,
     })
     const router = useRouter()
 

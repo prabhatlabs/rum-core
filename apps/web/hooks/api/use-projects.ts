@@ -10,7 +10,7 @@ export type ProjectInput = {
 }
 
 export function useProjects() {
-    const { data, isLoading, error, mutate } = useSWR<Project[] | null>('/projects', fetcher)
+    const { data, isLoading, error, mutate } = useSWR<Project[] | null>('/projects')
     const { projectId, setProjectId } = useCurrentProject();
 
     async function createProject(body: ProjectInput) {

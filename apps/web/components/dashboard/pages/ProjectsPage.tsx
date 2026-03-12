@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingSpinner } from "@/components/Loading";
 import ProjectKey from "@/components/ProjectKey";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +9,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
     Table,
     TableBody,
@@ -18,17 +21,29 @@ import {
 } from "@/components/ui/table";
 import { useProjects } from "@/hooks/api/use-projects";
 import { useDialog } from "@/hooks/use-dialog";
-import {
-    PencilSimpleIcon,
-    TrashIcon
-} from "@phosphor-icons/react";
+import type { Project } from "@/types/api";
+import { PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { Ellipsis, Folder, Plus } from "lucide-react";
 import { DashboardDialogs } from "../dialogs";
 
 export function ProjectsPage() {
-    const { projects, isLoading, setCurrentProject } =
-        useProjects();
+    const { projects, isLoading, setCurrentProject } = useProjects();
     const { openAddEditProject, openDeleteProject } = useDialog();
+    
+    const totalCalls = projects?.reduce((acc, project) => acc + project.usage[0]?.calls_used || 0, 0) || 0;
+
+    function renderUsageBar(project: Project) {
+        const calls = project.usage[0]?.calls_used || 0;
+        const value = (calls / (totalCalls || 1)) * 100;
+        return (
+            <Label>
+                <span>
+                    {calls} / {totalCalls}
+                </span>
+                <Progress value={value} className="w-24" />
+            </Label>
+        );
+    }
 
     return (
         <div className="space-y-4">
@@ -42,10 +57,10 @@ export function ProjectsPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Key</TableHead>
-                        <TableHead>Origin</TableHead>
-                        <TableHead>Usage (today)</TableHead>
+                        <TableHead className="border-r">Name</TableHead>
+                        <TableHead className="border-r">Key</TableHead>
+                        <TableHead className="border-r">Origin</TableHead>
+                        <TableHead className="border-r">Usage out of Total (today)</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -53,7 +68,7 @@ export function ProjectsPage() {
                     {isLoading ? (
                         <TableRow>
                             <TableCell colSpan={5} className="h-24 text-center">
-                                Loading...
+                                <LoadingSpinner />
                             </TableCell>
                         </TableRow>
                     ) : projects?.length === 0 ? (
@@ -65,16 +80,16 @@ export function ProjectsPage() {
                     ) : (
                         projects?.map((project) => (
                             <TableRow key={project.id}>
-                                <TableCell className="font-medium">
+                                <TableCell className="font-medium border-r">
                                     {project.name}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="border-r">
                                     <ProjectKey
                                         projectKey={project.project_key}
                                     />
                                 </TableCell>
-                                <TableCell>{project.origin}</TableCell>
-                                <TableCell>0</TableCell>
+                                <TableCell className="border-r">{project.origin}</TableCell>
+                                <TableCell className="border-r">{renderUsageBar(project)}</TableCell>
                                 <TableCell className="text-right">
                                     <ActionDropdown
                                         onEdit={() =>
