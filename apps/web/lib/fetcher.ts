@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@/types/api'
+import { toast } from 'sonner'
 
 interface FetcherError extends Error {
     status: number
@@ -14,7 +15,14 @@ interface FetcherOptions {
 }
 
 export async function fetcher<T>(url: string, options: FetcherOptions = {}): Promise<T> {
-    const { method = 'GET', body, headers = {} } = options
+    const { method = 'GET', body, headers = {} } = options;
+    const showToast = method !== 'GET';
+
+    let loadingToastId: number | string | null = null;
+    if (showToast) {
+        const message = method === 'POST' ? 'Creating...' : method === "DELETE" ? 'Deleting...' : 'Updating data...';
+        loadingToastId = toast.loading(message);
+    }
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
         method,
@@ -26,14 +34,24 @@ export async function fetcher<T>(url: string, options: FetcherOptions = {}): Pro
         body: body ? JSON.stringify(body) : undefined,
     })
 
+    if (loadingToastId)
+        toast.dismiss(loadingToastId);
+
     const json: ApiResponse<T> = await res.json()
 
     if (!res.ok || !json.success) {
         const error = new Error(json.message) as FetcherError
         error.status = res.status
         error.message = json.error ?? json.message
+        if (showToast)
+            toast.error(json.message, {
+                description: json.error,
+            });
         throw error
     }
+
+    if (showToast)
+        toast.success(json.message);
 
     return json.data as T
 }

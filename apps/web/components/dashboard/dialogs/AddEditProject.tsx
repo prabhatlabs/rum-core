@@ -16,6 +16,10 @@ import { Field } from "@/components/ui/field";
 import { ProjectInput, useProjects } from "@/hooks/api/use-projects";
 import { useDialog } from "@/hooks/use-dialog";
 import { Plus, Save } from "lucide-react";
+import { toast } from "sonner";
+
+const MAX_NAME_LENGTH = 100;
+const MAX_ORIGIN_LENGTH = 150;
 
 export function AddEditProject() {
     const {
@@ -24,13 +28,14 @@ export function AddEditProject() {
     } = useDialog();
     const isEdit = !!projectId;
 
-    const { isMutating, getProject, createProject, updateProject } =
-        useProjects();
+    const { getProject, createProject, updateProject } = useProjects();
 
     const [fields, setFields] = useState<ProjectInput>({
         name: "",
         origin: "",
     });
+    const [isLoading, setIsLoading] = useState(false);
+
     function handleFieldChange(e: React.ChangeEvent<HTMLInputElement>) {
         setFields((prev) => ({ ...prev, [e.target.id]: e.target.value }));
     }
@@ -47,21 +52,44 @@ export function AddEditProject() {
         });
     }, [isOpen, projectId]);
 
+    function validateInput() {
+        const isValidName =
+            fields.name.length > 0 &&
+            fields.name.length <= MAX_NAME_LENGTH &&
+            fields.origin.length > 0 &&
+            fields.origin.length <= MAX_ORIGIN_LENGTH;
+        let isValidUrl = false;
+        try {
+            new URL(fields.origin);
+            isValidUrl = true;
+        } catch (error) {
+        }
+
+        if (isValidName && isValidUrl) return;
+        
+        let description = "";
+        if (!isValidName) description += "Name must be between 1 and 100 characters\n";
+        if (!isValidUrl) description += "Origin must be a valid URL.";
+
+        toast.error("Invalid input", {
+            description,
+        });
+        throw new Error("Invalid input");
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            try {
-                new URL(fields.origin);
-            } catch (error) {
-                console.error("Invalid URL");
-                return;
-            }
+            validateInput();
+            setIsLoading(true);
             const isSuccess = isEdit
                 ? await updateProject(projectId, fields)
                 : await createProject(fields);
             if (isSuccess) closeAddEditProject();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -90,6 +118,7 @@ export function AddEditProject() {
                                 value: fields.name,
                                 onChange: handleFieldChange,
                                 required: true,
+                                maxLength: MAX_NAME_LENGTH,
                             }}
                             labelProps={{
                                 children: "Name",
@@ -102,6 +131,7 @@ export function AddEditProject() {
                                 value: fields.origin,
                                 onChange: handleFieldChange,
                                 required: true,
+                                maxLength: MAX_ORIGIN_LENGTH,
                             }}
                             labelProps={{
                                 children: "Origin",
@@ -116,8 +146,8 @@ export function AddEditProject() {
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isMutating}>
-                            {isMutating ? (
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading ? (
                                 <LoadingSpinner />
                             ) : isEdit ? (
                                 <Save />
