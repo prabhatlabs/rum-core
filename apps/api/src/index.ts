@@ -14,23 +14,20 @@ const app = new Elysia({
         credentials: true,
     }))
     .onRequest(({ request }) => {
-        console.log(`[INFO] ${request.method} ${request.url}`)
+        console.log(`[INFO] ${request.method} ${request.url.split('/api/v1')[1]}`)
     })
-    .error({
-        CUSTOM: APIErrorResponse
-    })
-    .onError(({ error, code, set }) => {
-        if (code !== "CUSTOM") {
-            // unhandled error
-            console.error("[ERROR]", error)
-            set.status = 500
-            return failResponse("InternalServerError", 'Something went wrong')
+    .onError(({ error, set }) => {
+        if (error instanceof APIErrorResponse) {
+            set.status = error.code
+            return failResponse(`[${error.name}]: ${error.error}`, error.message)
         }
-
-        set.status = error.code
-        return failResponse(`[${error.name}]: ${error.error}`, error.message)
+        
+        // unhandled error
+        console.error("[ERROR]", error)
+        set.status = 500
+        return failResponse("InternalServerError", 'Something went wrong')
     })
     .use(authRoute)
     .use(projectsRoutes)
     .get('/health', () => ({ status: 'ok' }))
-    .listen(ENV.PORT, () => console.log(`[INFO] rum-core api running on port ${ENV.PORT}`))
+    .listen(ENV.PORT, () => console.log(`[INFO] rum-core api running on port ${ENV.PORT}\n`))

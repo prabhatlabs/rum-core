@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 
 export function useAuth() {
-    const { data, isLoading, error } = useSWR<User | null>('/auth/me', fetcher)
+    const { data, isLoading, error } = useSWR<User | null>('/auth/me', fetcher, {
+        revalidateOnFocus: true
+    })
     const router = useRouter()
 
     const logout = async () => {

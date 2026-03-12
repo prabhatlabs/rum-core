@@ -1,5 +1,6 @@
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { DashboardDialogs } from "@/components/dashboard/dialogs";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProtectedRoute } from "@/hooks/use-protected-route";
 
@@ -20,6 +21,7 @@ export default function DashboardLayout({
                         </main>
                     </div>
                 </div>
+                <DashboardDialogs />
             </ProtectedRoute>
         </SidebarProvider>
     );

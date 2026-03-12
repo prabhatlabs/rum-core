@@ -43,8 +43,8 @@ export async function createProject(
     name: string,
     maxProjectCountAllowed = 0
 ) {
-    const existing = await db.$count(projects, sql`user_id = '${user_id}'`);
-    if (maxProjectCountAllowed > existing) throw new APIErrorResponse("LimitExceeded", "Limit exceeded", "You have reached the maximum number of projects", 400);
+    const existing = await db.$count(projects, sql`projects.user_id = ${user_id}`);
+    if (maxProjectCountAllowed <= existing) throw new APIErrorResponse("LimitExceeded", "Limit exceeded", "You have reached the maximum number of projects", 400);
     
     const isValid = isValidOrigin(origin);
     if (!isValid) throw new APIErrorResponse("ValueError", "Invalid origin", "Origin is not a valid URL", 400);

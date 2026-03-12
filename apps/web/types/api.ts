@@ -24,11 +24,22 @@ export interface Plan {
     updated_at: Date | null;
 };
 
+export interface Usage {
+    date: string;
+    id: string;
+    user_id: string;
+    created_at: Date;
+    updated_at: Date;
+    project_id: string;
+    calls_used: number;
+}
+
 export interface Project {
-    id: string
-    user_id: string
-    name: string
-    project_key: string
-    origin: string
-    created_at: string
+    id: string;
+    name: string;
+    user_id: string;
+    created_at: Date;
+    project_key: string;
+    origin: string;
+    usage: Usage[];
 }
