@@ -4,11 +4,11 @@ import { ENV } from '../constants/envvars'
 export const google = new Google(
   ENV.GOOGLE_CLIENT_ID,
   ENV.GOOGLE_CLIENT_SECRET,
-  `${ENV.BACKEND_URL}/auth/google/callback`
+  `${ENV.BACKEND_URL}/api/v1/auth/google/callback`
 )
 
 export const github = new GitHub(
   ENV.GITHUB_CLIENT_ID,
   ENV.GITHUB_CLIENT_SECRET,
-  `${ENV.BACKEND_URL}/auth/github/callback`
+  `${ENV.BACKEND_URL}/api/v1/auth/github/callback`
 )

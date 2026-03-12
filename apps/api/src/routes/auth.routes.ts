@@ -2,10 +2,11 @@ import { cookie } from '@elysiajs/cookie'
 import { generateCodeVerifier, generateState } from 'arctic'
 import { Elysia } from 'elysia'
 import { ENV } from '../constants/envvars'
+import APIErrorResponse from '../lib/error'
 import { github, google } from '../lib/oauth'
 import { failResponse, okResponse } from '../lib/response'
-import { cookieConfig, jwtConfig } from '../middleware/auth.middleware'
-import { getUserWithPlan, upsertUser } from '../services/auth.service'
+import { authMiddleware, cookieConfig, jwtConfig } from '../middleware/auth.middleware'
+import { upsertUser } from '../services/auth.service'
 
 const authRoutes = new Elysia({ prefix: '/auth' })
     .use(jwtConfig)
@@ -163,25 +164,10 @@ const authRoutes = new Elysia({ prefix: '/auth' })
 
         return redirect(`${ENV.FRONTEND_URL}/dashboard`)
     })
-
-    .get('/me', async ({ cookie, jwt, set }) => {
-        const token = cookie.auth?.value
-        if (!token) {
-            set.status = 401
-            return failResponse('Unauthorized')
-        }
-
-        const payload = await jwt.verify(token)
-        if (!payload) {
-            set.status = 401
-            return failResponse('Unauthorized')
-        }
-
-        const user = await getUserWithPlan(payload.sub as string)
-
+    .use(authMiddleware)
+    .get('/me', async ({ user }) => {
         if (!user) {
-            set.status = 401
-            return failResponse('Unauthorized')
+            throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
         }
 
         return okResponse(user)
