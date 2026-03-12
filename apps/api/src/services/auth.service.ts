@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm'
+import { PLAN_LIMITS } from '../constants/plans'
 import { db } from '../db'
 import { plans, users } from '../db/schema'
 
@@ -58,7 +59,7 @@ export async function upsertUser(params: UpsertUserParams) {
 }
 
 export async function getUserWithPlan(user_id: string) {
-    const user = await db.query.users.findFirst({
+    let user = await db.query.users.findFirst({
         where: eq(users.id, user_id),
         with: {
             plan: true
@@ -73,7 +74,7 @@ export async function getUserWithPlan(user_id: string) {
             status: 'active',
         });
 
-        return await db.query.users.findFirst({
+        user = await db.query.users.findFirst({
             where: eq(users.id, user_id),
             with: {
                 plan: true
@@ -81,5 +82,6 @@ export async function getUserWithPlan(user_id: string) {
         })
     }
 
-    return user
+    const planLimits = PLAN_LIMITS[(user?.plan.type || 'free') as keyof typeof PLAN_LIMITS];
+    return { ...user, plan_limits: planLimits };
 }

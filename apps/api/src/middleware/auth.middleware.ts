@@ -1,7 +1,6 @@
 import { jwt } from '@elysiajs/jwt';
 import { Elysia, t } from 'elysia';
 import { ENV } from '../constants/envvars';
-import { PLAN_LIMITS } from '../constants/plans';
 import APIErrorResponse from '../lib/error';
 import { getUserWithPlan } from '../services/auth.service';
 
@@ -41,10 +40,5 @@ export const authMiddleware = (app: Elysia) => app
             throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token or user not found', 401)
         }
 
-        const user_plan_limit = PLAN_LIMITS[user.plan.type as keyof typeof PLAN_LIMITS];
-        if (!user_plan_limit) {
-            throw new APIErrorResponse('InternalServerError', 'Internal Server Error', 'Invalid plan type', 500)
-        }
-
-        return { user, user_plan_limit }
+        return { user }
     })
