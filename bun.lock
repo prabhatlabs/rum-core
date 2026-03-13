@@ -64,7 +64,7 @@
       },
     },
     "apps/worker": {
-      "name": "worker",
+      "name": "@rum-core/worker",
       "dependencies": {
         "hono": "^4.12.7",
       },

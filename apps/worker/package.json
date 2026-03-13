@@ -1,5 +1,5 @@
 {
-  "name": "worker",
+  "name": "@rum-core/worker",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
