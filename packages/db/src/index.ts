@@ -1,2 +1,2 @@
-export * from './client';
-export * from './schema';
+export * as authService from "./services/auth.service";
+export * as projectsService from "./services/projects.service";

@@ -27,7 +27,8 @@
 
         // packages [db]
         "paths": {
-            "@rum-core/db": ["./packages/db/src/index.ts"]
+            "@rum-core/db": ["./packages/db/src/index.ts"],
+            "@rum-core/shared": ["./packages/shared/src/index.ts"]
         }
     }
 }

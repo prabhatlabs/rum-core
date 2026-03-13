@@ -1,11 +1,10 @@
 import { cookie } from '@elysiajs/cookie'
 import { authService } from '@rum-core/db'
+import { APIErrorResponse, failResponse, okResponse } from '@rum-core/shared'
 import { generateCodeVerifier, generateState } from 'arctic'
 import { Elysia } from 'elysia'
 import { ENV } from '../constants/envvars'
-import APIErrorResponse from '../lib/error'
 import { github, google } from '../lib/oauth'
-import { failResponse, okResponse } from '../lib/response'
 import { authMiddleware, cookieConfig, jwtConfig } from '../middleware/auth.middleware'
 
 const authRoutes = new Elysia({ prefix: '/auth' })

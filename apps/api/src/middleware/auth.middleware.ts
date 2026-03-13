@@ -1,8 +1,8 @@
 import { jwt } from '@elysiajs/jwt';
 import { authService } from '@rum-core/db';
+import { APIErrorResponse } from '@rum-core/shared';
 import Elysia, { t } from 'elysia';
 import { ENV } from '../constants/envvars';
-import APIErrorResponse from '../lib/error';
 
 export const jwtConfig = jwt({
     name: 'jwt',

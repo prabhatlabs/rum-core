@@ -1,6 +1,6 @@
 import { projectsService } from "@rum-core/db";
+import { okResponse } from "@rum-core/shared";
 import Elysia, { t } from "elysia";
-import { okResponse } from "../lib/response";
 import { authMiddleware } from "../middleware/auth.middleware";
 
 const projectsRoutes = new Elysia({ prefix: '/projects' })

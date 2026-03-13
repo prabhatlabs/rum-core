@@ -75,6 +75,7 @@
     "packages/db": {
       "name": "@rum-core/db",
       "dependencies": {
+        "@rum-core/shared": "workspace:*",
         "drizzle-orm": "^0.45.1",
       },
       "devDependencies": {
@@ -93,6 +94,15 @@
       "devDependencies": {
         "@types/bun": "latest",
         "esbuild": "^0.24.0",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/shared": {
+      "name": "@rum-core/shared",
+      "devDependencies": {
+        "@types/bun": "latest",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -533,6 +543,8 @@
     "@rum-core/db": ["@rum-core/db@workspace:packages/db"],
 
     "@rum-core/script": ["@rum-core/script@workspace:packages/script"],
+
+    "@rum-core/shared": ["@rum-core/shared@workspace:packages/shared"],
 
     "@rum-core/web": ["@rum-core/web@workspace:apps/web"],
 

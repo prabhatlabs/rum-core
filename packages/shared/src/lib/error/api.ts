@@ -1,6 +1,6 @@
 type ErrorName = "InternalServerError" | "UnauthorizedUserError" | "ValueError" | "NotFoundError" | "LimitExceeded"
 
-export default class APIErrorResponse extends Error {
+export class APIErrorResponse extends Error {
 
     public error: string;
     public code: number;

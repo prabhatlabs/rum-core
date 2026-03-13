@@ -1,8 +1,7 @@
 import { cors } from '@elysiajs/cors'
+import { APIErrorResponse, failResponse } from '@rum-core/shared'
 import Elysia from 'elysia'
 import { ENV } from './constants/envvars'
-import APIErrorResponse from './lib/error'
-import { failResponse } from './lib/response'
 import authRoute from './routes/auth.routes'
 import projectsRoutes from './routes/projects.routes'
 
