@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import Elysia, { t } from "elysia";
 import { okResponse } from "../lib/response";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { createProject, deleteProject, getProjects, updateProject } from "../services/projects.service";
@@ -9,9 +9,9 @@ const projectsRoutes = new Elysia({ prefix: '/projects' })
         const projects = await getProjects(user.id);
         return okResponse(projects);
     })
-    .post('/', async ({ user, body, user_plan_limit }) => {
+    .post('/', async ({ user, body }) => {
         const { origin, name } = body;
-        const project = await createProject(user.id, origin, name, user_plan_limit.projects);
+        const project = await createProject(user.id, origin, name, user.plan_limits.projects);
         return okResponse(project);
     }, {
         body: t.Object({

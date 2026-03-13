@@ -1,7 +1,6 @@
+import { db, plans, users } from '@rum-core/db'
 import { eq } from 'drizzle-orm'
 import { PLAN_LIMITS } from '../constants/plans'
-import { db } from '../db'
-import { plans, users } from '../db/schema'
 
 interface UpsertUserParams {
     email: string
@@ -63,7 +62,7 @@ export async function getUserWithPlan(user_id: string) {
         where: eq(users.id, user_id),
         with: {
             plan: true
-        }
+        },
     })
 
     // nearly impossible 
@@ -80,6 +79,10 @@ export async function getUserWithPlan(user_id: string) {
                 plan: true
             }
         })
+    }
+
+    if (!user) {
+        return null;
     }
 
     const planLimits = PLAN_LIMITS[(user?.plan.type || 'free') as keyof typeof PLAN_LIMITS];

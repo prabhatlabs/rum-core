@@ -1,7 +1,6 @@
+import { db, projects, usage } from "@rum-core/db";
 import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { db } from "../db";
-import { projects, usage } from "../db/schema";
 import APIErrorResponse from "../lib/error";
 import { isValidOrigin } from "../utils/links";
 

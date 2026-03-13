@@ -1,5 +1,5 @@
 import { cors } from '@elysiajs/cors'
-import { Elysia } from 'elysia'
+import Elysia from 'elysia'
 import { ENV } from './constants/envvars'
 import APIErrorResponse from './lib/error'
 import { failResponse } from './lib/response'

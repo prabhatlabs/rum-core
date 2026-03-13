@@ -1,5 +1,5 @@
 import { jwt } from '@elysiajs/jwt';
-import { Elysia, t } from 'elysia';
+import Elysia, { t } from 'elysia';
 import { ENV } from '../constants/envvars';
 import APIErrorResponse from '../lib/error';
 import { getUserWithPlan } from '../services/auth.service';
@@ -21,7 +21,7 @@ export const cookieConfig = {
     })
 }
 
-export const authMiddleware = (app: Elysia) => app
+export const authMiddleware = new Elysia()
     .use(jwtConfig)
     .guard(cookieConfig)
     .derive(async ({ jwt, cookie }) => {
@@ -34,11 +34,13 @@ export const authMiddleware = (app: Elysia) => app
         if (!payload) {
             throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
         }
+
         const user_id = payload.sub;
         const user = await getUserWithPlan(user_id);
         if (!user) {
             throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token or user not found', 401)
         }
 
-        return { user }
+        return { user };
     })
+    .as("scoped");
