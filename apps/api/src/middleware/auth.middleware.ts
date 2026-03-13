@@ -1,8 +1,8 @@
 import { jwt } from '@elysiajs/jwt';
+import { authService } from '@rum-core/db';
 import Elysia, { t } from 'elysia';
 import { ENV } from '../constants/envvars';
 import APIErrorResponse from '../lib/error';
-import { getUserWithPlan } from '../services/auth.service';
 
 export const jwtConfig = jwt({
     name: 'jwt',
@@ -36,7 +36,7 @@ export const authMiddleware = new Elysia()
         }
 
         const user_id = payload.sub;
-        const user = await getUserWithPlan(user_id);
+        const user = await authService.getUserWithPlan(user_id);
         if (!user) {
             throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token or user not found', 401)
         }

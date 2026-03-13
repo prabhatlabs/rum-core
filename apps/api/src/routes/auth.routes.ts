@@ -1,4 +1,5 @@
 import { cookie } from '@elysiajs/cookie'
+import { authService } from '@rum-core/db'
 import { generateCodeVerifier, generateState } from 'arctic'
 import { Elysia } from 'elysia'
 import { ENV } from '../constants/envvars'
@@ -6,7 +7,6 @@ import APIErrorResponse from '../lib/error'
 import { github, google } from '../lib/oauth'
 import { failResponse, okResponse } from '../lib/response'
 import { authMiddleware, cookieConfig, jwtConfig } from '../middleware/auth.middleware'
-import { upsertUser } from '../services/auth.service'
 
 const authRoutes = new Elysia({ prefix: '/auth' })
     .use(jwtConfig)
@@ -61,7 +61,7 @@ const authRoutes = new Elysia({ prefix: '/auth' })
             picture: string
         }
 
-        const user = await upsertUser({
+        const user = await authService.upsertUser({
             email: googleUser.email,
             name: googleUser.name,
             avatar_url: googleUser.picture,
@@ -141,7 +141,7 @@ const authRoutes = new Elysia({ prefix: '/auth' })
             email = emails.find(e => e.primary)?.email ?? ''
         }
 
-        const user = await upsertUser({
+        const user = await authService.upsertUser({
             email,
             name: githubUser.name,
             avatar_url: githubUser.avatar_url,
