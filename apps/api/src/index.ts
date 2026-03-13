@@ -13,7 +13,7 @@ const app = new Elysia({
         credentials: true,
     }))
     .onRequest(({ request }) => {
-        console.log(`[INFO] ${request.method} ${request.url.split('/api/v1')[1]}`)
+        console.log(`[INFO] ${request.method} ${request.url.split('/api/v1')[1] || request.url}`)
     })
     .onError(({ error, set }) => {
         if (error instanceof APIErrorResponse) {
