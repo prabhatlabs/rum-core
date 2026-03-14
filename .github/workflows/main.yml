@@ -30,13 +30,17 @@ jobs:
       - name: Copy build to script repo
         run: cp packages/script/dist/rum-core.js client-script-repo/dist/rum-core.js
 
+      - name: Get version
+        id: version
+        run: echo "version=$(node -p "require('./packages/script/package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Bump version & push
         run: |
           cd client-script-repo
-          VERSION=$(node -p "require('../packages/script/package.json').version")
+          git remote set-url origin https://x-access-token:${{ secrets.SCRIPT_REPO_TOKEN }}@github.com/IsayAyase/rum-core-client-script.git
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add dist/rum-core.js
-          git commit -m "chore: release v$VERSION"
-          git tag v$VERSION
+          git commit -m "chore: release v${{ steps.version.outputs.version }}"
+          git tag v${{ steps.version.outputs.version }}
           git push && git push --tags
