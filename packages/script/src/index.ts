@@ -21,7 +21,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
     const WORKER_URL_STR = WORKER_URL;
 
     const BATCH_INTERVAL_MS = 10_000;
-    const SESSION_ID = `sess_${PROJECT_KEY}` + Math.random().toString(36).slice(2, 12);
+    const SESSION_ID = `sess_${PROJECT_KEY}_${Math.random().toString(36).slice(2, 12)}`;
 
     const queue: any[] = [];
 
@@ -196,6 +196,8 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         const payload = JSON.stringify({ events: batch });
 
         if (!WORKER_URL) return;
+        
+        console.log("[rum-core] flushing payload:", payload);
 
         if (navigator.sendBeacon) {
             const blob = new Blob([payload], { type: "application/json" });
