@@ -196,7 +196,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         const payload = JSON.stringify({ events: batch });
 
         if (!WORKER_URL) return;
-        
         console.log("[rum-core] flushing payload:", payload);
 
         if (navigator.sendBeacon) {
