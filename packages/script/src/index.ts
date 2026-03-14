@@ -18,6 +18,8 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         return;
     }
 
+    console.log("[rum-core] Initialized");
+
     const WORKER_URL_STR = WORKER_URL;
 
     const BATCH_INTERVAL_MS = 10_000;
