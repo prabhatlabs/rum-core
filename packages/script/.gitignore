@@ -2,8 +2,7 @@
 node_modules
 
 # output
-!dist/
-!dist/rum-core.js
+dist
 out
 *.tgz
 
