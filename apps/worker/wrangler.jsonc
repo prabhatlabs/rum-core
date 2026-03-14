@@ -2,7 +2,13 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "rum-core-worker",
   "main": "src/index.ts",
-  "compatibility_date": "2026-03-13"
+  "compatibility_date": "2026-03-13",
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],
@@ -31,8 +37,4 @@
   // "ai": {
   //   "binding": "AI"
   // },
-  // "observability": {
-  //   "enabled": true,
-  //   "head_sampling_rate": 1
-  // }
 }
