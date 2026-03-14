@@ -210,6 +210,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 headers: { "Content-Type": "application/json" },
                 body: payload,
                 keepalive: true,
+                credentials: "omit"
             }).catch(() => { });
         }
     }
