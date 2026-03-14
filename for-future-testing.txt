@@ -1,0 +1,3 @@
+test backend in render
+try koyeb for worker
+cloudflare proxy for backend (ddos protection) 

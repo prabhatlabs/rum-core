@@ -121,30 +121,31 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 return { dns: null, tcp: null, tls: null, ttfb: null, duration: null };
             }
 
-            let dns: number | null = null;
-            if (entry.domainLookupEnd - entry.domainLookupStart > 0) {
-                dns = entry.domainLookupEnd - entry.domainLookupStart;
-            }
+            const dns =
+                (entry.domainLookupEnd - entry.domainLookupStart > 0)
+                    ? entry.domainLookupEnd - entry.domainLookupStart
+                    : null;
 
-            let tcp: number | null = null;
-            if (entry.connectEnd - entry.connectStart > 0) {
-                tcp = entry.connectEnd - entry.connectStart;
-            }
 
-            let tls: number | null = null;
-            if (entry.secureConnectionStart > 0) {
-                tls = entry.connectEnd - entry.secureConnectionStart;
-            }
+            const tcp =
+                (entry.connectEnd - entry.connectStart > 0)
+                    ? entry.connectEnd - entry.connectStart
+                    : null;
 
-            let ttfb: number | null = null;
-            if (entry.responseStart - entry.requestStart > 0) {
-                ttfb = entry.responseStart - entry.requestStart;
-            }
+            const tls =
+                (entry.secureConnectionStart > 0)
+                    ? entry.connectEnd - entry.secureConnectionStart
+                    : null;
 
-            let duration: number | null = null;
-            if (entry.duration > 0) {
-                duration = entry.duration;
-            }
+            const ttfb =
+                (entry.responseStart - entry.requestStart > 0)
+                    ? entry.responseStart - entry.requestStart
+                    : null;
+
+            const duration =
+                (entry.duration > 0)
+                    ? entry.duration
+                    : null;
 
             return { dns, tcp, tls, ttfb, duration };
         }
