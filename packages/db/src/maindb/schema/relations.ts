@@ -1,8 +1,5 @@
 import { relations } from "drizzle-orm";
-import { plans } from "./plans";
-import { projects } from "./projects";
-import { usage } from "./usage";
-import { users } from "./users";
+import { plans, projects, usage, users } from "./schema";
 
 export const usersRelations = relations(users, ({ one }) => ({
   plan: one(plans, {
