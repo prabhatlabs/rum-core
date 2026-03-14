@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "@rum-core/script",
   "module": "index.ts",
   "type": "module",

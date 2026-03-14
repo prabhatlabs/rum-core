@@ -12,10 +12,10 @@ app.get('/health', (c) => {
   return c.text('Working!');
 });
 
-app.post('/', (c) => {
-  const payload = c.req.json();
+app.post('/', async (c) => {
+  const payload = await c.req.json();
 
-  console.log(payload);
+  console.log(payload?.events?.length);
   return c.text('got the request');
 });
 

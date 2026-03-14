@@ -4,9 +4,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
     "use strict";
 
     try {
-
-
-
         if (typeof window === "undefined") return;
 
         const PROJECT_KEY = (document.currentScript as HTMLScriptElement | null)?.getAttribute("data-key") ?? null;
@@ -106,14 +103,14 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
 
         const env = getEnvironment();
 
-        function normalizeUrl(rawUrl: string) {
+        function normalizeUrl(rawUrl: string): string {
             try {
                 const url = new URL(rawUrl, location.origin);
-                const normalized = url.pathname
+                const normalizedPath = url.pathname
                     .split("/")
                     .map((seg: string) => (/^[0-9a-f-]{8,}$|^\d+$/.test(seg) && seg.length > 0 ? ":id" : seg))
                     .join("/");
-                return normalized || "/";
+                return `${url.origin}${normalizedPath || "/"}`;
             } catch {
                 return rawUrl;
             }
@@ -310,6 +307,8 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
             let _url = "";
             let _requestSize: number | null = null;
 
+            // ─── Methods ───────────────────────────────────────────────────────────────
+
             self.open = function (method: string, url: string, ...args: any[]) {
                 _method = (method || "GET").toUpperCase();
                 _url = url;
@@ -338,7 +337,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                             fullUrl = new URL(_url, location.origin).href;
                         } catch { }
 
-                        let entry = getResourceTiming(fullUrl);
+                        const entry = getResourceTiming(fullUrl);
                         const timing = extractTiming(entry);
                         let responseSize: number | null = null;
                         if (entry) {
@@ -397,6 +396,10 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 return xhr.send.apply(xhr, arguments);
             };
 
+            self.abort = function () {
+                return xhr.abort.apply(xhr, arguments);
+            };
+
             self.setRequestHeader = function () {
                 return xhr.setRequestHeader.apply(xhr, arguments);
             };
@@ -407,10 +410,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
 
             self.getAllResponseHeaders = function () {
                 return xhr.getAllResponseHeaders();
-            };
-
-            self.abort = function () {
-                return xhr.abort.apply(xhr, arguments);
             };
 
             self.overrideMimeType = function () {
@@ -429,6 +428,8 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 return xhr.dispatchEvent.apply(xhr, arguments);
             };
 
+            // ─── Read-only properties ──────────────────────────────────────────────────
+
             Object.defineProperty(self, "readyState", {
                 get: () => xhr.readyState,
             });
@@ -441,16 +442,83 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 get: () => xhr.statusText,
             });
 
-            Object.defineProperty(self, "responseText", {
-                get: () => xhr.responseText,
-            });
-
             Object.defineProperty(self, "response", {
                 get: () => xhr.response,
             });
 
+            Object.defineProperty(self, "responseText", {
+                get: () => xhr.responseText,
+            });
+
+            Object.defineProperty(self, "responseXML", {
+                get: () => xhr.responseXML,
+            });
+
             Object.defineProperty(self, "responseURL", {
                 get: () => xhr.responseURL,
+            });
+
+            Object.defineProperty(self, "upload", {
+                get: () => xhr.upload,
+            });
+
+            // ─── Read-write properties ─────────────────────────────────────────────────
+
+            Object.defineProperty(self, "responseType", {
+                get: () => xhr.responseType,
+                set: (val) => { xhr.responseType = val; }
+            });
+
+            Object.defineProperty(self, "timeout", {
+                get: () => xhr.timeout,
+                set: (val) => { xhr.timeout = val; }
+            });
+
+            Object.defineProperty(self, "withCredentials", {
+                get: () => xhr.withCredentials,
+                set: (val) => { xhr.withCredentials = val; }
+            });
+
+            // ─── Event handler properties ──────────────────────────────────────────────
+
+            Object.defineProperty(self, "onreadystatechange", {
+                get: () => xhr.onreadystatechange,
+                set: (val) => { xhr.onreadystatechange = val; }
+            });
+
+            Object.defineProperty(self, "onload", {
+                get: () => xhr.onload,
+                set: (val) => { xhr.onload = val; }
+            });
+
+            Object.defineProperty(self, "onerror", {
+                get: () => xhr.onerror,
+                set: (val) => { xhr.onerror = val; }
+            });
+
+            Object.defineProperty(self, "ontimeout", {
+                get: () => xhr.ontimeout,
+                set: (val) => { xhr.ontimeout = val; }
+            });
+
+            Object.defineProperty(self, "onabort", {
+                get: () => xhr.onabort,
+                set: (val) => { xhr.onabort = val; }
+            });
+
+            Object.defineProperty(self, "onprogress", {
+                get: () => xhr.onprogress,
+                set: (val) => { xhr.onprogress = val; }
+            });
+
+            Object.defineProperty(self, "onloadstart", {
+                get: () => xhr.onloadstart,
+                set: (val) => { xhr.onloadstart = val; }
+            });
+
+            Object.defineProperty(self, "onloadend", {
+                get: () => xhr.onloadend,
+                set: (val) => { xhr.onloadend = val; }
             });
 
             return self;
