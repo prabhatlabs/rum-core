@@ -1,10 +1,17 @@
 import {
+    APIErrorResponse,
     constants,
     getCutoffTimestamp,
     getPreviousDayTimestamp,
     getPreviousHourTimestamp,
+    okResponse,
+    type ApiResponse,
+    type TimeRange,
 } from "@rum-core/shared";
+import { eq } from "drizzle-orm";
 import { tursoClient } from "../eventdb/client";
+import { db } from "../maindb/client";
+import { plans, projects } from "../maindb/schema";
 
 const RETENTION = constants.plans.RETENTION;
 const RAW_TABLES = ["request_events", "page_vitals"];
@@ -44,6 +51,8 @@ const DAILY_TABLES = [
     "pv_daily_env",
     "pv_daily_env_geo",
 ];
+
+const ROLLUP_TABLES = new Set([...HOURLY_TABLES, ...DAILY_TABLES]);
 
 export async function aggregateHourlyFromRaw(): Promise<void> {
     const hourTimestamp = getPreviousHourTimestamp();
@@ -929,4 +938,63 @@ export async function cleanupOldData(): Promise<void> {
 
 export async function vacuumTurso(): Promise<void> {
     await tursoClient.execute({ sql: "VACUUM" });
+}
+
+export async function fetchRollupTables(
+    userId: string,
+    projectKey: string,
+    timeRange: TimeRange,
+    tableNames: string[]
+): Promise<ApiResponse<Record<string, unknown[]>>> {
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.project_key, projectKey),
+    });
+
+    if (!project || project.user_id !== userId) {
+        throw new APIErrorResponse("UnauthorizedUserError", "Forbidden", "Project not found or access denied", 403);
+    }
+
+    const userPlan = await db.query.plans.findFirst({
+        where: eq(plans.user_id, userId),
+    });
+
+    const planType = (userPlan?.type ?? 'free') as keyof typeof constants.plans.PLAN_LIMITS;
+    const allowedTimeRanges: TimeRange[] = [...constants.plans.PLAN_LIMITS[planType].time_ranges];
+
+    if (!allowedTimeRanges.includes(timeRange)) {
+        throw new APIErrorResponse("LimitExceeded", "Forbidden", `Time range '${timeRange}' not allowed for your plan`, 403);
+    }
+
+    const now = Date.now();
+    const isHourly = timeRange === '12h' || timeRange === '24h';
+    const days = parseInt(timeRange.replace('h', '').replace('d', ''));
+    const isDays = timeRange.includes('d');
+    const rangeMs = isDays ? days * 24 * 60 * 60 * 1000 : days * 60 * 60 * 1000;
+    const startTime = now - rangeMs;
+
+    const data: Record<string, any[]> = {};
+
+    const queries = tableNames.map(async (tableName) => {
+        if (!ROLLUP_TABLES.has(tableName)) {
+            return { tableName, data: [] };
+        }
+
+        const timeColumn = isHourly ? 'hour' : 'day';
+        const sql = `SELECT * FROM ${tableName} WHERE project_key = ? AND ${timeColumn} >= ? AND ${timeColumn} <= ?`;
+
+        const result = await tursoClient.execute({
+            sql,
+            args: [projectKey, startTime, now],
+        });
+
+        return { tableName, data: result.rows };
+    });
+
+    const results = await Promise.all(queries);
+
+    for (const { tableName, data: tableData } of results) {
+        data[tableName] = tableData;
+    }
+
+    return okResponse(data, "Data fetched successfully");
 }

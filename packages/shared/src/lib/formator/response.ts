@@ -1,9 +1,4 @@
-interface ApiResponse<T = null> {
-  success: boolean
-  message: string
-  data: T | null
-  error: string | null
-}
+import type { ApiResponse } from "../../type"
 
 export function okResponse<T>(data: T, message = 'Success'): ApiResponse<T> {
   return {

@@ -1,9 +1,16 @@
-export const PLAN_LIMITS = {
+import type { PlanType, TimeRange } from "../type";
+
+export const PLAN_LIMITS: Record<PlanType, {
+  projects: number;
+  calls_per_day: number;
+  retention_days: number;
+  time_ranges: readonly TimeRange[];
+}> = {
   free: {
     projects: 2,
     calls_per_day: 50_000,
     retention_days: 7,
-    time_ranges: ['12h', '24h', '7d'] as const,
+    time_ranges: ['24h', '7d'] as const,
   },
   pro: {
     projects: 8,
@@ -26,7 +33,7 @@ export const RETENTION = {
   monthly_usage_forever: true // never delete monthly summary
 } as const
 
-export const CACHE_TTL = {
+export const CACHE_TTL: Record<TimeRange, number> = {
   '12h': 60,          // 1 min in seconds
   '24h': 300,         // 5 min
   '7d': 1800,         // 30 min
