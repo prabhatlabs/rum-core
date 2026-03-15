@@ -375,10 +375,11 @@ rum-core/
 | Service | Platform | Notes |
 |---|---|---|
 | Browser Script | jsDelivr + GitHub (separate repo) | Auto built + tagged via GitHub Actions on push to main |
-| Cloudflare Worker | Cloudflare | Free, 100k req/day |
+| Cloudflare Worker | Cloudflare | Free, 100k req/day — ingest only, no cron |
 | Main Backend (dev/testing) | Render + UptimeRobot | Free, UptimeRobot pings `/health` every 5min to prevent sleep |
 | Main Backend (launch) | Koyeb | Never sleeps, free — swap older project to Render at launch |
 | Frontend | Vercel | Free, perfect for Next.js SSG |
+| Cron jobs | GitHub Actions | Scheduled workflows POST to Koyeb `/internal/cron/*` — free tier (2,000 min/month), each cron run takes seconds |
 
 ---
 
@@ -451,26 +452,52 @@ Write to Turso (request_events or page_vitals depending on endpoint)
 
 Every 30 min — bulk sync Redis → Neon to persist counts (protects against Redis data loss).
 
-### Cron jobs (all on Cloudflare Cron Triggers — free)
+### Cron jobs
 
-| Job | Schedule | Action |
-|---|---|---|
-| Usage sync | Every 30 min | Redis → Neon bulk upsert of daily counters |
-| Hourly rollup | Every hour (at :00) | Aggregate previous completed hour from raw tables → hourly rollup tables. Never aggregates current incomplete hour |
-| Daily rollup | Daily midnight UTC | Aggregate previous full day from hourly rollup tables → daily rollup tables |
-| Neon cleanup | Daily midnight UTC | Delete usage rows older than 92 days |
-| Turso cleanup | Daily midnight UTC | DELETE rows older than 32 days from all 6 Turso tables + VACUUM |
-| Monthly summary | 1st of month, 2am UTC | Aggregate previous month daily usage → monthly_usage table |
+**Trigger: GitHub Actions scheduled workflows**
+**Execution: Internal API endpoints on Koyeb (`/internal/cron/*`)**
 
-**Turso tables covered by cleanup cron (all share 32 day retention):**
-- `request_events` — raw events
-- `page_vitals` — raw vitals
-- `request_events_hourly` — hourly rollups
-- `page_vitals_hourly` — hourly rollups
-- `request_events_daily` — daily rollups
-- `page_vitals_daily` — daily rollups
+GitHub Actions fires the schedule and POSTs to the Koyeb API. All heavy DB work (Turso + Neon) runs inside the Elysia handler on Koyeb. Zero Cloudflare Worker budget consumed.
 
-**Rollup cron safety rule:**
+All `/internal/cron/*` endpoints are protected by a shared secret:
+```
+x-cron-secret: <CRON_SECRET>
+```
+`CRON_SECRET` stored as a GitHub Actions secret and as an env var on Koyeb.
+
+| Job | GitHub Actions Schedule | Endpoint | Action |
+|---|---|---|---|
+| Usage sync | `*/30 * * * *` | `POST /internal/cron/usage-sync` | Redis → Neon bulk upsert of daily counters |
+| Hourly rollup | `0 * * * *` | `POST /internal/cron/hourly-rollup` | Aggregate previous completed hour from raw tables → 16 hourly rollup tables |
+| Daily cron | `0 0 * * *` | `POST /internal/cron/daily` | Runs 5 steps in order — see below |
+| Monthly summary | `0 2 1 * *` | `POST /internal/cron/monthly-summary` | Aggregate previous month daily usage → monthly_usage table |
+
+**Daily cron — midnight UTC (5 steps in order):**
+```
+1. Aggregate previous day from hourly rollups → 16 daily rollup tables
+        ↓
+2. DELETE hourly rollup rows older than 24h from all 16 hourly tables
+   (already aggregated into daily, no longer needed)
+        ↓
+3. DELETE raw + daily rollup rows older than 32 days from all 18 tables
+   (2 raw + 16 daily rollup tables)
+        ↓
+4. VACUUM Turso (reclaim storage after bulk deletes)
+        ↓
+5. DELETE usage rows older than 92 days from Neon
+```
+
+> Order matters — aggregation must run before deletes. Steps 2 and 3 are separate: hourly rollups have a 24h retention, raw and daily rollups have 32 day retention.
+
+**Turso table retention summary:**
+
+| Tables | Count | Retention | Deleted by |
+|---|---|---|---|
+| Raw (`request_events`, `page_vitals`) | 2 | 32 days | Daily cron step 3 |
+| Hourly rollups (`re_hourly_*`, `pv_hourly_*`) | 16 | 24 hours | Daily cron step 2 |
+| Daily rollups (`re_daily_*`, `pv_daily_*`) | 16 | 32 days | Daily cron step 3 |
+
+**Hourly rollup safety rule:**
 Hourly rollup runs at top of every hour and only processes the previous completed hour:
 ```
 cron fires at 14:00 UTC
@@ -1251,6 +1278,7 @@ PRIMARY KEY (project_key, day, device_type, browser, os, connection_type, countr
 - [x] Environment — per dimension drilldown (browser/device/OS/connection)
 - [x] Pre-aggregation strategy — 34 Turso tables (2 raw + 32 rollups), dashboard reads rollups only
 - [x] Rollup table schemas — 16 for request_events, 16 for page_vitals (hourly + daily pairs)
+- [x] Cron infrastructure — GitHub Actions scheduled workflows → Koyeb internal API endpoints
 - [ ] Map library decision — react-simple-maps (lightweight SVG) recommended
 - [ ] Data export feature — allow users to export tracking data as XLS or CSV
 - [ ] Vitals score algorithm — define exact weighting for 0-100 score computation
