@@ -1,6 +1,5 @@
-import { getCurrentDate } from '@rum-core/shared';
-import { constants } from '@rum-core/shared';
-import { and, eq, sql } from 'drizzle-orm';
+import { constants, getCurrentDate, getCutoffTimestamp } from '@rum-core/shared';
+import { and, eq, lt, sql } from 'drizzle-orm';
 import { db } from '../maindb/client';
 import { plans, projects, usage } from '../maindb/schema/schema';
 
@@ -74,4 +73,11 @@ export async function getCallsLeft(projectKey: string): Promise<{ remaining: num
     const remaining = Math.max(0, limit - used);
 
     return { remaining, limit, used };
+}
+
+export async function cleanupUsage(): Promise<void> {
+    const cutoff92Days = getCutoffTimestamp(constants.plans.RETENTION.usage_max_days);
+    const cutoffDate = new Date(cutoff92Days).toISOString().split('T')[0]!;
+
+    await db.delete(usage).where(lt(usage.date, cutoffDate));
 }
