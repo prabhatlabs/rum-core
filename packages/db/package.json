@@ -18,7 +18,8 @@
   },
   "type": "module",
   "dependencies": {
-    "drizzle-orm": "^0.45.1",
-    "@rum-core/shared": "workspace:*"
+    "@libsql/client": "^0.17.0",
+    "@rum-core/shared": "workspace:*",
+    "drizzle-orm": "^0.45.1"
   }
 }

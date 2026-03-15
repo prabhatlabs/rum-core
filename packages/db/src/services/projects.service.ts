@@ -1,7 +1,8 @@
 import { APIErrorResponse } from "@rum-core/shared";
 import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { db, projects, usage } from "../maindb";
+import { db } from '../maindb/client';
+import { projects, usage } from "../maindb/schema";
 import { isValidOrigin } from "../utils/links";
 
 // returns all projects, as even for pro plan, cap is at 8!
