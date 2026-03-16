@@ -52,8 +52,6 @@ const DAILY_TABLES = [
     "pv_daily_env_geo",
 ];
 
-const ROLLUP_TABLES = new Set([...HOURLY_TABLES, ...DAILY_TABLES]);
-
 export async function aggregateHourlyFromRaw(): Promise<void> {
     const hourTimestamp = getPreviousHourTimestamp();
     const hourStart = hourTimestamp;
@@ -946,17 +944,14 @@ export async function fetchRollupTables(
     timeRange: TimeRange,
     tableNames: string[]
 ): Promise<ApiResponse<Record<string, unknown[]>>> {
-    const project = await db.query.projects.findFirst({
-        where: eq(projects.project_key, projectKey),
-    });
+    const [project, userPlan] = await Promise.all([
+        db.query.projects.findFirst({ where: eq(projects.project_key, projectKey) }),
+        db.query.plans.findFirst({ where: eq(plans.user_id, userId) }),
+    ]);
 
     if (!project || project.user_id !== userId) {
         throw new APIErrorResponse("UnauthorizedUserError", "Forbidden", "Project not found or access denied", 403);
     }
-
-    const userPlan = await db.query.plans.findFirst({
-        where: eq(plans.user_id, userId),
-    });
 
     const planType = (userPlan?.type ?? 'free') as keyof typeof constants.plans.PLAN_LIMITS;
     const allowedTimeRanges: TimeRange[] = [...constants.plans.PLAN_LIMITS[planType].time_ranges];
@@ -975,7 +970,9 @@ export async function fetchRollupTables(
     const data: Record<string, any[]> = {};
 
     const queries = tableNames.map(async (tableName) => {
-        if (!ROLLUP_TABLES.has(tableName)) {
+        const validTables = isHourly ? new Set(HOURLY_TABLES) : new Set(DAILY_TABLES);
+
+        if (!validTables.has(tableName)) {
             return { tableName, data: [] };
         }
 
