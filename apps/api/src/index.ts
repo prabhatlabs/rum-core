@@ -1,9 +1,14 @@
 import { cors } from '@elysiajs/cors'
+import { initEventDB, initMainDB } from '@rum-core/db'
 import { APIErrorResponse, failResponse } from '@rum-core/shared'
 import Elysia from 'elysia'
 import { ENV } from './constants/envvars'
 import authRoute from './routes/auth.routes'
 import projectsRoutes from './routes/projects.routes'
+
+// db init
+initMainDB(process.env.DATABASE_URL!);
+initEventDB(process.env.TURSO_DATABASE_URL!, process.env.TURSO_AUTH_TOKEN!);
 
 const app = new Elysia({
     prefix: "/api/v1",
@@ -20,7 +25,7 @@ const app = new Elysia({
             set.status = error.code
             return failResponse(`[${error.name}]: ${error.error}`, error.message)
         }
-        
+
         // unhandled error
         console.error("[ERROR]", error)
         set.status = 500

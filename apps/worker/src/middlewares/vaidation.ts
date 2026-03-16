@@ -3,8 +3,8 @@ import { createMiddleware } from "hono/factory";
 import { getCallsLeft } from "../../../../packages/db/src/services/usage.service";
 
 export const validateRequest = createMiddleware(async (c, next) => {
-    const projectKey = c.req.header('x-project-key');
     const origin = c.req.header('origin');
+    const projectKey = (await c.req.json()).project_key;
 
     if (!projectKey) {
         throw new APIErrorResponse('ValidationError', 'Missing project key', 'Missing project key', 400);
