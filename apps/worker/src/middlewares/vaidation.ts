@@ -12,7 +12,7 @@ export const validateRequest = createMiddleware(async (c, next) => {
 
     const { remaining, origin: allowedOrigin } = await getCallsLeft(projectKey);
 
-    if (allowedOrigin && origin !== allowedOrigin) {
+    if (allowedOrigin && `${origin}/` !== allowedOrigin) {
         throw new APIErrorResponse('ForbiddenError', 'Invalid origin', 'Origin is not allowed', 403);
     }
 

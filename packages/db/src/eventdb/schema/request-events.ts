@@ -1,7 +1,8 @@
 import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { nanoid } from 'nanoid';
 
 export const requestEvents = sqliteTable('request_events', {
-    id: text('id').primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => nanoid()),
     project_key: text('project_key').notNull(),
     session_id: text('session_id').notNull(),
     url: text('url').notNull(),

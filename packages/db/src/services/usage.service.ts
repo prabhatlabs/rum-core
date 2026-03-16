@@ -61,7 +61,7 @@ export async function getCallsLeft(projectKey: string): Promise<{ remaining: num
             )
         )
         .where(eq(projects.project_key, projectKey))
-        .groupBy(projects.user_id, plans.type)
+        .groupBy(projects.user_id, plans.type, projects.origin)
         .limit(1);
 
     if (!result[0]) {
