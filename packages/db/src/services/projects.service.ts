@@ -5,10 +5,9 @@ import { getMainDB } from '../maindb/client';
 import { projects, usage } from "../maindb/schema";
 import { isValidOrigin } from "../utils/links";
 
-const db = getMainDB();
-
 // returns all projects, as even for pro plan, cap is at 8!
 export async function getProjects(user_id: string) {
+    const db = getMainDB();
     return await db.query.projects.findMany({
         where: eq(usage.user_id, user_id),
         with: {
@@ -22,6 +21,7 @@ export async function getProjects(user_id: string) {
 }
 
 export async function getProject(project_id: string, user_id: string) {
+    const db = getMainDB();
     return await db.query.projects.findFirst({
         where(fields, operators) {
             return operators.and(
@@ -45,6 +45,7 @@ export async function createProject(
     name: string,
     maxProjectCountAllowed = 0
 ) {
+    const db = getMainDB();
     const existing = await db.$count(projects, sql`projects.user_id = ${user_id}`);
     if (maxProjectCountAllowed <= existing) throw new APIErrorResponse("LimitExceeded", "Limit exceeded", "You have reached the maximum number of projects", 400);
 
@@ -68,6 +69,7 @@ export async function updateProject(
     const isValid = isValidOrigin(origin);
     if (!isValid) throw new APIErrorResponse("ValueError", "Invalid origin", "Origin is not a valid URL", 400);
 
+    const db = getMainDB();
     const [project] = await db
         .update(projects)
         .set({ name, origin })
@@ -77,6 +79,7 @@ export async function updateProject(
 }
 
 export async function deleteProject(project_id: string, user_id: string) {
+    const db = getMainDB();
     const [project] = await db
         .delete(projects)
         .where(and(eq(projects.id, project_id), eq(projects.user_id, user_id)))

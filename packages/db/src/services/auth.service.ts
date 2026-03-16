@@ -3,7 +3,6 @@ import { eq } from 'drizzle-orm';
 import { getMainDB } from '../maindb/client';
 import { plans, users } from '../maindb/schema';
 
-const db = getMainDB();
 
 interface UpsertUserParams {
     email: string
@@ -14,6 +13,8 @@ interface UpsertUserParams {
 }
 
 export async function upsertUser(params: UpsertUserParams) {
+    const db = getMainDB();
+
     const existingUser = await db.query.users.findFirst({
         where: eq(users.email, params.email)
     })
@@ -61,6 +62,8 @@ export async function upsertUser(params: UpsertUserParams) {
 }
 
 export async function getUserWithPlan(user_id: string) {
+    const db = getMainDB();
+    
     let user = await db.query.users.findFirst({
         where: eq(users.id, user_id),
         with: {

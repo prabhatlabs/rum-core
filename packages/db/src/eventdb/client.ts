@@ -17,7 +17,8 @@ export function initEventDB(url: string, authToken: string) {
         url,
         authToken
     });
-    _db = drizzle(_sql, { schema });
+    _db = drizzle(_sql, { schema }); 
+    console.log('Connected to eventdb');
 }
 
 export function getEventDB() {

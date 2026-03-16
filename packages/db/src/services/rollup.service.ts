@@ -12,7 +12,6 @@ import { eq } from "drizzle-orm";
 import { getEventDBClient } from "../eventdb/client";
 import { getMainDB } from "../maindb/client";
 import { plans, projects } from "../maindb/schema";
-
 const RETENTION = constants.plans.RETENTION;
 const RAW_TABLES = ["request_events", "page_vitals"];
 const HOURLY_TABLES = [
@@ -51,9 +50,6 @@ const DAILY_TABLES = [
     "pv_daily_env",
     "pv_daily_env_geo",
 ];
-
-const eventDBClient = getEventDBClient();
-const mainDB = getMainDB();
 
 export async function aggregateHourlyFromRaw(): Promise<void> {
     const hourTimestamp = getPreviousHourTimestamp();
@@ -479,6 +475,7 @@ export async function aggregateHourlyFromRaw(): Promise<void> {
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
+    const eventDBClient = getEventDBClient();
     await eventDBClient.execute({ sql: reSummary });
     await eventDBClient.execute({ sql: reEndpoints });
     await eventDBClient.execute({ sql: reEndpointGeo });
@@ -899,6 +896,7 @@ export async function aggregateDailyFromHourly(): Promise<void> {
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
+    const eventDBClient = getEventDBClient();
     await eventDBClient.execute({ sql: reSummary });
     await eventDBClient.execute({ sql: reEndpoints });
     await eventDBClient.execute({ sql: reEndpointGeo });
@@ -919,6 +917,7 @@ export async function aggregateDailyFromHourly(): Promise<void> {
 
 export async function cleanupHourlyRollups(): Promise<void> {
     const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+    const eventDBClient = getEventDBClient();
     await Promise.all(
         HOURLY_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE hour < ${cutoff24h}` }))
     );
@@ -926,7 +925,7 @@ export async function cleanupHourlyRollups(): Promise<void> {
 
 export async function cleanupOldData(): Promise<void> {
     const cutoff32Days = getCutoffTimestamp(RETENTION.events_max_days);
-
+    const eventDBClient = getEventDBClient();
     await Promise.all([
         ...RAW_TABLES.map(table =>
             eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE timestamp < ${cutoff32Days}` })
@@ -938,6 +937,7 @@ export async function cleanupOldData(): Promise<void> {
 }
 
 export async function vacuumTurso(): Promise<void> {
+    const eventDBClient = getEventDBClient();
     await eventDBClient.execute({ sql: "VACUUM" });
 }
 
@@ -947,6 +947,8 @@ export async function fetchRollupTables(
     timeRange: TimeRange,
     tableNames: string[]
 ): Promise<ApiResponse<Record<string, unknown[]>>> {
+    const eventDBClient = getEventDBClient();
+    const mainDB = getMainDB();
     const [project, userPlan] = await Promise.all([
         mainDB.query.projects.findFirst({ where: eq(projects.project_key, projectKey) }),
         mainDB.query.plans.findFirst({ where: eq(plans.user_id, userId) }),

@@ -13,11 +13,11 @@ export function initMainDB(url: string) {
     if (_db) {
         return;
     }
-
     _sql = new Pool({
         connectionString: url
     });
     _db = drizzle(_sql, { schema });
+    console.log('Connected to maindb');
 }
 
 export function getMainDB() {
@@ -28,10 +28,8 @@ export function getMainDB() {
 }
 
 export function getMainDBSQL() {
-    // if (!_sql) {
-    //     throw new Error('No maindb client')
-    // }
-    // return _sql
-
-    return _sql ? _sql : (() => {throw new Error('No maindb client')})()
+    if (!_sql) {
+        throw new Error('No maindb client')
+    }
+    return _sql
 }

@@ -3,15 +3,13 @@ import { and, eq, lt, sql } from 'drizzle-orm';
 import { getMainDB } from '../maindb/client';
 import { plans, projects, usage } from '../maindb/schema/schema';
 
-const db = getMainDB();
-
 export async function incrementUsage(projectKey: string, calls: number) {
     if (calls <= 0) {
         throw new Error(`incrementUsage called with invalid calls value: ${calls}`);
     }
 
     const currentDate = getCurrentDate();
-
+    const db = getMainDB();
     await db.transaction(async (tx) => {
         const project = await tx
             .select({ user_id: projects.user_id, id: projects.id })
@@ -45,6 +43,7 @@ export async function incrementUsage(projectKey: string, calls: number) {
 export async function getCallsLeft(projectKey: string): Promise<{ remaining: number; limit: number; used: number, origin: string }> {
     const currentDate = getCurrentDate();
 
+    const db = getMainDB();
     const result = await db
         .select({
             user_id: projects.user_id,
@@ -82,5 +81,6 @@ export async function cleanupUsage(): Promise<void> {
     const cutoff92Days = getCutoffTimestamp(constants.plans.RETENTION.usage_max_days);
     const cutoffDate = new Date(cutoff92Days).toISOString().split('T')[0]!;
 
+    const db = getMainDB();
     await db.delete(usage).where(lt(usage.date, cutoffDate));
 }
