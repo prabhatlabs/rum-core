@@ -129,7 +129,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         function flushEvents() {
             if (eventQueue.length === 0) return;
             const batch = eventQueue.splice(0, eventQueue.length);
-            sendBeaconOrFetch(EVENTS_URL, JSON.stringify({ events: batch }));
+            sendBeaconOrFetch(EVENTS_URL, JSON.stringify({ events: batch, project_key: PROJECT_KEY }));
         }
 
         setInterval(flushEvents, BATCH_INTERVAL_MS);
