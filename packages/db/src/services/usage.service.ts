@@ -1,7 +1,9 @@
 import { APIErrorResponse, constants, getCurrentDate, getCutoffTimestamp } from '@rum-core/shared';
 import { and, eq, lt, sql } from 'drizzle-orm';
-import { db } from '../maindb/client';
+import { getMainDB } from '../maindb/client';
 import { plans, projects, usage } from '../maindb/schema/schema';
+
+const db = getMainDB();
 
 export async function incrementUsage(projectKey: string, calls: number) {
     if (calls <= 0) {

@@ -1,7 +1,9 @@
 import { constants } from "@rum-core/shared";
 import { eq } from 'drizzle-orm';
-import { db } from '../maindb/client';
+import { getMainDB } from '../maindb/client';
 import { plans, users } from '../maindb/schema';
+
+const db = getMainDB();
 
 interface UpsertUserParams {
     email: string

@@ -9,8 +9,8 @@ import {
     type TimeRange,
 } from "@rum-core/shared";
 import { eq } from "drizzle-orm";
-import { tursoClient } from "../eventdb/client";
-import { db } from "../maindb/client";
+import { getEventDBClient } from "../eventdb/client";
+import { getMainDB } from "../maindb/client";
 import { plans, projects } from "../maindb/schema";
 
 const RETENTION = constants.plans.RETENTION;
@@ -51,6 +51,9 @@ const DAILY_TABLES = [
     "pv_daily_env",
     "pv_daily_env_geo",
 ];
+
+const eventDBClient = getEventDBClient();
+const mainDB = getMainDB();
 
 export async function aggregateHourlyFromRaw(): Promise<void> {
     const hourTimestamp = getPreviousHourTimestamp();
@@ -476,22 +479,22 @@ export async function aggregateHourlyFromRaw(): Promise<void> {
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
-    await tursoClient.execute({ sql: reSummary });
-    await tursoClient.execute({ sql: reEndpoints });
-    await tursoClient.execute({ sql: reEndpointGeo });
-    await tursoClient.execute({ sql: reEndpointEnv });
-    await tursoClient.execute({ sql: reGeo });
-    await tursoClient.execute({ sql: reGeoDetail });
-    await tursoClient.execute({ sql: reEnv });
-    await tursoClient.execute({ sql: reEnvGeo });
-    await tursoClient.execute({ sql: pvSummary });
-    await tursoClient.execute({ sql: pvPages });
-    await tursoClient.execute({ sql: pvPageGeo });
-    await tursoClient.execute({ sql: pvPageEnv });
-    await tursoClient.execute({ sql: pvGeo });
-    await tursoClient.execute({ sql: pvGeoDetail });
-    await tursoClient.execute({ sql: pvEnv });
-    await tursoClient.execute({ sql: pvEnvGeo });
+    await eventDBClient.execute({ sql: reSummary });
+    await eventDBClient.execute({ sql: reEndpoints });
+    await eventDBClient.execute({ sql: reEndpointGeo });
+    await eventDBClient.execute({ sql: reEndpointEnv });
+    await eventDBClient.execute({ sql: reGeo });
+    await eventDBClient.execute({ sql: reGeoDetail });
+    await eventDBClient.execute({ sql: reEnv });
+    await eventDBClient.execute({ sql: reEnvGeo });
+    await eventDBClient.execute({ sql: pvSummary });
+    await eventDBClient.execute({ sql: pvPages });
+    await eventDBClient.execute({ sql: pvPageGeo });
+    await eventDBClient.execute({ sql: pvPageEnv });
+    await eventDBClient.execute({ sql: pvGeo });
+    await eventDBClient.execute({ sql: pvGeoDetail });
+    await eventDBClient.execute({ sql: pvEnv });
+    await eventDBClient.execute({ sql: pvEnvGeo });
 }
 
 export async function aggregateDailyFromHourly(): Promise<void> {
@@ -896,28 +899,28 @@ export async function aggregateDailyFromHourly(): Promise<void> {
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
-    await tursoClient.execute({ sql: reSummary });
-    await tursoClient.execute({ sql: reEndpoints });
-    await tursoClient.execute({ sql: reEndpointGeo });
-    await tursoClient.execute({ sql: reEndpointEnv });
-    await tursoClient.execute({ sql: reGeo });
-    await tursoClient.execute({ sql: reGeoDetail });
-    await tursoClient.execute({ sql: reEnv });
-    await tursoClient.execute({ sql: reEnvGeo });
-    await tursoClient.execute({ sql: pvSummary });
-    await tursoClient.execute({ sql: pvPages });
-    await tursoClient.execute({ sql: pvPageGeo });
-    await tursoClient.execute({ sql: pvPageEnv });
-    await tursoClient.execute({ sql: pvGeo });
-    await tursoClient.execute({ sql: pvGeoDetail });
-    await tursoClient.execute({ sql: pvEnv });
-    await tursoClient.execute({ sql: pvEnvGeo });
+    await eventDBClient.execute({ sql: reSummary });
+    await eventDBClient.execute({ sql: reEndpoints });
+    await eventDBClient.execute({ sql: reEndpointGeo });
+    await eventDBClient.execute({ sql: reEndpointEnv });
+    await eventDBClient.execute({ sql: reGeo });
+    await eventDBClient.execute({ sql: reGeoDetail });
+    await eventDBClient.execute({ sql: reEnv });
+    await eventDBClient.execute({ sql: reEnvGeo });
+    await eventDBClient.execute({ sql: pvSummary });
+    await eventDBClient.execute({ sql: pvPages });
+    await eventDBClient.execute({ sql: pvPageGeo });
+    await eventDBClient.execute({ sql: pvPageEnv });
+    await eventDBClient.execute({ sql: pvGeo });
+    await eventDBClient.execute({ sql: pvGeoDetail });
+    await eventDBClient.execute({ sql: pvEnv });
+    await eventDBClient.execute({ sql: pvEnvGeo });
 }
 
 export async function cleanupHourlyRollups(): Promise<void> {
     const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
     await Promise.all(
-        HOURLY_TABLES.map(table => tursoClient.execute({ sql: `DELETE FROM ${table} WHERE hour < ${cutoff24h}` }))
+        HOURLY_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE hour < ${cutoff24h}` }))
     );
 }
 
@@ -926,16 +929,16 @@ export async function cleanupOldData(): Promise<void> {
 
     await Promise.all([
         ...RAW_TABLES.map(table =>
-            tursoClient.execute({ sql: `DELETE FROM ${table} WHERE timestamp < ${cutoff32Days}` })
+            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE timestamp < ${cutoff32Days}` })
         ),
         ...DAILY_TABLES.map(table =>
-            tursoClient.execute({ sql: `DELETE FROM ${table} WHERE day < ${cutoff32Days}` })
+            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE day < ${cutoff32Days}` })
         ),
     ]);
 }
 
 export async function vacuumTurso(): Promise<void> {
-    await tursoClient.execute({ sql: "VACUUM" });
+    await eventDBClient.execute({ sql: "VACUUM" });
 }
 
 export async function fetchRollupTables(
@@ -945,8 +948,8 @@ export async function fetchRollupTables(
     tableNames: string[]
 ): Promise<ApiResponse<Record<string, unknown[]>>> {
     const [project, userPlan] = await Promise.all([
-        db.query.projects.findFirst({ where: eq(projects.project_key, projectKey) }),
-        db.query.plans.findFirst({ where: eq(plans.user_id, userId) }),
+        mainDB.query.projects.findFirst({ where: eq(projects.project_key, projectKey) }),
+        mainDB.query.plans.findFirst({ where: eq(plans.user_id, userId) }),
     ]);
 
     if (!project || project.user_id !== userId) {
@@ -979,7 +982,7 @@ export async function fetchRollupTables(
         const timeColumn = isHourly ? 'hour' : 'day';
         const sql = `SELECT * FROM ${tableName} WHERE project_key = ? AND ${timeColumn} >= ? AND ${timeColumn} <= ?`;
 
-        const result = await tursoClient.execute({
+        const result = await eventDBClient.execute({
             sql,
             args: [projectKey, startTime, now],
         });

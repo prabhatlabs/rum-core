@@ -1,4 +1,4 @@
-import { maindbClient } from '../maindb/client';
+import { getMainDBSQL } from '../maindb/client';
 import {
     aggregateDailyFromHourly,
     aggregateHourlyFromRaw,
@@ -7,6 +7,8 @@ import {
     vacuumTurso
 } from './rollup.service';
 import { cleanupUsage } from './usage.service';
+
+const sqlClient = getMainDBSQL();
 
 export async function runHourlyCron(): Promise<void> {
     await aggregateHourlyFromRaw();
@@ -25,7 +27,7 @@ export async function runMonthlySummary(): Promise<void> {
     const firstDayOfMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
     const monthStr = firstDayOfMonth.toISOString().split('T')[0];
 
-    await maindbClient.query(`
+    await sqlClient.query(`
         INSERT INTO monthly_usage (user_id, month, calls_million)
         SELECT 
             user_id,
