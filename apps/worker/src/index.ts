@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { saveBulkEvents } from './controllers/events';
+import { ingestPageVitals, ingestRequestEvents } from './controllers/events';
+import { validateRequest } from './middlewares/vaidation';
 
 const app = new Hono()
 
@@ -13,6 +14,8 @@ app.get('/health', (c) => {
   return c.text('Working!');
 });
 
-app.post('/', saveBulkEvents);
+app.use(validateRequest);
+app.post('/ingest/events', ingestRequestEvents);
+app.post('/ingest/vitals', ingestPageVitals);
 
 export default app

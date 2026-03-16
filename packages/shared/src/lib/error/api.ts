@@ -1,4 +1,4 @@
-type ErrorName = "InternalServerError" | "UnauthorizedUserError" | "ValueError" | "NotFoundError" | "LimitExceeded"
+type ErrorName = "InternalServerError" | "UnauthorizedUserError" | "RateLimitError" | "ForbiddenError" | "ValidationError" | "ValueError" | "NotFoundError" | "LimitExceeded"
 
 export class APIErrorResponse extends Error {
 
