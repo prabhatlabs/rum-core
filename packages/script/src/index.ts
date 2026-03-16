@@ -7,87 +7,39 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         if (typeof window === "undefined") return;
 
         const PROJECT_KEY = (document.currentScript as HTMLScriptElement | null)?.getAttribute("data-key") ?? null;
-        let WORKER_URL: string | null = (document.currentScript as HTMLScriptElement | null)?.getAttribute("data-worker") ?? null;
+        const WORKER_URL = (document.currentScript as HTMLScriptElement | null)?.getAttribute("data-worker") ?? null;
 
-        if (!PROJECT_KEY) {
-            console.warn("[rum-core] Missing data-key attribute on script tag");
-            return;
-        }
+        if (!PROJECT_KEY) { console.warn("[rum-core] Missing data-key attribute on script tag"); return; }
+        if (!WORKER_URL) { console.warn("[rum-core] Missing data-worker attribute on script tag"); return; }
 
-        if (!WORKER_URL) {
-            console.warn("[rum-core] Missing data-worker attribute on script tag");
-            return;
-        }
-
-        console.log("[rum-core] Initialized");
-
-        const WORKER_URL_STR = WORKER_URL;
-
+        const EVENTS_URL = `${WORKER_URL}/ingest/events`;
+        const VITALS_URL = `${WORKER_URL}/ingest/vitals`;
         const BATCH_INTERVAL_MS = 10_000;
         const SESSION_ID = `sess_${PROJECT_KEY}_${Math.random().toString(36).slice(2, 12)}`;
 
-        const queue: any[] = [];
-
-        const vitals: { lcp: number | null; fcp: number | null; cls: number | null; inp: number | null } = {
-            lcp: null,
-            fcp: null,
-            cls: null,
-            inp: null,
-        };
+        // ─── Environment (captured once on load) ──────────────────────────────────
 
         function getEnvironment() {
             const ua = navigator.userAgent;
 
-            let browser = "Unknown";
-            let browser_version: string | null = null;
-            if (/Edg\//.test(ua)) {
-                browser = "Edge";
-                browser_version = (ua.match(/Edg\/([\d.]+)/) || [])[1] || null;
-            } else if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) {
-                browser = "Chrome";
-                browser_version = (ua.match(/Chrome\/([\d.]+)/) || [])[1] || null;
-            } else if (/Firefox\//.test(ua)) {
-                browser = "Firefox";
-                browser_version = (ua.match(/Firefox\/([\d.]+)/) || [])[1] || null;
-            } else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) {
-                browser = "Safari";
-                browser_version = (ua.match(/Version\/([\d.]+)/) || [])[1] || null;
-            }
+            let browser = "Unknown", browser_version: string | null = null;
+            if (/Edg\//.test(ua)) { browser = "Edge"; browser_version = (ua.match(/Edg\/([\d.]+)/) || [])[1] || null; }
+            else if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) { browser = "Chrome"; browser_version = (ua.match(/Chrome\/([\d.]+)/) || [])[1] || null; }
+            else if (/Firefox\//.test(ua)) { browser = "Firefox"; browser_version = (ua.match(/Firefox\/([\d.]+)/) || [])[1] || null; }
+            else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) { browser = "Safari"; browser_version = (ua.match(/Version\/([\d.]+)/) || [])[1] || null; }
 
-            let os = "Unknown";
-            let os_version: string | null = null;
-            if (/Windows NT/.test(ua)) {
-                os = "Windows";
-                os_version = (ua.match(/Windows NT ([\d.]+)/) || [])[1] || null;
-            } else if (/Mac OS X/.test(ua) && !/iPhone|iPad/.test(ua)) {
-                os = "macOS";
-                os_version = ((ua.match(/Mac OS X ([\d_]+)/) || [])[1] || "").replace(/_/g, ".") || null;
-            } else if (/Android/.test(ua)) {
-                os = "Android";
-                os_version = (ua.match(/Android ([\d.]+)/) || [])[1] || null;
-            } else if (/iPhone|iPad/.test(ua)) {
-                os = "iOS";
-                os_version = ((ua.match(/OS ([\d_]+)/) || [])[1] || "").replace(/_/g, ".") || null;
-            } else if (/Linux/.test(ua)) {
-                os = "Linux";
-            }
+            let os = "Unknown", os_version: string | null = null;
+            if (/Windows NT/.test(ua)) { os = "Windows"; os_version = (ua.match(/Windows NT ([\d.]+)/) || [])[1] || null; }
+            else if (/Mac OS X/.test(ua) && !/iPhone|iPad/.test(ua)) { os = "macOS"; os_version = ((ua.match(/Mac OS X ([\d_]+)/) || [])[1] || "").replace(/_/g, ".") || null; }
+            else if (/Android/.test(ua)) { os = "Android"; os_version = (ua.match(/Android ([\d.]+)/) || [])[1] || null; }
+            else if (/iPhone|iPad/.test(ua)) { os = "iOS"; os_version = ((ua.match(/OS ([\d_]+)/) || [])[1] || "").replace(/_/g, ".") || null; }
+            else if (/Linux/.test(ua)) { os = "Linux"; }
 
             let device_type = "desktop";
-            if (/Mobi|Android.*Mobile|iPhone/.test(ua)) {
-                device_type = "mobile";
-            } else if (/iPad|Android(?!.*Mobile)/.test(ua)) {
-                device_type = "tablet";
-            }
-
-            let screen_res: string | null = null;
-            if (screen.width && screen.height) {
-                screen_res = `${screen.width}x${screen.height}`;
-            }
+            if (/Mobi|Android.*Mobile|iPhone/.test(ua)) device_type = "mobile";
+            else if (/iPad|Android(?!.*Mobile)/.test(ua)) device_type = "tablet";
 
             const connection: any = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-            const connection_type = connection?.effectiveType ?? null;
-
-            const language = navigator.language || null;
 
             return {
                 browser,
@@ -95,20 +47,22 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 os,
                 os_version,
                 device_type,
-                screen_res,
-                connection_type,
-                language,
+                screen_res: screen.width && screen.height ? `${screen.width}x${screen.height}` : null,
+                connection_type: connection?.effectiveType ?? null,
+                language: navigator.language || null,
             };
         }
 
         const env = getEnvironment();
+
+        // ─── Helpers ──────────────────────────────────────────────────────────────
 
         function normalizeUrl(rawUrl: string): string {
             try {
                 const url = new URL(rawUrl, location.origin);
                 const normalizedPath = url.pathname
                     .split("/")
-                    .map((seg: string) => (/^[0-9a-f-]{8,}$|^\d+$/.test(seg) && seg.length > 0 ? ":id" : seg))
+                    .map((seg) => (/^[0-9a-f-]{8,}$|^\d+$/.test(seg) && seg.length > 0 ? ":id" : seg))
                     .join("/");
                 return `${url.origin}${normalizedPath || "/"}`;
             } catch {
@@ -117,198 +71,168 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         }
 
         function extractTiming(entry: PerformanceResourceTiming | null) {
-            if (!entry) {
-                return { dns: null, tcp: null, tls: null, ttfb: null, duration: null };
-            }
-
-            const dns =
-                (entry.domainLookupEnd - entry.domainLookupStart > 0)
-                    ? entry.domainLookupEnd - entry.domainLookupStart
-                    : null;
-
-
-            const tcp =
-                (entry.connectEnd - entry.connectStart > 0)
-                    ? entry.connectEnd - entry.connectStart
-                    : null;
-
-            const tls =
-                (entry.secureConnectionStart > 0)
-                    ? entry.connectEnd - entry.secureConnectionStart
-                    : null;
-
-            const ttfb =
-                (entry.responseStart - entry.requestStart > 0)
-                    ? entry.responseStart - entry.requestStart
-                    : null;
-
-            const duration =
-                (entry.duration > 0)
-                    ? entry.duration
-                    : null;
-
-            return { dns, tcp, tls, ttfb, duration };
+            if (!entry) return { dns: null, tcp: null, tls: null, ttfb: null, duration: null };
+            return {
+                dns: entry.domainLookupEnd - entry.domainLookupStart > 0 ? entry.domainLookupEnd - entry.domainLookupStart : null,
+                tcp: entry.connectEnd - entry.connectStart > 0 ? entry.connectEnd - entry.connectStart : null,
+                tls: entry.secureConnectionStart > 0 ? entry.connectEnd - entry.secureConnectionStart : null,
+                ttfb: entry.responseStart - entry.requestStart > 0 ? entry.responseStart - entry.requestStart : null,
+                duration: entry.duration > 0 ? entry.duration : null,
+            };
         }
 
-        function getResourceTiming(url: string) {
+        function getResourceTiming(url: string): PerformanceResourceTiming | null {
             try {
                 const entries = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
-                if (!entries || entries.length === 0) {
-                    return null;
-                }
-
                 for (let i = entries.length - 1; i >= 0; i--) {
-                    const entry = entries[i];
-                    if (entry?.name === url || (entry?.name && entry.name.endsWith(url))) {
-                        return entry;
-                    }
+                    const e = entries[i];
+                    if (e?.name === url || e?.name?.endsWith(url)) return e;
                 }
-            } catch {
-                // ignored
-            }
+            } catch { }
             return null;
         }
 
-        function buildEvent(partial: any) {
+        function sendBeaconOrFetch(url: string, payload: string) {
+            const blob = new Blob([payload], { type: "application/json" });
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(url, blob);
+            } else {
+                fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: payload, keepalive: true, credentials: "omit" }).catch(() => { });
+            }
+        }
+
+        // ─── Request Events ───────────────────────────────────────────────────────
+
+        const eventQueue: any[] = [];
+
+        function buildRequestEvent(partial: any) {
             return {
                 project_key: PROJECT_KEY,
                 session_id: SESSION_ID,
                 url: partial.url,
                 method: partial.method,
-                status_code: partial.status_code,
-                request_size: partial.request_size,
-                response_size: partial.response_size,
-                dns: partial.dns,
-                tcp: partial.tcp,
-                tls: partial.tls,
-                ttfb: partial.ttfb,
-                duration: partial.duration,
+                status_code: partial.status_code ?? null,
+                request_size: partial.request_size ?? null,
+                response_size: partial.response_size ?? null,
+                dns: partial.dns ?? null,
+                tcp: partial.tcp ?? null,
+                tls: partial.tls ?? null,
+                ttfb: partial.ttfb ?? null,
+                duration: partial.duration ?? null,
                 page_url: location.href,
                 referrer: document.referrer || null,
                 timestamp: Date.now(),
                 ...env,
-                lcp: vitals.lcp,
-                fcp: vitals.fcp,
-                cls: vitals.cls,
-                inp: vitals.inp,
             };
         }
 
-        function flush() {
-            if (queue.length === 0) return;
-            const batch = queue.splice(0, queue.length);
-            const payload = JSON.stringify({ events: batch });
-
-            if (!WORKER_URL) return;
-            console.log("[rum-core] flushing payload:", payload);
-
-            if (navigator.sendBeacon) {
-                const blob = new Blob([payload], { type: "application/json" });
-                navigator.sendBeacon(WORKER_URL_STR, blob);
-            } else {
-                fetch(WORKER_URL_STR, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: payload,
-                    keepalive: true,
-                    credentials: "omit"
-                }).catch(() => { });
-            }
+        function flushEvents() {
+            if (eventQueue.length === 0) return;
+            const batch = eventQueue.splice(0, eventQueue.length);
+            sendBeaconOrFetch(EVENTS_URL, JSON.stringify({ events: batch }));
         }
 
-        setInterval(flush, BATCH_INTERVAL_MS);
+        setInterval(flushEvents, BATCH_INTERVAL_MS);
+        document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushEvents(); });
 
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "hidden") flush();
-        });
+        // ─── Web Vitals ───────────────────────────────────────────────────────────
 
-        // #region patch fetch
+        function computeVitalsScore(lcp: number | null, fcp: number | null, cls: number | null, inp: number | null): number | null {
+            type Rating = "good" | "ni" | "poor";
+            const ratingScore: Record<Rating, number> = { good: 100, ni: 50, poor: 0 };
+            function rate(v: number, good: number, ni: number): Rating { return v <= good ? "good" : v <= ni ? "ni" : "poor"; }
+            const scores: number[] = [];
+            if (lcp !== null) scores.push(ratingScore[rate(lcp, 2500, 4000)]);
+            if (fcp !== null) scores.push(ratingScore[rate(fcp, 1800, 3000)]);
+            if (cls !== null) scores.push(ratingScore[rate(cls, 0.1, 0.25)]);
+            if (inp !== null) scores.push(ratingScore[rate(inp, 200, 500)]);
+            return scores.length === 0 ? null : Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+
+        function sendVitals(lcp: number | null, fcp: number | null, cls: number | null, inp: number | null) {
+            sendBeaconOrFetch(VITALS_URL, JSON.stringify({
+                project_key: PROJECT_KEY,
+                session_id: SESSION_ID,
+                page_url: location.href,
+                referrer: document.referrer || null,
+                timestamp: Date.now(),
+                lcp,
+                fcp,
+                cls,
+                inp,
+                vitals_score: computeVitalsScore(lcp, fcp, cls, inp),
+                ...env,
+            }));
+        }
+
+        function initWebVitals() {
+            try {
+                const c = { lcp: null as number | null, fcp: null as number | null, cls: null as number | null, inp: null as number | null };
+                let sent = false;
+
+                function trySend() {
+                    if (!sent && c.fcp !== null && c.lcp !== null) { sent = true; sendVitals(c.lcp, c.fcp, c.cls, c.inp); }
+                }
+
+                onLCP((m) => { c.lcp = m.value; trySend(); });
+                onFCP((m) => { c.fcp = m.value; trySend(); });
+                onCLS((m) => { c.cls = m.value; });
+                onINP((m) => { c.inp = m.value; });
+
+                // fallback — flush whatever collected if tab hidden before trySend fires
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "hidden" && !sent) { sent = true; sendVitals(c.lcp, c.fcp, c.cls, c.inp); }
+                });
+            } catch { }
+        }
+
+        if (document.readyState === "complete") { initWebVitals(); }
+        else { window.addEventListener("load", initWebVitals); }
+
+        // ─── Patch fetch ──────────────────────────────────────────────────────────
+
         const _fetch = global.fetch;
         global.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
             const reqUrl = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
-            if (reqUrl === WORKER_URL_STR) return _fetch(input, init);
+            if (reqUrl.startsWith(WORKER_URL!)) return _fetch(input, init);
 
             const method = (init?.method ?? "GET").toUpperCase();
-            const body = init?.body;
             let requestSize: number | null = null;
+            const body = init?.body;
 
             if (body) {
-                if (typeof body === "string") {
-                    requestSize = new Blob([body]).size;
-                } else if (body instanceof Blob || body instanceof File) {
-                    requestSize = body.size;
-                } else if (body instanceof ArrayBuffer) {
-                    requestSize = body.byteLength;
-                } else if (body instanceof FormData) {
-                    try {
-                        const tempReq = new Request("https://temp.com", { method: "POST", body });
-                        requestSize = (await tempReq.clone().text()).length;
-                    } catch {
-                        requestSize = null;
-                    }
-                } else if (ArrayBuffer.isView(body)) {
-                    requestSize = body.byteLength;
+                if (typeof body === "string") requestSize = new Blob([body]).size;
+                else if (body instanceof Blob || body instanceof File) requestSize = body.size;
+                else if (body instanceof ArrayBuffer) requestSize = body.byteLength;
+                else if (ArrayBuffer.isView(body)) requestSize = body.byteLength;
+                else if (body instanceof FormData) {
+                    try { requestSize = (await new Request("https://temp.com", { method: "POST", body }).clone().text()).length; }
+                    catch { requestSize = null; }
                 }
             }
 
             const start = performance.now();
 
             return _fetch(input, init).then((response: Response) => {
-                const elapsed = performance.now() - start;
                 const entry = getResourceTiming(reqUrl);
                 const timing = extractTiming(entry);
-                let responseSize: number | null = null;
-                if (entry) {
-                    if (entry.encodedBodySize > 0) {
-                        responseSize = entry.encodedBodySize;
-                    } else if (entry.transferSize > 0) {
-                        responseSize = entry.transferSize;
-                    }
-                }
-
-                queue.push(buildEvent({
-                    url: normalizeUrl(reqUrl),
-                    method,
-                    status_code: response.status,
-                    request_size: requestSize,
-                    response_size: responseSize,
-                    dns: timing.dns,
-                    tcp: timing.tcp,
-                    tls: timing.tls,
-                    ttfb: timing.ttfb,
-                    duration: timing.duration || elapsed,
-                }));
-
+                const responseSize = entry ? (entry.encodedBodySize > 0 ? entry.encodedBodySize : entry.transferSize > 0 ? entry.transferSize : null) : null;
+                eventQueue.push(buildRequestEvent({ url: normalizeUrl(reqUrl), method, status_code: response.status, request_size: requestSize, response_size: responseSize, ...timing, duration: timing.duration ?? (performance.now() - start) }));
                 return response;
             }).catch((err: Error) => {
-                const elapsed = performance.now() - start;
-                queue.push(buildEvent({
-                    url: normalizeUrl(reqUrl),
-                    method,
-                    status_code: null,
-                    request_size: requestSize,
-                    response_size: null,
-                    dns: null,
-                    tcp: null,
-                    tls: null,
-                    ttfb: null,
-                    duration: elapsed,
-                }));
+                eventQueue.push(buildRequestEvent({ url: normalizeUrl(reqUrl), method, status_code: null, request_size: requestSize, response_size: null, dns: null, tcp: null, tls: null, ttfb: null, duration: performance.now() - start }));
                 throw err;
             });
         };
 
-        // #region patch XMLHttpRequest
+        // ─── Patch XHR ────────────────────────────────────────────────────────────
+
         const _XHR = global.XMLHttpRequest;
+
         function createXHRPatched(this: XMLHttpRequest) {
             const xhr = new _XHR();
             const self = this as any;
-
-            let _method = "GET";
-            let _url = "";
-            let _requestSize: number | null = null;
-
-            // ─── Methods ───────────────────────────────────────────────────────────────
+            let _method = "GET", _url = "", _requestSize: number | null = null;
 
             self.open = function (method: string, url: string, ...args: any[]) {
                 _method = (method || "GET").toUpperCase();
@@ -317,243 +241,67 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
             };
 
             self.send = function (body?: any) {
-                if (body) {
-                    try {
-                        _requestSize = new Blob([body as BlobPart]).size;
-                    } catch {
-                        _requestSize = null;
-                    }
-                }
+                if (body) { try { _requestSize = new Blob([body as BlobPart]).size; } catch { _requestSize = null; } }
 
-                if (_url === WORKER_URL_STR || (_url && _url.startsWith(WORKER_URL_STR))) {
-                    return xhr.send.apply(xhr, arguments);
-                }
+                if (_url.startsWith(WORKER_URL!)) return xhr.send.apply(xhr, arguments);
 
                 xhr.addEventListener("load", () => {
                     if (xhr.readyState !== 4) return;
-
                     setTimeout(() => {
                         let fullUrl = _url;
-                        try {
-                            fullUrl = new URL(_url, location.origin).href;
-                        } catch { }
-
+                        try { fullUrl = new URL(_url, location.origin).href; } catch { }
                         const entry = getResourceTiming(fullUrl);
                         const timing = extractTiming(entry);
-                        let responseSize: number | null = null;
-                        if (entry) {
-                            if (entry.encodedBodySize > 0) {
-                                responseSize = entry.encodedBodySize;
-                            } else if (entry.transferSize > 0) {
-                                responseSize = entry.transferSize;
-                            }
-                        }
-
-                        queue.push(buildEvent({
-                            url: normalizeUrl(_url),
-                            method: _method,
-                            status_code: xhr.status || null,
-                            request_size: _requestSize,
-                            response_size: responseSize,
-                            dns: timing.dns,
-                            tcp: timing.tcp,
-                            tls: timing.tls,
-                            ttfb: timing.ttfb,
-                            duration: timing.duration,
-                        }));
+                        const responseSize = entry ? (entry.encodedBodySize > 0 ? entry.encodedBodySize : entry.transferSize > 0 ? entry.transferSize : null) : null;
+                        eventQueue.push(buildRequestEvent({ url: normalizeUrl(_url), method: _method, status_code: xhr.status || null, request_size: _requestSize, response_size: responseSize, ...timing }));
                     }, 0);
                 });
 
-                xhr.addEventListener("error", () => {
-                    queue.push(buildEvent({
-                        url: normalizeUrl(_url),
-                        method: _method,
-                        status_code: null,
-                        request_size: _requestSize,
-                        response_size: null,
-                        dns: null,
-                        tcp: null,
-                        tls: null,
-                        ttfb: null,
-                        duration: null,
-                    }));
-                });
-
-                xhr.addEventListener("timeout", () => {
-                    queue.push(buildEvent({
-                        url: normalizeUrl(_url),
-                        method: _method,
-                        status_code: null,
-                        request_size: _requestSize,
-                        response_size: null,
-                        dns: null,
-                        tcp: null,
-                        tls: null,
-                        ttfb: null,
-                        duration: null,
-                    }));
-                });
+                xhr.addEventListener("error", () => { eventQueue.push(buildRequestEvent({ url: normalizeUrl(_url), method: _method, status_code: null, request_size: _requestSize, response_size: null, dns: null, tcp: null, tls: null, ttfb: null, duration: null })); });
+                xhr.addEventListener("timeout", () => { eventQueue.push(buildRequestEvent({ url: normalizeUrl(_url), method: _method, status_code: null, request_size: _requestSize, response_size: null, dns: null, tcp: null, tls: null, ttfb: null, duration: null })); });
 
                 return xhr.send.apply(xhr, arguments);
             };
 
-            self.abort = function () {
-                return xhr.abort.apply(xhr, arguments);
-            };
+            self.abort = function () { return xhr.abort.apply(xhr, arguments); };
+            self.setRequestHeader = function () { return xhr.setRequestHeader.apply(xhr, arguments); };
+            self.getResponseHeader = function (h: string) { return xhr.getResponseHeader(h); };
+            self.getAllResponseHeaders = function () { return xhr.getAllResponseHeaders(); };
+            self.overrideMimeType = function () { return xhr.overrideMimeType.apply(xhr, arguments); };
+            self.addEventListener = function () { return xhr.addEventListener.apply(xhr, arguments); };
+            self.removeEventListener = function () { return xhr.removeEventListener.apply(xhr, arguments); };
+            self.dispatchEvent = function () { return xhr.dispatchEvent.apply(xhr, arguments); };
 
-            self.setRequestHeader = function () {
-                return xhr.setRequestHeader.apply(xhr, arguments);
-            };
+            // read-only
+            for (const prop of ["readyState", "status", "statusText", "response", "responseText", "responseXML", "responseURL", "upload"] as const) {
+                Object.defineProperty(self, prop, { get: () => xhr[prop] });
+            }
 
-            self.getResponseHeader = function (header: string) {
-                return xhr.getResponseHeader(header);
-            };
+            // read-write
+            for (const prop of ["responseType", "timeout", "withCredentials"] as const) {
+                Object.defineProperty(self, prop, { get: () => xhr[prop], set: (val) => { (xhr as any)[prop] = val; } });
+            }
 
-            self.getAllResponseHeaders = function () {
-                return xhr.getAllResponseHeaders();
-            };
-
-            self.overrideMimeType = function () {
-                return xhr.overrideMimeType.apply(xhr, arguments);
-            };
-
-            self.addEventListener = function () {
-                return xhr.addEventListener.apply(xhr, arguments);
-            };
-
-            self.removeEventListener = function () {
-                return xhr.removeEventListener.apply(xhr, arguments);
-            };
-
-            self.dispatchEvent = function () {
-                return xhr.dispatchEvent.apply(xhr, arguments);
-            };
-
-            // ─── Read-only properties ──────────────────────────────────────────────────
-
-            Object.defineProperty(self, "readyState", {
-                get: () => xhr.readyState,
-            });
-
-            Object.defineProperty(self, "status", {
-                get: () => xhr.status,
-            });
-
-            Object.defineProperty(self, "statusText", {
-                get: () => xhr.statusText,
-            });
-
-            Object.defineProperty(self, "response", {
-                get: () => xhr.response,
-            });
-
-            Object.defineProperty(self, "responseText", {
-                get: () => xhr.responseText,
-            });
-
-            Object.defineProperty(self, "responseXML", {
-                get: () => xhr.responseXML,
-            });
-
-            Object.defineProperty(self, "responseURL", {
-                get: () => xhr.responseURL,
-            });
-
-            Object.defineProperty(self, "upload", {
-                get: () => xhr.upload,
-            });
-
-            // ─── Read-write properties ─────────────────────────────────────────────────
-
-            Object.defineProperty(self, "responseType", {
-                get: () => xhr.responseType,
-                set: (val) => { xhr.responseType = val; }
-            });
-
-            Object.defineProperty(self, "timeout", {
-                get: () => xhr.timeout,
-                set: (val) => { xhr.timeout = val; }
-            });
-
-            Object.defineProperty(self, "withCredentials", {
-                get: () => xhr.withCredentials,
-                set: (val) => { xhr.withCredentials = val; }
-            });
-
-            // ─── Event handler properties ──────────────────────────────────────────────
-
-            Object.defineProperty(self, "onreadystatechange", {
-                get: () => xhr.onreadystatechange,
-                set: (val) => { xhr.onreadystatechange = val; }
-            });
-
-            Object.defineProperty(self, "onload", {
-                get: () => xhr.onload,
-                set: (val) => { xhr.onload = val; }
-            });
-
-            Object.defineProperty(self, "onerror", {
-                get: () => xhr.onerror,
-                set: (val) => { xhr.onerror = val; }
-            });
-
-            Object.defineProperty(self, "ontimeout", {
-                get: () => xhr.ontimeout,
-                set: (val) => { xhr.ontimeout = val; }
-            });
-
-            Object.defineProperty(self, "onabort", {
-                get: () => xhr.onabort,
-                set: (val) => { xhr.onabort = val; }
-            });
-
-            Object.defineProperty(self, "onprogress", {
-                get: () => xhr.onprogress,
-                set: (val) => { xhr.onprogress = val; }
-            });
-
-            Object.defineProperty(self, "onloadstart", {
-                get: () => xhr.onloadstart,
-                set: (val) => { xhr.onloadstart = val; }
-            });
-
-            Object.defineProperty(self, "onloadend", {
-                get: () => xhr.onloadend,
-                set: (val) => { xhr.onloadend = val; }
-            });
+            // event handlers
+            for (const prop of ["onreadystatechange", "onload", "onerror", "ontimeout", "onabort", "onprogress", "onloadstart", "onloadend"] as const) {
+                Object.defineProperty(self, prop, { get: () => xhr[prop], set: (val) => { (xhr as any)[prop] = val; } });
+            }
 
             return self;
         }
 
-        const XHRPatched = function (this: XMLHttpRequest) {
-            return createXHRPatched.call(this);
-        } as any;
-
+        const XHRPatched = function (this: XMLHttpRequest) { return createXHRPatched.call(this); } as any;
         XHRPatched.prototype = _XHR.prototype;
         XHRPatched.UNSENT = _XHR.UNSENT;
         XHRPatched.OPENED = _XHR.OPENED;
         XHRPatched.HEADERS_RECEIVED = _XHR.HEADERS_RECEIVED;
         XHRPatched.LOADING = _XHR.LOADING;
         XHRPatched.DONE = _XHR.DONE;
-
         global.XMLHttpRequest = XHRPatched;
 
-        function initWebVitals() {
-            try {
-                onLCP((m) => { vitals.lcp = m.value; });
-                onFCP((m) => { vitals.fcp = m.value; });
-                onCLS((m) => { vitals.cls = m.value; });
-                onINP((m) => { vitals.inp = m.value; });
-            } catch { }
-        }
+        console.log("[rum-core] Initialized");
 
-        if (document.readyState === "complete") {
-            initWebVitals();
-        } else {
-            window.addEventListener("load", initWebVitals);
-        }
-
-    } catch (error) {
-        console.error("[rum-core]", error)
+    } catch (err) {
+        console.error("[rum-core]", err);
     }
 })(typeof window !== "undefined" ? window : global);
