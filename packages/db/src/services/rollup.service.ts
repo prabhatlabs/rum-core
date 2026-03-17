@@ -936,11 +936,6 @@ export async function cleanupOldData(): Promise<void> {
     ]);
 }
 
-export async function vacuumTurso(): Promise<void> {
-    const eventDBClient = getEventDBClient();
-    await eventDBClient.execute({ sql: "VACUUM" });
-}
-
 export async function fetchRollupTables(
     userId: string,
     projectKey: string,

@@ -1,10 +1,13 @@
-import { getMainDBSQL } from '../maindb/client';
+import {
+    getCurrentMonthStr,
+    getPreviousMonthStr
+} from "@rum-core/shared";
+import { getMainDBHttp } from '../maindb/client';
 import {
     aggregateDailyFromHourly,
     aggregateHourlyFromRaw,
     cleanupHourlyRollups,
-    cleanupOldData,
-    vacuumTurso
+    cleanupOldData
 } from './rollup.service';
 import { cleanupUsage } from './usage.service';
 
@@ -17,25 +20,23 @@ export async function runDailyCron(): Promise<void> {
     await aggregateDailyFromHourly();
     await cleanupHourlyRollups();
     await cleanupOldData();
-    await vacuumTurso();
     await cleanupUsage();
 }
 
 export async function runMonthlySummary(): Promise<void> {
-    const sqlClient = getMainDBSQL();
+    const db = getMainDBHttp();
     
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
-    const monthStr = firstDayOfMonth.toISOString().split('T')[0];
+    const previousMonthStr = getPreviousMonthStr();
+    const currentMonthStr = getCurrentMonthStr();
 
-    await sqlClient.query(`
+    await db.execute(`
         INSERT INTO monthly_usage (user_id, month, calls_million)
         SELECT 
             user_id,
-            '${monthStr}' as month,
+            '${previousMonthStr}' as month,
             SUM(calls_used) / 1000000.0 as calls_million
         FROM usage
-        WHERE date >= '${monthStr}' AND date < '${now.toISOString().split('T')[0]}'
+        WHERE date >= '${previousMonthStr}' AND date < '${currentMonthStr}'
         GROUP BY user_id
         ON CONFLICT(user_id, month) DO UPDATE SET
             calls_million = excluded.calls_million

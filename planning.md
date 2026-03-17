@@ -403,7 +403,7 @@ Frontend hides unavailable time ranges based on plan, but backend always validat
 DELETE FROM request_events WHERE timestamp < NOW() - INTERVAL '32 days';
 DELETE FROM page_vitals WHERE timestamp < NOW() - INTERVAL '32 days';
 ```
-- ⚠️ **VACUUM required after bulk deletes** — Turso is SQLite and doesn't free storage automatically after deletes. Run `VACUUM` after the cleanup cron to reclaim disk space.
+- ⚠️ **VACUUM is automatic in Turso** — Turso automatically runs VACUUM in the background, so manual VACUUM is optional. It can still be run manually after bulk deletes if desired.
 
 ### Neon (usage data) — delete after 92 days
 - Show 90 days in UI, keep 92 for safety buffer
@@ -482,7 +482,7 @@ x-cron-secret: <CRON_SECRET>
 3. DELETE raw + daily rollup rows older than 32 days from all 18 tables
    (2 raw + 16 daily rollup tables)
         ↓
-4. VACUUM Turso (reclaim storage after bulk deletes)
+4. VACUUM Turso (optional — Turso auto-vacuums, but can be run manually)
         ↓
 5. DELETE usage rows older than 92 days from Neon
 ```

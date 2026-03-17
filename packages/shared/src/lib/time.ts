@@ -33,3 +33,19 @@ export function getDayTimestamp(timestamp: number): number {
 export function getCutoffTimestamp(days: number): number {
     return Date.now() - (days * 24 * 60 * 60 * 1000);
 }
+
+export function getPreviousMonthTimestamp(): number {
+    const now = new Date();
+    const firstDayOfPreviousMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
+    return firstDayOfPreviousMonth.getTime();
+}
+
+export function getPreviousMonthStr(): string {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
+    return firstDayOfMonth.toISOString().split('T')[0] ?? '';
+}
+
+export function getCurrentMonthStr(): string {
+    return new Date().toISOString().split('T')[0] ?? '';
+}
