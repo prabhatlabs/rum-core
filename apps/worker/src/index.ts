@@ -1,4 +1,4 @@
-import { initEventDB, initMainDB } from "@rum-core/db";
+import { initEventDB, initMainDBForWorker } from "@rum-core/db";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { ingestPageVitals, ingestRequestEvents } from "./controllers/events";
@@ -21,7 +21,7 @@ app.use(
 );
 
 app.use("*", (c, next) => {
-    initMainDB(c.env.DATABASE_URL);
+    initMainDBForWorker(c.env.DATABASE_URL);
     initEventDB(c.env.TURSO_DATABASE_URL, c.env.TURSO_AUTH_TOKEN);
     return next();
 });

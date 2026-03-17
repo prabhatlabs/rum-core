@@ -57,7 +57,11 @@ export async function createProject(
         .insert(projects)
         .values({ user_id, project_key: projectKey, origin, name })
         .returning();
-    return project;
+
+    if (!project) {
+        throw new APIErrorResponse("InternalServerError", "Something went wrong", "Something went wrong", 500);
+    }
+    return { ...project, usage: [] };
 }
 
 export async function updateProject(
@@ -75,7 +79,11 @@ export async function updateProject(
         .set({ name, origin })
         .where(and(eq(projects.id, project_id), eq(projects.user_id, user_id)))
         .returning();
-    return project;
+
+    if (!project) {
+        throw new APIErrorResponse("InternalServerError", "Something went wrong", "Something went wrong", 500);
+    }
+    return { ...project, usage: [] };
 }
 
 export async function deleteProject(project_id: string, user_id: string) {

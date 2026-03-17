@@ -1,6 +1,6 @@
 import { APIErrorResponse } from "@rum-core/shared";
 import { createMiddleware } from "hono/factory";
-import { getCallsLeft } from "../../../../packages/db/src/services/usage.service";
+import { getCallsLeftHttp } from "../../../../packages/db/src/services/usage.service";
 
 export const validateRequest = createMiddleware(async (c, next) => {
     const origin = c.req.header('origin');
@@ -10,9 +10,9 @@ export const validateRequest = createMiddleware(async (c, next) => {
         throw new APIErrorResponse('ValidationError', 'Missing project key', 'Missing project key', 400);
     }
 
-    const { remaining, origin: allowedOrigin } = await getCallsLeft(projectKey);
+    const { remaining, origin: allowedOrigin } = await getCallsLeftHttp(projectKey);
 
-    if (allowedOrigin && `${origin}/` !== allowedOrigin) {
+    if (allowedOrigin && origin !== allowedOrigin) {
         throw new APIErrorResponse('ForbiddenError', 'Invalid origin', 'Origin is not allowed', 403);
     }
 
