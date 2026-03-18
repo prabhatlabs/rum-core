@@ -30,18 +30,18 @@ export function useProjectTables(params: ProjectDataParams) {
           })
         : null
 
-    const { data, isLoading, error, mutate } = useSWR<ProjectTableData>(
+    const { data, isLoading, isValidating, error, mutate } = useSWR<ProjectTableData>(
         swrKey,
         () => fetcher<ProjectTableData>(`/projects/data/${projectId}`, {
             method: 'POST',
             body: { time_range: timeRange, tables },
-            showToast: false
         })
     )
 
     return {
         tableData: data,
         isLoading,
+        isValidating,
         error,
         mutate
     }

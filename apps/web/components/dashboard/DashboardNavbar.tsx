@@ -117,7 +117,7 @@ function TotalCallUsage() {
     const { projects } = useProjects();
     const totalCalls =
         projects?.reduce(
-            (acc, project) => acc + project.usage[0]?.calls_used || 0,
+            (acc, project) => acc + (project?.usage?.[0]?.calls_used || 0),
             0,
         ) || 0;
     const maxCalls = user?.plan_limits.calls_per_day || 0;

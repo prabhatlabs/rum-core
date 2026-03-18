@@ -17,7 +17,7 @@ interface FetcherOptions {
 
 export async function fetcher<T>(url: string, options: FetcherOptions = { showToast: true }): Promise<T> {
     const { method = 'GET', body, headers = {} } = options;
-    const showToast = method !== 'GET' && options.showToast !== false;
+    const showToast = method !== 'GET' && options.showToast;
 
     let loadingToastId: number | string | null = null;
     if (showToast) {

@@ -30,7 +30,7 @@ export function ProjectsPage() {
     const { projects, isLoading, setCurrentProject } = useProjects();
     const { openAddEditProject, openDeleteProject } = useDialog();
     
-    const totalCalls = projects?.reduce((acc, project) => acc + project.usage[0]?.calls_used || 0, 0) || 0;
+    const totalCalls = projects?.reduce((acc, project) => acc + (project.usage[0]?.calls_used || 0), 0) || 0;
 
     function renderUsageBar(project: Project) {
         const calls = project.usage[0]?.calls_used || 0;
