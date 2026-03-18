@@ -54,7 +54,7 @@ export function ProjectsPage() {
                 </Button>
             </div>
 
-            <Table>
+            <Table className="border mb-4">
                 <TableHeader>
                     <TableRow>
                         <TableHead className="border-r">Name</TableHead>
