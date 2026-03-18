@@ -4,4 +4,4 @@ COPY . .
 RUN bun install --frozen-lockfile
 WORKDIR /apps/api
 EXPOSE 3000
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "run-api"]
