@@ -1,13 +1,38 @@
-import { projectsService } from "@rum-core/db";
-import { okResponse } from "@rum-core/shared";
+import { projectsService, rollupService } from "@rum-core/db";
+import { okResponse, type TimeRange } from "@rum-core/shared";
 import Elysia, { t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
+
+const timeRangeTransform = t.Transform(t.String())
+    .Decode((value) => {
+        const range = value as TimeRange;
+        return range;
+    }).Encode((value) => {
+        const range = value as TimeRange;
+        return range
+    })
 
 const projectsRoutes = new Elysia({ prefix: '/projects' })
     .use(authMiddleware)
     .get('/', async ({ user }) => {
         const projects = await projectsService.getProjects(user.id);
         return okResponse(projects);
+    })
+    .get('/data/:id', async ({ user, params, body }) => {
+        const user_id = user.id;
+        const project_id = params.id;
+        const { time_range, tables } = body;
+        const data = await rollupService.fetchRollupTables(user_id, project_id, time_range, tables);
+
+        return okResponse(data);
+    }, {
+        params: t.Object({
+            id: t.String()
+        }),
+        body: t.Object({
+            time_range: timeRangeTransform,
+            tables: t.Array(t.String())
+        })
     })
     .post('/', async ({ user, body }) => {
         const { origin, name } = body;
