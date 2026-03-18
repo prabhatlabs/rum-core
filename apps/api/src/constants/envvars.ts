@@ -1,5 +1,6 @@
 export const ENV = {
-  PORT: Number(process.env.PORT) || 5000,
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: Number(process.env.PORT) || 8000,
   JWT_SECRET: process.env.JWT_SECRET!,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,

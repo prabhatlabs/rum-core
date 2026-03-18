@@ -3,6 +3,7 @@ import { authService } from '@rum-core/db'
 import { APIErrorResponse, failResponse, okResponse } from '@rum-core/shared'
 import { generateCodeVerifier, generateState } from 'arctic'
 import { Elysia } from 'elysia'
+import { AUTH_COOKIE_CLEAR_CONFIG, AUTH_COOKIE_CONFIG } from '../constants/cookie'
 import { ENV } from '../constants/envvars'
 import { github, google } from '../lib/oauth'
 import { authMiddleware, cookieConfig, jwtConfig } from '../middleware/auth.middleware'
@@ -22,8 +23,8 @@ const authRoutes = new Elysia({ prefix: '/auth' })
             return failResponse('Missing cookie')
         }
 
-        cookie.google_state.set({ value: state, httpOnly: true, maxAge: 600 })
-        cookie.google_verifier.set({ value: codeVerifier, httpOnly: true, maxAge: 600 })
+        cookie.google_state.set({ value: state, ...AUTH_COOKIE_CONFIG })
+        cookie.google_verifier.set({ value: codeVerifier, ...AUTH_COOKIE_CONFIG })
 
         return redirect(url.toString())
     })
@@ -76,9 +77,7 @@ const authRoutes = new Elysia({ prefix: '/auth' })
         const token = await jwt.sign({ sub: user.id })
         cookie.auth?.set({
             value: token,
-            httpOnly: true,
-            maxAge: 60 * 60 * 24 * 7, // 7 days
-            sameSite: 'lax',
+            ...AUTH_COOKIE_CONFIG
         })
 
         return redirect(`${ENV.FRONTEND_URL}/dashboard`)
@@ -93,7 +92,7 @@ const authRoutes = new Elysia({ prefix: '/auth' })
             return failResponse('Missing cookie')
         }
 
-        cookie.github_state.set({ value: state, httpOnly: true, maxAge: 600 })
+        cookie.github_state.set({ value: state, ...AUTH_COOKIE_CONFIG })
 
         return redirect(url.toString())
     })
@@ -156,9 +155,7 @@ const authRoutes = new Elysia({ prefix: '/auth' })
         const token = await jwt.sign({ sub: user.id })
         cookie.auth?.set({
             value: token,
-            httpOnly: true,
-            maxAge: 60 * 60 * 24 * 7, // 7 days
-            sameSite: 'lax',
+            ...AUTH_COOKIE_CONFIG
         })
 
         return redirect(`${ENV.FRONTEND_URL}/dashboard`)
@@ -174,9 +171,7 @@ const authRoutes = new Elysia({ prefix: '/auth' })
 
     .post('/logout', ({ cookie }) => {
         cookie.auth.set({
-            value: '',
-            httpOnly: true,
-            maxAge: 0,
+            ...AUTH_COOKIE_CLEAR_CONFIG
         })
         return okResponse(null, 'Logged out successfully')
     })
