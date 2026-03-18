@@ -121,7 +121,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
                 duration: partial.duration ?? null,
                 page_url: location.href,
                 referrer: document.referrer || null,
-                timestamp: Date.now(),
                 ...env,
             };
         }

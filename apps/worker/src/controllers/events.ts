@@ -1,5 +1,5 @@
 import { eventsService } from "@rum-core/db";
-import { APIErrorResponse, okResponse } from "@rum-core/shared";
+import { APIErrorResponse, getCurrentTime, okResponse } from "@rum-core/shared";
 import type { Context } from "hono";
 import { getGeo, hashIp } from "../lib/enrich";
 
@@ -21,6 +21,7 @@ export async function ingestRequestEvents(c: Context) {
     const enriched = events.map((event: any) => ({
         ...event,
         ...geo,
+        timestamp: getCurrentTime(),
         ip_hash: ipHash,
     }));
 
@@ -39,7 +40,12 @@ export async function ingestPageVitals(c: Context) {
     const geo = getGeo(c);
     const ipHash = await hashIp(c);
 
-    const enriched = { ...vitals, ...geo, ip_hash: ipHash };
+    const enriched = {
+        ...vitals,
+        ...geo,
+        timestamp: getCurrentTime(),
+        ip_hash: ipHash
+    };
 
     await eventsService.bulkInsertPageVitals(enriched);
 
