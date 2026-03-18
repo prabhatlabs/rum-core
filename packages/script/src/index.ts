@@ -187,7 +187,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         else { window.addEventListener("load", initWebVitals); }
 
         // ─── Patch fetch ──────────────────────────────────────────────────────────
-
         const _fetch = global.fetch;
         global.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
             const reqUrl = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
