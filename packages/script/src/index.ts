@@ -102,7 +102,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         }
 
         // ─── Request Events ───────────────────────────────────────────────────────
-
         const eventQueue: any[] = [];
 
         function buildRequestEvent(partial: any) {
@@ -135,7 +134,6 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushEvents(); });
 
         // ─── Web Vitals ───────────────────────────────────────────────────────────
-
         function computeVitalsScore(lcp: number | null, fcp: number | null, cls: number | null, inp: number | null): number | null {
             type Rating = "good" | "ni" | "poor";
             const ratingScore: Record<Rating, number> = { good: 100, ni: 50, poor: 0 };
