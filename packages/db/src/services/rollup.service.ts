@@ -938,17 +938,17 @@ export async function cleanupOldData(): Promise<void> {
 
 export async function fetchRollupTables(
     userId: string,
-    projectKey: string,
+    projectId: string,
     timeRange: TimeRange,
     tableNames: string[]
 ): Promise<ApiResponse<Record<string, unknown[]>>> {
     const eventDBClient = getEventDBClient();
     const mainDB = getMainDB();
     const [project, userPlan] = await Promise.all([
-        mainDB.query.projects.findFirst({ where: eq(projects.project_key, projectKey) }),
+        mainDB.query.projects.findFirst({ where: eq(projects.id, projectId) }),
         mainDB.query.plans.findFirst({ where: eq(plans.user_id, userId) }),
     ]);
-
+    
     if (!project || project.user_id !== userId) {
         throw new APIErrorResponse("UnauthorizedUserError", "Forbidden", "Project not found or access denied", 403);
     }
@@ -981,7 +981,7 @@ export async function fetchRollupTables(
 
         const result = await eventDBClient.execute({
             sql,
-            args: [projectKey, startTime, now],
+            args: [project.project_key, startTime, now],
         });
 
         return { tableName, data: result.rows };

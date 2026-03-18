@@ -18,7 +18,7 @@ const projectsRoutes = new Elysia({ prefix: '/projects' })
         const projects = await projectsService.getProjects(user.id);
         return okResponse(projects);
     })
-    .get('/data/:id', async ({ user, params, body }) => {
+    .post('/data/:id', async ({ user, params, body }) => {
         const user_id = user.id;
         const project_id = params.id;
         const { time_range, tables } = body;
