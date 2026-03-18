@@ -295,7 +295,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         XHRPatched.DONE = _XHR.DONE;
         global.XMLHttpRequest = XHRPatched;
 
-        console.log("[rum-core] Initialized");
+        console.log("[rum-core] Initialized!");
 
     } catch (err) {
         console.error("[rum-core]", err);
