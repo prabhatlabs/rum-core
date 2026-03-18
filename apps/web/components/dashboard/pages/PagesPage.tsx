@@ -8,17 +8,17 @@ import { TimeRangeSelector } from '@/components/dashboard/TimeRangeSelector'
 import { TableBox } from '@/components/dashboard/TableBox'
 import type { TimeRange } from '@/types/api'
 
-export function OverviewPage() {
+export function PagesPage() {
     const [timeRange, setTimeRange] = useState<TimeRange>('24h')
     const { projectId } = useCurrentProject()
 
     const { tableData, isLoading, mutate } = useProjectTables({
         projectId: projectId ?? '',
-        tab: 'overview',
+        tab: 'pages',
         timeRange
     })
 
-    const tables = getTablesByTimeRange(tabTables['overview'], timeRange)
+    const tables = getTablesByTimeRange(tabTables['pages'], timeRange)
 
     return (
         <div className="space-y-4">

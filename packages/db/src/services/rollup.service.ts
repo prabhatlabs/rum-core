@@ -4,9 +4,7 @@ import {
     getCutoffTimestamp,
     getPreviousDayTimestamp,
     getPreviousHourTimestamp,
-    okResponse,
-    type ApiResponse,
-    type TimeRange,
+    type TimeRange
 } from "@rum-core/shared";
 import { eq } from "drizzle-orm";
 import { getEventDBClient } from "../eventdb/client";
@@ -941,7 +939,7 @@ export async function fetchRollupTables(
     projectId: string,
     timeRange: TimeRange,
     tableNames: string[]
-): Promise<ApiResponse<Record<string, unknown[]>>> {
+): Promise<Record<string, unknown[]>> {
     const eventDBClient = getEventDBClient();
     const mainDB = getMainDB();
     const [project, userPlan] = await Promise.all([
@@ -993,5 +991,5 @@ export async function fetchRollupTables(
         data[tableName] = tableData;
     }
 
-    return okResponse(data, "Data fetched successfully");
+    return data;
 }

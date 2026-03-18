@@ -21,7 +21,7 @@ export default function DashboardLayout({
             <SWRConfig
                 value={{
                     revalidateOnFocus: false,
-                    dedupingInterval: 60000,
+                    dedupingInterval: 90000,
                     provider: () => swrCache,
                     fetcher: fetcher
                 }}

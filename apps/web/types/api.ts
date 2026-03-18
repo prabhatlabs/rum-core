@@ -7,12 +7,12 @@ export interface ApiResponse<T = null> {
 
 export type PlanLimits = {
     readonly projects: 2;
-    readonly calls_per_day: 50000;
+    readonly calls_per_day: 80000;
     readonly retention_days: 7;
     readonly time_ranges: readonly ["12h", "24h", "7d"];
 } | {
     readonly projects: 8;
-    readonly calls_per_day: 500000;
+    readonly calls_per_day: 800000;
     readonly retention_days: 30;
     readonly time_ranges: readonly["12h", "24h", "7d", "30d"];
 } | {
@@ -51,6 +51,10 @@ export interface Usage {
     project_id: string;
     calls_used: number;
 }
+
+export type TimeRange = '12h' | '24h' | '7d' | '30d';
+
+export interface ProjectTableData extends Record<string, unknown[]> {}
 
 export interface Project {
     id: string;

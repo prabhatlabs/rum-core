@@ -11,12 +11,13 @@ type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 interface FetcherOptions {
     method?: Method
     body?: unknown
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
+    showToast?: boolean
 }
 
-export async function fetcher<T>(url: string, options: FetcherOptions = {}): Promise<T> {
+export async function fetcher<T>(url: string, options: FetcherOptions = { showToast: true }): Promise<T> {
     const { method = 'GET', body, headers = {} } = options;
-    const showToast = method !== 'GET';
+    const showToast = method !== 'GET' && options.showToast !== false;
 
     let loadingToastId: number | string | null = null;
     if (showToast) {

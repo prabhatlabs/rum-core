@@ -55,7 +55,7 @@ export function useProjects() {
 
     useEffect(() => {
         if (projectId) return;
-        if (data && data.length > 0) {
+        if (data && data.length > 0 && data[0]) {
             setProjectId(data[0].id);
         }
     }, [data, projectId]);

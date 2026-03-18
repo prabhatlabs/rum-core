@@ -337,7 +337,7 @@ All list tables load in one API call and filter/sort entirely in the browser. Sa
 Dynamic segments are normalized in the browser script before sending. Full origin is preserved:
 ```
 https://api.stripe.com/v1/customers/123  →  https://api.stripe.com/v1/customers/:id
-/api/users/456                           →  http://localhost:5000/api/users/:id
+/api/users/456                           →  http://localhost:8000/api/users/:id
 ```
 
 ---

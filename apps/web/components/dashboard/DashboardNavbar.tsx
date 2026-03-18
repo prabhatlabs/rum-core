@@ -1,7 +1,7 @@
 "use client";
 
 import { DashboardSidebarTrigger } from "@/components/dashboard/DashboardSidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -24,7 +24,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useDialog } from "@/hooks/use-dialog";
 import { cn } from "@/lib/utils";
 import { Folder, Plus } from "lucide-react";
-import Image from "next/image";
 import { Suspense } from "react";
 import { ThemeToggle } from "../ui/theme-toggle";
 
@@ -127,11 +126,13 @@ function TotalCallUsage() {
         percentage >= 90
             ? "border-destructive"
             : percentage >= 70
-            ? "border-warning"
-        : "border-success";
+              ? "border-warning"
+              : "border-success";
     return (
-        <Button variant="outline" className={borderClass}>
-            <span className={cn("border-b", borderClass)}>{`${totalCalls} / ${maxCalls}`}</span>
+        <Button variant="outline">
+            <span
+                className={cn("border-b", borderClass)}
+            >{`${totalCalls} / ${maxCalls}`}</span>
         </Button>
     );
 }
@@ -145,15 +146,11 @@ function UserDropdown() {
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size={"icon"} className="relative">
                     <Avatar className="">
-                        {avatarUrl ? (
-                            <Image
-                                src={avatarUrl}
-                                alt={user?.name ?? "User"}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
-                        ) : null}
+                        <AvatarImage
+                            src={avatarUrl ?? ""}
+                            alt={user?.name ?? "User"}
+                            className="object-cover"
+                        />
                         <AvatarFallback>
                             {user?.name?.[0] ?? "U"}
                         </AvatarFallback>
@@ -163,15 +160,11 @@ function UserDropdown() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex flex-col items-center gap-3 p-4">
                     <Avatar className="size-25">
-                        {avatarUrl ? (
-                            <Image
-                                src={avatarUrl}
-                                alt={user?.name ?? "User"}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
-                        ) : null}
+                        <AvatarImage
+                            src={avatarUrl ?? ""}
+                            alt={user?.name ?? "User"}
+                            className="object-cover"
+                        />
                         <AvatarFallback className="text-4xl">
                             {user?.name?.[0] ?? "U"}
                         </AvatarFallback>

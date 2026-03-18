@@ -21,26 +21,17 @@ import { useProjects } from "@/hooks/api/use-projects";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const dashboardTabs: TabType[] = [
-  "overview",
-  "performance",
-  "errors",
-  "geography",
-  "environment",
-];
-const userTabs: TabType[] = ["projects", "usage", "billing"];
-
 export function DashboardSidebar() {
   const pathname = usePathname();
   const {currentProject} = useProjects();
 
   const currTab = (pathname.split("/")[2] || "overview") as TabType;
 
-  const dashboardPages = dashboardPagesArray.filter((page) =>
-    dashboardTabs.includes(page.tab as TabType),
+  const projectPages = dashboardPagesArray.filter((page) =>
+    page.grp === "projects",
   );
   const userPages = dashboardPagesArray.filter((page) =>
-    userTabs.includes(page.tab as TabType),
+    page.grp === "user",
   );
 
   function renderMenuItem(page: DashboardPage) {
@@ -69,7 +60,7 @@ export function DashboardSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
           <SidebarMenu>
-            {dashboardPages.map((page) => renderMenuItem(page))}
+            {projectPages.map((page) => renderMenuItem(page))}
           </SidebarMenu>
         </SidebarGroup>
         <SidebarGroup>
