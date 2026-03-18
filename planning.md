@@ -1282,3 +1282,7 @@ PRIMARY KEY (project_key, day, device_type, browser, os, connection_type, countr
 - [ ] Map library decision — react-simple-maps (lightweight SVG) recommended
 - [ ] Data export feature — allow users to export tracking data as XLS or CSV
 - [ ] Vitals score algorithm — define exact weighting for 0-100 score computation
+- [ ] Per-project URL filter — allowlist/denylist patterns, stored in Neon (url_filter_mode + url_patterns), evaluated client-side in browser script before sending events
+- [ ] Per-project vitals toggle — collect_vitals boolean in Neon, controls whether web-vitals/slim listener is initialized in browser script
+- [ ] Project settings page — /dashboard/[project_key]/settings — URL patterns input, vitals toggle, origin edit
+- [ ] Decide: URL filtering scope — request events only, or also applies to page vitals (likely independent controls)
