@@ -19,23 +19,21 @@ const app = new Elysia({
         origin: ENV.FRONTEND_URL,
         credentials: true,
     }))
-    .onRequest(({ request }) => {
-        console.log(`[INFO] ${request.method} ${request.url.split('/api/v1')[1] || request.url}`)
-    })
-    .onError(({ error, set }) => {
+    .onError(({ error, set, request }) => {
         if (error instanceof APIErrorResponse) {
             set.status = error.code
             return failResponse(`[${error.name}]: ${error.error}`, error.message)
         }
-
+        
         // unhandled error
+        console.log(`[INFO] ${request.method} ${request.url.split('/api/v1')[1] || request.url}`)
         console.error("[ERROR]", error)
         set.status = 500
         return failResponse("InternalServerError", 'Something went wrong')
     })
-    .use(cronRoutes)
     .use(authRoute)
     .use(projectsRoutes)
+    .use(cronRoutes)
     .use(html())
     .get('/', ({ set }) => {
         const url = "https://ref.prabhatlabs.dev"

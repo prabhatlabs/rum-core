@@ -14,7 +14,7 @@ export const jwtConfig = jwt({
 
 export const cookieConfig = {
     cookie: t.Object({
-        auth: t.String(),
+        auth: t.Optional(t.String()), 
         google_state: t.Optional(t.String()),
         google_verifier: t.Optional(t.String()),
         github_state: t.Optional(t.String()),
