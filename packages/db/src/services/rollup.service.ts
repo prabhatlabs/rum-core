@@ -982,7 +982,9 @@ export async function fetchRollupTables(
             args: [project.project_key, startTime, now],
         });
 
-        return { tableName, data: result.rows };
+        const rows = result.rows.map(({ project_key, ...rest }) => rest)
+
+        return { tableName, data: rows };
     });
 
     const results = await Promise.all(queries);
