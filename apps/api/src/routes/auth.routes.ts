@@ -2,7 +2,7 @@ import { cookie } from '@elysiajs/cookie'
 import { authService } from '@rum-core/db'
 import { APIErrorResponse, failResponse, okResponse } from '@rum-core/shared'
 import { generateCodeVerifier, generateState } from 'arctic'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import { AUTH_COOKIE_CLEAR_CONFIG, AUTH_COOKIE_CONFIG } from '../constants/cookie'
 import { ENV } from '../constants/envvars'
 import { github, google } from '../lib/oauth'
@@ -75,12 +75,13 @@ const authRoutes = new Elysia({ prefix: '/auth' })
         }
 
         const token = await jwt.sign({ sub: user.id })
-        cookie.auth?.set({
-            value: token,
-            ...AUTH_COOKIE_CONFIG
-        })
+        // cookie.auth?.set({
+        //     value: token,
+        //     ...AUTH_COOKIE_CONFIG
+        // })
+        // return redirect(`${ENV.FRONTEND_URL}/dashboard`)
 
-        return redirect(`${ENV.FRONTEND_URL}/dashboard`)
+        return redirect(`${ENV.FRONTEND_URL}/auth/callback?token=${token}`)
     })
 
     // GITHUB oauth
@@ -153,12 +154,31 @@ const authRoutes = new Elysia({ prefix: '/auth' })
         }
 
         const token = await jwt.sign({ sub: user.id })
-        cookie.auth?.set({
+        // cookie.auth?.set({
+        //     value: token,
+        //     ...AUTH_COOKIE_CONFIG
+        // })
+
+        // return redirect(`${ENV.FRONTEND_URL}/dashboard`)
+        return redirect(`${ENV.FRONTEND_URL}/auth/callback?token=${token}`)
+    })
+    .get('/session', async ({ query, cookie, set }) => {
+        const { token } = query
+        if (!token) {
+            set.status = 400
+            return failResponse('Missing token')
+        }
+
+        cookie.auth.set({
             value: token,
             ...AUTH_COOKIE_CONFIG
         })
 
-        return redirect(`${ENV.FRONTEND_URL}/dashboard`)
+        return okResponse(null, 'Session created')
+    }, {
+        query: t.Object({
+            token: t.String()
+        })
     })
     .use(authMiddleware)
     .get('/me', async ({ user }) => {
