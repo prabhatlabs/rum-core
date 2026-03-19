@@ -8,9 +8,6 @@
             "enabled": true,
             "invocation_logs": true
         }
-    },
-    "env": {
-        "dev": {}
     }
     // "compatibility_flags": [
     //   "nodejs_compat"
