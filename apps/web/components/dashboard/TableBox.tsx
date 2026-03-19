@@ -9,18 +9,46 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { formatDateTime, type TimeRange } from "@rum-core/shared";
 
 interface TableBoxProps {
     title: string;
     data?: unknown[];
     className?: string;
+    timeRange?: TimeRange;
 }
 
 function columnNameFormatter(column: string): string {
     return column.replaceAll("_", " ");
 }
 
-export function TableBox({ title, data = [], className }: TableBoxProps) {
+function isTimestamp(value: number): boolean {
+    return value > 1_000_000_000_000;
+}
+
+function formatValue(value: unknown, showDate: boolean, showTime: boolean): string {
+    if (value === null || value === undefined) return "-";
+    if (typeof value === "number") {
+        if (isTimestamp(value)) {
+            return formatDateTime(value, showDate, showTime);
+        }
+        return Number.isInteger(value) ? String(value) : value.toFixed(2);
+    }
+    const num = Number(value);
+    if (!isNaN(num) && value !== "") {
+        if (isTimestamp(num)) {
+            return formatDateTime(num, showDate, showTime);
+        }
+        return Number.isInteger(num) ? String(num) : num.toFixed(2);
+    }
+    return String(value);
+}
+
+export function TableBox({ title, data = [], className, timeRange = "24h" }: TableBoxProps) {
+    const isHourly = timeRange === "12h" || timeRange === "24h";
+    const isDaily = timeRange === "7d" || timeRange === "30d";
+    const showDate = !isHourly;
+    const showTime = !isDaily;
     const firstRow = data[0];
     const columns = firstRow ? Object.keys(firstRow) : [];
 
@@ -69,13 +97,15 @@ export function TableBox({ title, data = [], className }: TableBoxProps) {
                                     <TableRow key={idx}>
                                         {columns.map((col, key) => (
                                             <TableCell key={col} className={key !== 0 ? "border-l" : ""}>
-                                                {String(
+                                                {formatValue(
                                                     (
                                                         row as Record<
                                                             string,
                                                             unknown
                                                         >
-                                                    )[col] ?? "",
+                                                    )[col],
+                                                    showDate,
+                                                    showTime,
                                                 )}
                                             </TableCell>
                                         ))}

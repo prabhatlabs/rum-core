@@ -52,8 +52,6 @@ export interface Usage {
     calls_used: number;
 }
 
-export type TimeRange = '12h' | '24h' | '7d' | '30d';
-
 export interface ProjectTableData extends Record<string, unknown[]> {}
 
 export interface Project {

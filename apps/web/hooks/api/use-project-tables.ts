@@ -1,6 +1,6 @@
 import { tabTables, type TabType } from '@/components/dashboard/pages'
 import { fetcher } from '@/lib/fetcher'
-import type { TimeRange } from '@/types/api'
+import type { TimeRange } from '@rum-core/shared'
 import useSWR from 'swr'
 
 export type ProjectDataParams = {

@@ -7,7 +7,7 @@ import { tabTables } from '@/components/dashboard/pages'
 import { TimeRangeSelector } from '@/components/dashboard/TimeRangeSelector'
 import { RefreshButton } from '@/components/dashboard/RefreshButton'
 import { TableGridRenderer } from '@/components/dashboard/TableGridRenderer'
-import type { TimeRange } from '@/types/api'
+import type { TimeRange } from '@rum-core/shared'
 
 export function PagesPage() {
     const [timeRange, setTimeRange] = useState<TimeRange>('24h')
@@ -27,7 +27,7 @@ export function PagesPage() {
                 <RefreshButton onRefresh={() => mutate()} isRefreshing={isLoading || isValidating} />
                 <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
             </div>
-            <TableGridRenderer tableNames={tables} data={tableData} />
+            <TableGridRenderer tableNames={tables} data={tableData} timeRange={timeRange} />
         </div>
     )
 }

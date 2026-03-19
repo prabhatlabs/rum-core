@@ -49,3 +49,30 @@ export function getPreviousMonthStr(): string {
 export function getCurrentMonthStr(): string {
     return new Date().toISOString().split('T')[0] ?? '';
 }
+
+export function formatDateTime(timestamp: number, showDate = true, showTime = true): string {
+    const date = new Date(timestamp);
+    if (!showDate && !showTime) return "";
+    if (showDate && !showTime) {
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        });
+    }
+    if (!showDate && showTime) {
+        return date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    }
+    return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+}
