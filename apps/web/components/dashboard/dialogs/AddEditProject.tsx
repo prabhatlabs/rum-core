@@ -13,7 +13,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
-import { ProjectInput, useProjects } from "@/hooks/api/use-projects";
+import { type ProjectInput, useProjects } from "@/hooks/api/use-projects";
 import { useDialog } from "@/hooks/use-dialog";
 import { Plus, Save } from "lucide-react";
 import { toast } from "sonner";
