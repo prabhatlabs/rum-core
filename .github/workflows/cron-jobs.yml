@@ -1,0 +1,39 @@
+name: Cron Jobs
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # hourly — every hour at :00 UTC
+    - cron: '0 0 * * *'   # daily  — midnight UTC
+    - cron: '0 0 1 * *'   # monthly — 1st of month, midnight UTC
+  workflow_dispatch:       # manual trigger for testing
+
+jobs:
+  hourly:
+    if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run hourly cron
+        run: |
+          curl -X POST ${{ secrets.API_URL }}/api/v1/cron/hourly \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -f --silent --show-error
+
+  daily:
+    if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run daily cron
+        run: |
+          curl -X POST ${{ secrets.API_URL }}/api/v1/cron/daily \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -f --silent --show-error
+
+  monthly:
+    if: github.event.schedule == '0 0 1 * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run monthly cron
+        run: |
+          curl -X POST ${{ secrets.API_URL }}/api/v1/cron/monthly \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -f --silent --show-error
