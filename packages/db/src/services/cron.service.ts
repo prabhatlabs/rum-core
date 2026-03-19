@@ -2,7 +2,7 @@ import {
     getCurrentMonthStr,
     getPreviousMonthStr
 } from "@rum-core/shared";
-import { getMainDBHttp } from '../maindb/client';
+import { getMainDB } from '../maindb/client';
 import {
     aggregateDailyFromHourly,
     aggregateHourlyFromRaw,
@@ -24,7 +24,7 @@ export async function runDailyCron(): Promise<void> {
 }
 
 export async function runMonthlySummary(): Promise<void> {
-    const db = getMainDBHttp();
+    const db = getMainDB();
     
     const previousMonthStr = getPreviousMonthStr();
     const currentMonthStr = getCurrentMonthStr();
