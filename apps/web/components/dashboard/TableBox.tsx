@@ -27,7 +27,7 @@ function isTimestamp(value: number): boolean {
 }
 
 function formatValue(value: unknown, showDate: boolean, showTime: boolean): string {
-    if (value === null || value === undefined) return "-";
+    if (value === null || value === undefined || value === "") return "-";
     if (typeof value === "number") {
         if (isTimestamp(value)) {
             return formatDateTime(value, showDate, showTime);
@@ -58,7 +58,7 @@ export function TableBox({ title, data = [], className, timeRange = "24h" }: Tab
                 <CardTitle>{tableNames[title] ?? title}</CardTitle>
             </CardHeader>
             <CardContent className="">
-                <div className="h-60 md:h-80 lg:h-100 overflow-auto">
+                <div className="h-[calc(100dvh-260px)] overflow-auto">
                     <Table className="min-w-full h-full mb-4 border">
                         <TableHeader>
                             <TableRow
