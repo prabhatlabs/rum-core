@@ -20,11 +20,11 @@ interface TableBoxProps {
     isLoading?: boolean;
 }
 
-function columnNameFormatter(column: string): string {
+export function columnNameFormatter(column: string): string {
     return column.replaceAll("_", " ");
 }
 
-function isTimestamp(value: number): boolean {
+export function isTimestamp(value: number): boolean {
     return value > 1_000_000_000_000;
 }
 

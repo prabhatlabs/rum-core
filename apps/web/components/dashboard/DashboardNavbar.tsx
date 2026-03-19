@@ -35,7 +35,7 @@ export function DashboardNavbar() {
                     <DashboardSidebarTrigger />
                 </div>
                 <Suspense>
-                    <ProjectSelector />
+                    <ProjectSelector className="hidden sm:block max-w-50" />
                 </Suspense>
                 <TotalCallUsage />
             </div>
@@ -47,68 +47,70 @@ export function DashboardNavbar() {
     );
 }
 
-function ProjectSelector() {
+export function ProjectSelector({ className }: { className?: string }) {
     const { projects, isLoading, currentProject, setCurrentProject } =
         useProjects();
     const { openAddEditProject } = useDialog();
     useKeepCurrentProjectInSync();
 
     return (
-        <Select
-            value={currentProject?.id}
-            onValueChange={(value) => {
-                setCurrentProject(value);
-            }}
-        >
-            <SelectTrigger className="max-w-50 w-full" disabled={isLoading}>
-                <SelectValue placeholder="Select Project">
-                    <div className="flex items-center gap-2">
-                        <Folder className="size-4 text-primary" />
-                        <div className="flex flex-col items-start">
-                            <span className="text-sm font-medium">
-                                {isLoading
-                                    ? "Loading..."
-                                    : (currentProject?.name ??
-                                      "Select Project")}
-                            </span>
-                        </div>
-                    </div>
-                </SelectValue>
-            </SelectTrigger>
-            <SelectContent
-                side="bottom"
-                align="start"
-                position="popper"
-                className="max-w-64 w-full"
+        <div className={cn(className)}>
+            <Select
+                value={currentProject?.id}
+                onValueChange={(value) => {
+                    setCurrentProject(value);
+                }}
             >
-                {projects?.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
+                <SelectTrigger className="w-full" disabled={isLoading}>
+                    <SelectValue placeholder="Select Project">
                         <div className="flex items-center gap-2">
-                            <Folder className="size-4" />
-                            <div className="flex flex-col">
+                            <Folder className="size-4 text-primary" />
+                            <div className="flex flex-col items-start">
                                 <span className="text-sm font-medium">
-                                    {project.name}
-                                </span>
-                                <span className="text-xs text-muted-foreground truncate w-50">
-                                    {project.origin}
+                                    {isLoading
+                                        ? "Loading..."
+                                        : (currentProject?.name ??
+                                          "Select Project")}
                                 </span>
                             </div>
                         </div>
-                    </SelectItem>
-                ))}
-                {(projects?.length ?? 0) > 0 && (
-                    <SelectSeparator className="my-1" />
-                )}
-                <Button
-                    onClick={() => openAddEditProject()}
-                    variant={"ghost"}
-                    className="flex w-full justify-start"
+                    </SelectValue>
+                </SelectTrigger>
+                <SelectContent
+                    side="bottom"
+                    align="start"
+                    position="popper"
+                    className="max-w-64 w-full"
                 >
-                    <Plus />
-                    <span>Create new project</span>
-                </Button>
-            </SelectContent>
-        </Select>
+                    {projects?.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                            <div className="flex items-center gap-2">
+                                <Folder className="size-4" />
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium">
+                                        {project.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground truncate w-50">
+                                        {project.origin}
+                                    </span>
+                                </div>
+                            </div>
+                        </SelectItem>
+                    ))}
+                    {(projects?.length ?? 0) > 0 && (
+                        <SelectSeparator className="my-1" />
+                    )}
+                    <Button
+                        onClick={() => openAddEditProject()}
+                        variant={"ghost"}
+                        className="flex w-full justify-start"
+                    >
+                        <Plus />
+                        <span>Create new project</span>
+                    </Button>
+                </SelectContent>
+            </Select>
+        </div>
     );
 }
 

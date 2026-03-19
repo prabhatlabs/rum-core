@@ -20,61 +20,61 @@ import {
 import { useProjects } from "@/hooks/api/use-projects";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ProjectSelector } from "./DashboardNavbar";
 
 export function DashboardSidebar() {
-  const pathname = usePathname();
-  const {currentProject} = useProjects();
+    const pathname = usePathname();
+    const { currentProject } = useProjects();
 
-  const currTab = (pathname.split("/")[2] || "overview") as TabType;
+    const currTab = (pathname.split("/")[2] || "overview") as TabType;
 
-  const projectPages = dashboardPagesArray.filter((page) =>
-    page.grp === "projects",
-  );
-  const userPages = dashboardPagesArray.filter((page) =>
-    page.grp === "user",
-  );
-
-  function renderMenuItem(page: DashboardPage) {
-    const url = `/dashboard/${page.tab}${currentProject ? `?project_id=${currentProject.id}` : ''}`;
-    const isActive = currTab === page.tab;
-    return (
-      <SidebarMenuItem key={page.tab}>
-        <SidebarMenuButton asChild isActive={isActive}>
-          <Link href={url} className="flex items-center gap-3">
-            <page.icon className="h-4 w-4" />
-            <span>{page.title}</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+    const projectPages = dashboardPagesArray.filter(
+        (page) => page.grp === "projects",
     );
-  }
+    const userPages = dashboardPagesArray.filter((page) => page.grp === "user");
 
-  return (
-    <Sidebar collapsible="offcanvas">
-      <SidebarHeader>
-        <div className="px-2 py-1">
-          <h1 className="text-xl font-bold">Rum Core</h1>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
-          <SidebarMenu>
-            {projectPages.map((page) => renderMenuItem(page))}
-          </SidebarMenu>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarMenu>
-            {userPages.map((page) => renderMenuItem(page))}
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter></SidebarFooter>
-    </Sidebar>
-  );
+    function renderMenuItem(page: DashboardPage) {
+        const url = `/dashboard/${page.tab}${currentProject ? `?project_id=${currentProject.id}` : ""}`;
+        const isActive = currTab === page.tab;
+        return (
+            <SidebarMenuItem key={page.tab}>
+                <SidebarMenuButton asChild isActive={isActive}>
+                    <Link href={url} className="flex items-center gap-3">
+                        <page.icon className="h-4 w-4" />
+                        <span>{page.title}</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        );
+    }
+
+    return (
+        <Sidebar collapsible="offcanvas">
+            <SidebarHeader>
+                <div className="px-2 py-1">
+                    <h1 className="text-xl font-bold">Rum Core</h1>
+                </div>
+            </SidebarHeader>
+            <SidebarContent>
+                <SidebarGroup>
+                    <ProjectSelector className="sm:hidden w-full" />
+                    <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+                    <SidebarMenu>
+                        {projectPages.map((page) => renderMenuItem(page))}
+                    </SidebarMenu>
+                </SidebarGroup>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Account</SidebarGroupLabel>
+                    <SidebarMenu>
+                        {userPages.map((page) => renderMenuItem(page))}
+                    </SidebarMenu>
+                </SidebarGroup>
+            </SidebarContent>
+            <SidebarFooter></SidebarFooter>
+        </Sidebar>
+    );
 }
 
 export function DashboardSidebarTrigger() {
-  return <SidebarTrigger className="lg:hidden" />;
+    return <SidebarTrigger className="lg:hidden" />;
 }
