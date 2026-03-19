@@ -69,6 +69,7 @@ export function TableRenderer({
                     title={activeTable}
                     data={data?.[activeTable] ?? []}
                     timeRange={timeRange}
+                    isLoading={isRefreshing}
                 />
             )}
         </div>

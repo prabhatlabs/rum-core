@@ -1,4 +1,5 @@
 import { tableNames } from "@/components/dashboard/pages";
+import { LoadingSpinner } from "@/components/Loading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
@@ -16,6 +17,7 @@ interface TableBoxProps {
     data?: unknown[];
     className?: string;
     timeRange?: TimeRange;
+    isLoading?: boolean;
 }
 
 function columnNameFormatter(column: string): string {
@@ -44,7 +46,7 @@ function formatValue(value: unknown, showDate: boolean, showTime: boolean): stri
     return String(value);
 }
 
-export function TableBox({ title, data = [], className, timeRange = "24h" }: TableBoxProps) {
+export function TableBox({ title, data = [], className, timeRange = "24h", isLoading }: TableBoxProps) {
     const isHourly = timeRange === "12h" || timeRange === "24h";
     const isDaily = timeRange === "7d" || timeRange === "30d";
     const showDate = !isHourly;
@@ -83,7 +85,16 @@ export function TableBox({ title, data = [], className, timeRange = "24h" }: Tab
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.length === 0 ? (
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length || 1}
+                                        className="text-center text-muted-foreground"
+                                    >
+                                        <LoadingSpinner className="mx-auto" />
+                                    </TableCell>
+                                </TableRow>
+                            ) : data.length === 0 ? (
                                 <TableRow>
                                     <TableCell
                                         colSpan={columns.length || 1}
