@@ -15,16 +15,23 @@ interface TimeRangeSelectorProps {
 
 const DEFAULT_OPTIONS: TimeRange[] = ['12h', '24h', '7d', '30d']
 
+const OPTION_LABELS: Record<string, string> = {
+    '12h': 'Last 12 hours',
+    '24h': 'Last 24 hours',
+    '7d': 'Last 7 days',
+    '30d': 'Last 30 days',
+}
+
 export function TimeRangeSelector({ value, onChange, options = DEFAULT_OPTIONS }: TimeRangeSelectorProps) {
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-25">
+            <SelectTrigger className="w-32">
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
                 {options.map((option) => (
                     <SelectItem key={option} value={option}>
-                        {option}
+                        {OPTION_LABELS[option] ?? option}
                     </SelectItem>
                 ))}
             </SelectContent>

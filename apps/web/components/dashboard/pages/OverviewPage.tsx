@@ -1,7 +1,7 @@
 'use client'
 
-import { tabTables } from '@/components/dashboard/pages'
 import { DataRenderer } from '@/components/dashboard/DataRenderer'
+import { tabTables } from '@/components/dashboard/pages'
 import { getTablesByTimeRange, useProjectTables } from '@/hooks/api/use-project-tables'
 import { useCurrentProject } from '@/hooks/api/use-projects'
 import { useTabState } from '@/hooks/use-tab-state'
