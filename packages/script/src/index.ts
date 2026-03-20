@@ -92,13 +92,14 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
             return null;
         }
 
-        function sendBeaconOrFetch(url: string, payload: string) {
-            const blob = new Blob([payload], { type: "application/json" });
-            if (navigator.sendBeacon) {
-                navigator.sendBeacon(url, blob);
-            } else {
-                fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: payload, keepalive: true, credentials: "omit" }).catch(() => { });
-            }
+        function sendData(url: string, payload: string) {
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: payload,
+                keepalive: true,        // keeps request alive after page unload, same benefit as sendBeacon
+                credentials: "omit",
+            }).catch(() => { });
         }
 
         // ─── Request Events ───────────────────────────────────────────────────────
@@ -127,7 +128,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         function flushEvents() {
             if (eventQueue.length === 0) return;
             const batch = eventQueue.splice(0, eventQueue.length);
-            sendBeaconOrFetch(EVENTS_URL, JSON.stringify({ events: batch, project_key: PROJECT_KEY }));
+            sendData(EVENTS_URL, JSON.stringify({ events: batch, project_key: PROJECT_KEY }));
         }
 
         setInterval(flushEvents, BATCH_INTERVAL_MS);
@@ -147,7 +148,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
         }
 
         function sendVitals(lcp: number | null, fcp: number | null, cls: number | null, inp: number | null) {
-            sendBeaconOrFetch(VITALS_URL, JSON.stringify({
+            sendData(VITALS_URL, JSON.stringify({
                 project_key: PROJECT_KEY,
                 session_id: SESSION_ID,
                 page_url: location.href,

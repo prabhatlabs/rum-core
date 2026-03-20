@@ -16,7 +16,8 @@ app.use(
     "/*",
     cors({
         origin: (origin) => origin, // echo back whatever origin is requesting
-        credentials: true,
+        allowMethods: ['GET', 'POST', 'OPTIONS'],
+        allowHeaders: ['Content-Type'],
     }),
 );
 
@@ -26,7 +27,7 @@ app.use("*", (c, next) => {
     return next();
 });
 
-app.get("/health", (c) => {
+app.get("/", (c) => {
     return c.text("Working!");
 });
 

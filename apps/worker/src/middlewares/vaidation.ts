@@ -3,6 +3,9 @@ import { createMiddleware } from "hono/factory";
 import { getCallsLeftHttp } from "../../../../packages/db/src/services/usage.service";
 
 export const validateRequest = createMiddleware(async (c, next) => {
+     if (c.req.method === 'OPTIONS') {
+        return next()
+    }
     const origin = c.req.header('origin');
     const projectKey = (await c.req.json()).project_key;
 
