@@ -1,21 +1,21 @@
 "use client";
 
 import {
-  dashboardPagesArray,
-  type DashboardPage,
-  type TabType,
+    dashboardPagesArray,
+    type DashboardPage,
+    type TabType,
 } from "@/components/dashboard/pages";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useProjects } from "@/hooks/api/use-projects";
 import Link from "next/link";
@@ -70,7 +70,14 @@ export function DashboardSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter></SidebarFooter>
+            <SidebarFooter>
+                <div className="flex gap-1 text-xs text-muted-foreground">
+                    <span>*</span>
+                    <span>
+                        Hourly data refreshes every hour. Data over 24h refreshes once a day.
+                    </span>
+                </div>
+            </SidebarFooter>
         </Sidebar>
     );
 }

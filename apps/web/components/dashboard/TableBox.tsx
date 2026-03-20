@@ -1,6 +1,6 @@
 import { tableNames } from "@/components/dashboard/pages";
-import { LoadingSpinner } from "@/components/Loading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
@@ -18,10 +18,11 @@ interface TableBoxProps {
     className?: string;
     timeRange?: TimeRange;
     isLoading?: boolean;
+    showTitle?: boolean;
 }
 
 export function columnNameFormatter(column: string): string {
-    return column.replaceAll("_", " ");
+    return column.replace("_pct", " (%)").replaceAll("_", " ");
 }
 
 export function isTimestamp(value: number): boolean {
@@ -46,7 +47,7 @@ function formatValue(value: unknown, showDate: boolean, showTime: boolean): stri
     return String(value);
 }
 
-export function TableBox({ title, data = [], className, timeRange = "24h", isLoading }: TableBoxProps) {
+export function TableBox({ title, data = [], className, timeRange = "24h", isLoading, showTitle = true }: TableBoxProps) {
     const isHourly = timeRange === "12h" || timeRange === "24h";
     const isDaily = timeRange === "7d" || timeRange === "30d";
     const showDate = !isHourly;
@@ -56,11 +57,13 @@ export function TableBox({ title, data = [], className, timeRange = "24h", isLoa
 
     return (
         <Card className={cn("", className)}>
-            <CardHeader className="">
-                <CardTitle>{tableNames[title] ?? title}</CardTitle>
-            </CardHeader>
+            {showTitle && (
+                <CardHeader className="">
+                    <CardTitle>{tableNames[title] ?? title}</CardTitle>
+                </CardHeader>
+            )}
             <CardContent className="">
-                <div className="h-[calc(100dvh-260px)] overflow-auto">
+                <div className="h-[calc(100dvh-330px)] overflow-auto">
                     <Table className="min-w-full h-full mb-4 border">
                         <TableHeader>
                             <TableRow
@@ -86,14 +89,17 @@ export function TableBox({ title, data = [], className, timeRange = "24h", isLoa
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length || 1}
-                                        className="text-center text-muted-foreground"
-                                    >
-                                        <LoadingSpinner className="mx-auto" />
-                                    </TableCell>
-                                </TableRow>
+                                <>
+                                    {Array.from({ length: 2 }).map((_, rowIdx) => (
+                                        <TableRow key={rowIdx}>
+                                            {Array.from({ length: 5 }).map((_, colIdx) => (
+                                                <TableCell key={colIdx} className={colIdx !== 0 ? "border-l" : ""}>
+                                                    <Skeleton className="h-4 w-full rounded" />
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </>
                             ) : data.length === 0 ? (
                                 <TableRow>
                                     <TableCell

@@ -1,7 +1,7 @@
 'use client'
 
 import { tabTables } from '@/components/dashboard/pages'
-import { TableRenderer } from '@/components/dashboard/TableRenderer'
+import { DataRenderer } from '@/components/dashboard/DataRenderer'
 import { getTablesByTimeRange, useProjectTables } from '@/hooks/api/use-project-tables'
 import { useCurrentProject } from '@/hooks/api/use-projects'
 import { useTabState } from '@/hooks/use-tab-state'
@@ -22,7 +22,8 @@ export function EndpointsPage() {
     const tables = getTablesByTimeRange(tabTables['endpoints'], timeRange)
 
     return (
-        <TableRenderer
+        <DataRenderer
+            title="Endpoints"
             tableNames={tables}
             data={tableData}
             timeRange={timeRange}
