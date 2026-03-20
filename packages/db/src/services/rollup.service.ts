@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { getEventDBClient } from "../eventdb/client";
 import { getMainDB } from "../maindb/client";
 import { plans, projects } from "../maindb/schema";
+
 const RETENTION = constants.plans.RETENTION;
 const RAW_TABLES = ["request_events", "page_vitals"];
 const HOURLY_TABLES = [
@@ -52,177 +53,177 @@ const DAILY_TABLES = [
 export async function aggregateHourlyFromRaw(): Promise<void> {
     const hourTimestamp = getPreviousHourTimestamp();
     const hourStart = hourTimestamp;
-    const hourEnd = hourTimestamp + 3600000 - 1; // 59 min, 59 sec, 999 ms
+    const hourEnd = hourTimestamp + 3600000 - 1;
 
     const reSummary = `
-        INSERT INTO re_hourly_summary (project_key, hour, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_hourly_summary (project_key, hour_at, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key
-        ON CONFLICT(project_key, hour) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reEndpoints = `
-        INSERT INTO re_hourly_endpoints (project_key, hour, url, method, total_requests, error_count, avg_ttfb, avg_duration, avg_dns, avg_tcp, avg_tls, top_country, device_mobile_pct)
+        INSERT INTO re_hourly_endpoints (project_key, hour_at, url, method, total_requests, error_count, avg_ttfb_ms, avg_duration_ms, avg_dns_ms, avg_tcp_ms, avg_tls_ms, top_country, device_mobile_pct)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             url,
             method,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration,
-            AVG(dns) as avg_dns,
-            AVG(tcp) as avg_tcp,
-            AVG(tls) as avg_tls,
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms,
+            AVG(dns) as avg_dns_ms,
+            AVG(tcp) as avg_tcp_ms,
+            AVG(tls) as avg_tls_ms,
             (SELECT country FROM request_events r2 WHERE r2.project_key = request_events.project_key AND r2.url = request_events.url AND r2.method = request_events.method AND r2.timestamp >= ${hourStart} AND r2.timestamp <= ${hourEnd} GROUP BY country ORDER BY COUNT(*) DESC LIMIT 1) as top_country,
-            (SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM request_events r4 WHERE r4.project_key = request_events.project_key AND r4.url = request_events.url AND r4.method = request_events.method AND r4.timestamp >= ${hourStart} AND r4.timestamp <= ${hourEnd}) FROM request_events r3 WHERE r3.project_key = request_events.project_key AND r3.url = request_events.url AND r3.method = request_events.method AND r3.timestamp >= ${hourStart} AND r3.timestamp <= ${hourEnd} AND r3.device_type = 'mobile')
+            (SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM request_events r4 WHERE r4.project_key = request_events.project_key AND r4.url = request_events.url AND r4.method = request_events.method AND r4.timestamp >= ${hourStart} AND r4.timestamp <= ${hourEnd}) FROM request_events r3 WHERE r3.project_key = request_events.project_key AND r3.url = request_events.url AND r3.method = request_events.method AND r3.timestamp >= ${hourStart} AND r3.timestamp <= ${hourEnd} AND r3.device_type = 'mobile') as device_mobile_pct
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, url, method
-        ON CONFLICT(project_key, hour, url, method) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, url, method) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration,
-            avg_dns = excluded.avg_dns,
-            avg_tcp = excluded.avg_tcp,
-            avg_tls = excluded.avg_tls,
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms,
+            avg_dns_ms = excluded.avg_dns_ms,
+            avg_tcp_ms = excluded.avg_tcp_ms,
+            avg_tls_ms = excluded.avg_tls_ms,
             top_country = excluded.top_country,
             device_mobile_pct = excluded.device_mobile_pct
     `;
 
     const reEndpointGeo = `
-        INSERT INTO re_hourly_endpoint_geo (project_key, hour, url, method, country, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_hourly_endpoint_geo (project_key, hour_at, url, method, country, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             url,
             method,
             COALESCE(country, '') as country,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, url, method, country
-        ON CONFLICT(project_key, hour, url, method, country) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, url, method, country) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reEndpointEnv = `
-        INSERT INTO re_hourly_endpoint_env (project_key, hour, url, method, device_type, browser, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_hourly_endpoint_env (project_key, hour_at, url, method, device_type, browser, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             url,
             method,
             COALESCE(device_type, '') as device_type,
             COALESCE(browser, '') as browser,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, url, method, device_type, browser
-        ON CONFLICT(project_key, hour, url, method, device_type, browser) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, url, method, device_type, browser) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reGeo = `
-        INSERT INTO re_hourly_geo (project_key, hour, country, total_requests, error_count, avg_ttfb, avg_duration, top_device)
+        INSERT INTO re_hourly_geo (project_key, hour_at, country, total_requests, error_count, avg_ttfb_ms, avg_duration_ms, top_device)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(country, '') as country,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration,
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms,
             (SELECT device_type FROM request_events r2 WHERE r2.project_key = request_events.project_key AND r2.country = request_events.country AND r2.timestamp >= ${hourStart} AND r2.timestamp <= ${hourEnd} GROUP BY device_type ORDER BY COUNT(*) DESC LIMIT 1) as top_device
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, country
-        ON CONFLICT(project_key, hour, country) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, country) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration,
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms,
             top_device = excluded.top_device
     `;
 
     const reGeoDetail = `
-        INSERT INTO re_hourly_geo_detail (project_key, hour, country, region, city, total_requests, error_count, avg_ttfb, avg_duration, top_device)
+        INSERT INTO re_hourly_geo_detail (project_key, hour_at, country, region, city, total_requests, error_count, avg_ttfb_ms, avg_duration_ms, top_device)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(country, '') as country,
             COALESCE(region, '') as region,
             COALESCE(city, '') as city,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration,
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms,
             (SELECT device_type FROM request_events r2 WHERE r2.project_key = request_events.project_key AND r2.country = request_events.country AND r2.region = request_events.region AND r2.city = request_events.city AND r2.timestamp >= ${hourStart} AND r2.timestamp <= ${hourEnd} GROUP BY device_type ORDER BY COUNT(*) DESC LIMIT 1) as top_device
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, country, region, city
-        ON CONFLICT(project_key, hour, country, region, city) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, country, region, city) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration,
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms,
             top_device = excluded.top_device
     `;
 
     const reEnv = `
-        INSERT INTO re_hourly_env (project_key, hour, device_type, browser, os, connection_type, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_hourly_env (project_key, hour_at, device_type, browser, os, connection_type, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(device_type, '') as device_type,
             COALESCE(browser, '') as browser,
             COALESCE(os, '') as os,
             COALESCE(connection_type, '') as connection_type,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb,
-            AVG(duration) as avg_duration
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, device_type, browser, os, connection_type
-        ON CONFLICT(project_key, hour, device_type, browser, os, connection_type) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, device_type, browser, os, connection_type) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reEnvGeo = `
-        INSERT INTO re_hourly_env_geo (project_key, hour, device_type, browser, os, connection_type, country, total_requests, error_count, avg_ttfb)
+        INSERT INTO re_hourly_env_geo (project_key, hour_at, device_type, browser, os, connection_type, country, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(device_type, '') as device_type,
             COALESCE(browser, '') as browser,
             COALESCE(os, '') as os,
@@ -230,246 +231,244 @@ export async function aggregateHourlyFromRaw(): Promise<void> {
             COALESCE(country, '') as country,
             COUNT(*) as total_requests,
             SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count,
-            AVG(ttfb) as avg_ttfb
+            AVG(ttfb) as avg_ttfb_ms,
+            AVG(duration) as avg_duration_ms
         FROM request_events
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, device_type, browser, os, connection_type, country
-        ON CONFLICT(project_key, hour, device_type, browser, os, connection_type, country) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, device_type, browser, os, connection_type, country) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const pvSummary = `
-        INSERT INTO pv_hourly_summary (project_key, hour, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_hourly_summary (project_key, hour_at, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key
-        ON CONFLICT(project_key, hour) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvPages = `
-        INSERT INTO pv_hourly_pages (project_key, hour, page_url, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score, top_country, device_mobile_pct)
+        INSERT INTO pv_hourly_pages (project_key, hour_at, page_url, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score, top_country, device_mobile_pct)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             page_url,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score,
             (
-                SELECT country 
-                FROM page_vitals pv2 
+                SELECT country FROM page_vitals pv2 
                 WHERE pv2.project_key = page_vitals.project_key 
                 AND pv2.page_url = page_vitals.page_url 
-                AND pv2.timestamp >= ${hourStart} AND pv2.timestamp < ${hourEnd}
-                GROUP BY country 
-                ORDER BY COUNT(*) DESC 
-                LIMIT 1
+                AND pv2.timestamp >= ${hourStart} AND pv2.timestamp <= ${hourEnd}
+                GROUP BY country ORDER BY COUNT(*) DESC LIMIT 1
             ) as top_country,
             (
                 SELECT COUNT(*) * 100.0 / (
-                    SELECT COUNT(*) 
-                    FROM page_vitals pv4 
+                    SELECT COUNT(*) FROM page_vitals pv4 
                     WHERE pv4.project_key = page_vitals.project_key 
                     AND pv4.page_url = page_vitals.page_url 
-                    AND pv4.timestamp >= ${hourStart} AND pv4.timestamp < ${hourEnd}
+                    AND pv4.timestamp >= ${hourStart} AND pv4.timestamp <= ${hourEnd}
                 )
                 FROM page_vitals pv3 
                 WHERE pv3.project_key = page_vitals.project_key 
                 AND pv3.page_url = page_vitals.page_url 
-                AND pv3.timestamp >= ${hourStart} AND pv3.timestamp < ${hourEnd}
+                AND pv3.timestamp >= ${hourStart} AND pv3.timestamp <= ${hourEnd}
                 AND pv3.device_type = 'mobile'
             ) as device_mobile_pct
         FROM page_vitals
-        WHERE timestamp >= ${hourStart} AND timestamp < ${hourEnd}
+        WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, page_url
-        ON CONFLICT(project_key, hour, page_url) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, page_url) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score,
             top_country = excluded.top_country,
             device_mobile_pct = excluded.device_mobile_pct
     `;
 
     const pvPageGeo = `
-        INSERT INTO pv_hourly_page_geo (project_key, hour, page_url, country, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_hourly_page_geo (project_key, hour_at, page_url, country, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             page_url,
             COALESCE(country, '') as country,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, page_url, country
-        ON CONFLICT(project_key, hour, page_url, country) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, page_url, country) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvPageEnv = `
-        INSERT INTO pv_hourly_page_env (project_key, hour, page_url, device_type, browser, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_hourly_page_env (project_key, hour_at, page_url, device_type, browser, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             page_url,
             COALESCE(device_type, '') as device_type,
             COALESCE(browser, '') as browser,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, page_url, device_type, browser
-        ON CONFLICT(project_key, hour, page_url, device_type, browser) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, page_url, device_type, browser) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvGeo = `
-        INSERT INTO pv_hourly_geo (project_key, hour, country, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score, top_device)
+        INSERT INTO pv_hourly_geo (project_key, hour_at, country, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score, top_device)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(country, '') as country,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score,
             (SELECT device_type FROM page_vitals pv2 WHERE pv2.project_key = page_vitals.project_key AND pv2.country = page_vitals.country AND pv2.timestamp >= ${hourStart} AND pv2.timestamp <= ${hourEnd} GROUP BY device_type ORDER BY COUNT(*) DESC LIMIT 1) as top_device
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, country
-        ON CONFLICT(project_key, hour, country) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, country) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score,
             top_device = excluded.top_device
     `;
 
     const pvGeoDetail = `
-        INSERT INTO pv_hourly_geo_detail (project_key, hour, country, region, city, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score, top_device)
+        INSERT INTO pv_hourly_geo_detail (project_key, hour_at, country, region, city, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score, top_device)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(country, '') as country,
             COALESCE(region, '') as region,
             COALESCE(city, '') as city,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score,
             (SELECT device_type FROM page_vitals pv2 WHERE pv2.project_key = page_vitals.project_key AND pv2.country = page_vitals.country AND pv2.region = page_vitals.region AND pv2.city = page_vitals.city AND pv2.timestamp >= ${hourStart} AND pv2.timestamp <= ${hourEnd} GROUP BY device_type ORDER BY COUNT(*) DESC LIMIT 1) as top_device
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, country, region, city
-        ON CONFLICT(project_key, hour, country, region, city) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, country, region, city) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score,
             top_device = excluded.top_device
     `;
 
     const pvEnv = `
-        INSERT INTO pv_hourly_env (project_key, hour, device_type, browser, os, connection_type, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_hourly_env (project_key, hour_at, device_type, browser, os, connection_type, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(device_type, '') as device_type,
             COALESCE(browser, '') as browser,
             COALESCE(os, '') as os,
             COALESCE(connection_type, '') as connection_type,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, device_type, browser, os, connection_type
-        ON CONFLICT(project_key, hour, device_type, browser, os, connection_type) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, device_type, browser, os, connection_type) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvEnvGeo = `
-        INSERT INTO pv_hourly_env_geo (project_key, hour, device_type, browser, os, connection_type, country, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_hourly_env_geo (project_key, hour_at, device_type, browser, os, connection_type, country, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${hourTimestamp} as hour,
+            ${hourTimestamp} as hour_at,
             COALESCE(device_type, '') as device_type,
             COALESCE(browser, '') as browser,
             COALESCE(os, '') as os,
             COALESCE(connection_type, '') as connection_type,
             COALESCE(country, '') as country,
             COUNT(DISTINCT session_id) as session_count,
-            AVG(lcp) as avg_lcp,
-            AVG(fcp) as avg_fcp,
-            AVG(cls) as avg_cls,
-            AVG(inp) as avg_inp,
+            AVG(lcp) as avg_lcp_ms,
+            AVG(fcp) as avg_fcp_ms,
+            AVG(cls) as avg_cls_score,
+            AVG(inp) as avg_inp_ms,
             AVG(vitals_score) as avg_vitals_score
         FROM page_vitals
         WHERE timestamp >= ${hourStart} AND timestamp <= ${hourEnd}
         GROUP BY project_key, device_type, browser, os, connection_type, country
-        ON CONFLICT(project_key, hour, device_type, browser, os, connection_type, country) DO UPDATE SET
+        ON CONFLICT(project_key, hour_at, device_type, browser, os, connection_type, country) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
@@ -498,174 +497,174 @@ export async function aggregateDailyFromHourly(): Promise<void> {
     const dayEnd = dayTimestamp + 86399999;
 
     const reSummary = `
-        INSERT INTO re_daily_summary (project_key, day, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_daily_summary (project_key, day_at, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms
         FROM re_hourly_summary
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key
-        ON CONFLICT(project_key, day) DO UPDATE SET
+        ON CONFLICT(project_key, day_at) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reEndpoints = `
-        INSERT INTO re_daily_endpoints (project_key, day, url, method, total_requests, error_count, avg_ttfb, avg_duration, avg_dns, avg_tcp, avg_tls, top_country, device_mobile_pct)
+        INSERT INTO re_daily_endpoints (project_key, day_at, url, method, total_requests, error_count, avg_ttfb_ms, avg_duration_ms, avg_dns_ms, avg_tcp_ms, avg_tls_ms, top_country, device_mobile_pct)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             url,
             method,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration,
-            SUM(avg_dns * total_requests) / NULLIF(SUM(total_requests), 0) as avg_dns,
-            SUM(avg_tcp * total_requests) / NULLIF(SUM(total_requests), 0) as avg_tcp,
-            SUM(avg_tls * total_requests) / NULLIF(SUM(total_requests), 0) as avg_tls,
-            (SELECT top_country FROM re_hourly_endpoints WHERE project_key = re_hourly_endpoints.project_key AND url = re_hourly_endpoints.url AND method = re_hourly_endpoints.method AND hour >= ${dayStart} AND hour <= ${dayEnd} ORDER BY total_requests DESC LIMIT 1) as top_country,
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms,
+            SUM(avg_dns_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_dns_ms,
+            SUM(avg_tcp_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_tcp_ms,
+            SUM(avg_tls_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_tls_ms,
+            (SELECT top_country FROM re_hourly_endpoints WHERE project_key = re_hourly_endpoints.project_key AND url = re_hourly_endpoints.url AND method = re_hourly_endpoints.method AND hour_at >= ${dayStart} AND hour_at <= ${dayEnd} ORDER BY total_requests DESC LIMIT 1) as top_country,
             AVG(device_mobile_pct) as device_mobile_pct
         FROM re_hourly_endpoints
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, url, method
-        ON CONFLICT(project_key, day, url, method) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, url, method) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration,
-            avg_dns = excluded.avg_dns,
-            avg_tcp = excluded.avg_tcp,
-            avg_tls = excluded.avg_tls,
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms,
+            avg_dns_ms = excluded.avg_dns_ms,
+            avg_tcp_ms = excluded.avg_tcp_ms,
+            avg_tls_ms = excluded.avg_tls_ms,
             top_country = excluded.top_country,
             device_mobile_pct = excluded.device_mobile_pct
     `;
 
     const reEndpointGeo = `
-        INSERT INTO re_daily_endpoint_geo (project_key, day, url, method, country, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_daily_endpoint_geo (project_key, day_at, url, method, country, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             url,
             method,
             country,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms
         FROM re_hourly_endpoint_geo
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, url, method, country
-        ON CONFLICT(project_key, day, url, method, country) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, url, method, country) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reEndpointEnv = `
-        INSERT INTO re_daily_endpoint_env (project_key, day, url, method, device_type, browser, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_daily_endpoint_env (project_key, day_at, url, method, device_type, browser, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             url,
             method,
             device_type,
             browser,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms
         FROM re_hourly_endpoint_env
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, url, method, device_type, browser
-        ON CONFLICT(project_key, day, url, method, device_type, browser) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, url, method, device_type, browser) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reGeo = `
-        INSERT INTO re_daily_geo (project_key, day, country, total_requests, error_count, avg_ttfb, avg_duration, top_device)
+        INSERT INTO re_daily_geo (project_key, day_at, country, total_requests, error_count, avg_ttfb_ms, avg_duration_ms, top_device)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             country,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration,
-            (SELECT top_device FROM re_hourly_geo WHERE project_key = re_hourly_geo.project_key AND country = re_hourly_geo.country AND hour >= ${dayStart} AND hour <= ${dayEnd} ORDER BY total_requests DESC LIMIT 1) as top_device
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms,
+            (SELECT top_device FROM re_hourly_geo WHERE project_key = re_hourly_geo.project_key AND country = re_hourly_geo.country AND hour_at >= ${dayStart} AND hour_at <= ${dayEnd} ORDER BY total_requests DESC LIMIT 1) as top_device
         FROM re_hourly_geo
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, country
-        ON CONFLICT(project_key, day, country) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, country) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration,
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms,
             top_device = excluded.top_device
     `;
 
     const reGeoDetail = `
-        INSERT INTO re_daily_geo_detail (project_key, day, country, region, city, total_requests, error_count, avg_ttfb, avg_duration, top_device)
+        INSERT INTO re_daily_geo_detail (project_key, day_at, country, region, city, total_requests, error_count, avg_ttfb_ms, avg_duration_ms, top_device)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             country,
             region,
             city,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration,
-            (SELECT top_device FROM re_hourly_geo_detail WHERE project_key = re_hourly_geo_detail.project_key AND country = re_hourly_geo_detail.country AND region = re_hourly_geo_detail.region AND city = re_hourly_geo_detail.city AND hour >= ${dayStart} AND hour <= ${dayEnd} ORDER BY total_requests DESC LIMIT 1) as top_device
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms,
+            (SELECT top_device FROM re_hourly_geo_detail WHERE project_key = re_hourly_geo_detail.project_key AND country = re_hourly_geo_detail.country AND region = re_hourly_geo_detail.region AND city = re_hourly_geo_detail.city AND hour_at >= ${dayStart} AND hour_at <= ${dayEnd} ORDER BY total_requests DESC LIMIT 1) as top_device
         FROM re_hourly_geo_detail
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, country, region, city
-        ON CONFLICT(project_key, day, country, region, city) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, country, region, city) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration,
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms,
             top_device = excluded.top_device
     `;
 
     const reEnv = `
-        INSERT INTO re_daily_env (project_key, day, device_type, browser, os, connection_type, total_requests, error_count, avg_ttfb, avg_duration)
+        INSERT INTO re_daily_env (project_key, day_at, device_type, browser, os, connection_type, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             device_type,
             browser,
             os,
             connection_type,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb,
-            SUM(avg_duration * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms
         FROM re_hourly_env
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, device_type, browser, os, connection_type
-        ON CONFLICT(project_key, day, device_type, browser, os, connection_type) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, device_type, browser, os, connection_type) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb,
-            avg_duration = excluded.avg_duration
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const reEnvGeo = `
-        INSERT INTO re_daily_env_geo (project_key, day, device_type, browser, os, connection_type, country, total_requests, error_count, avg_ttfb)
+        INSERT INTO re_daily_env_geo (project_key, day_at, device_type, browser, os, connection_type, country, total_requests, error_count, avg_ttfb_ms, avg_duration_ms)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             device_type,
             browser,
             os,
@@ -673,224 +672,226 @@ export async function aggregateDailyFromHourly(): Promise<void> {
             country,
             SUM(total_requests) as total_requests,
             SUM(error_count) as error_count,
-            SUM(avg_ttfb * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb
+            SUM(avg_ttfb_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_ttfb_ms,
+            SUM(avg_duration_ms * total_requests) / NULLIF(SUM(total_requests), 0) as avg_duration_ms
         FROM re_hourly_env_geo
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, device_type, browser, os, connection_type, country
-        ON CONFLICT(project_key, day, device_type, browser, os, connection_type, country) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, device_type, browser, os, connection_type, country) DO UPDATE SET
             total_requests = excluded.total_requests,
             error_count = excluded.error_count,
-            avg_ttfb = excluded.avg_ttfb
+            avg_ttfb_ms = excluded.avg_ttfb_ms,
+            avg_duration_ms = excluded.avg_duration_ms
     `;
 
     const pvSummary = `
-        INSERT INTO pv_daily_summary (project_key, day, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_daily_summary (project_key, day_at, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score
         FROM pv_hourly_summary
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key
-        ON CONFLICT(project_key, day) DO UPDATE SET
+        ON CONFLICT(project_key, day_at) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvPages = `
-        INSERT INTO pv_daily_pages (project_key, day, page_url, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score, top_country, device_mobile_pct)
+        INSERT INTO pv_daily_pages (project_key, day_at, page_url, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score, top_country, device_mobile_pct)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             page_url,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score,
-            (SELECT top_country FROM pv_hourly_pages WHERE project_key = pv_hourly_pages.project_key AND page_url = pv_hourly_pages.page_url AND hour >= ${dayStart} AND hour <= ${dayEnd} ORDER BY session_count DESC LIMIT 1) as top_country,
+            (SELECT top_country FROM pv_hourly_pages WHERE project_key = pv_hourly_pages.project_key AND page_url = pv_hourly_pages.page_url AND hour_at >= ${dayStart} AND hour_at <= ${dayEnd} ORDER BY session_count DESC LIMIT 1) as top_country,
             AVG(device_mobile_pct) as device_mobile_pct
         FROM pv_hourly_pages
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, page_url
-        ON CONFLICT(project_key, day, page_url) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, page_url) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score,
             top_country = excluded.top_country,
             device_mobile_pct = excluded.device_mobile_pct
     `;
 
     const pvPageGeo = `
-        INSERT INTO pv_daily_page_geo (project_key, day, page_url, country, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_daily_page_geo (project_key, day_at, page_url, country, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             page_url,
             country,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score
         FROM pv_hourly_page_geo
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, page_url, country
-        ON CONFLICT(project_key, day, page_url, country) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, page_url, country) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvPageEnv = `
-        INSERT INTO pv_daily_page_env (project_key, day, page_url, device_type, browser, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_daily_page_env (project_key, day_at, page_url, device_type, browser, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             page_url,
             device_type,
             browser,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score
         FROM pv_hourly_page_env
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, page_url, device_type, browser
-        ON CONFLICT(project_key, day, page_url, device_type, browser) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, page_url, device_type, browser) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvGeo = `
-        INSERT INTO pv_daily_geo (project_key, day, country, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score, top_device)
+        INSERT INTO pv_daily_geo (project_key, day_at, country, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score, top_device)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             country,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score,
-            (SELECT top_device FROM pv_hourly_geo WHERE project_key = pv_hourly_geo.project_key AND country = pv_hourly_geo.country AND hour >= ${dayStart} AND hour <= ${dayEnd} ORDER BY session_count DESC LIMIT 1) as top_device
+            (SELECT top_device FROM pv_hourly_geo WHERE project_key = pv_hourly_geo.project_key AND country = pv_hourly_geo.country AND hour_at >= ${dayStart} AND hour_at <= ${dayEnd} ORDER BY session_count DESC LIMIT 1) as top_device
         FROM pv_hourly_geo
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, country
-        ON CONFLICT(project_key, day, country) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, country) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score,
             top_device = excluded.top_device
     `;
 
     const pvGeoDetail = `
-        INSERT INTO pv_daily_geo_detail (project_key, day, country, region, city, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score, top_device)
+        INSERT INTO pv_daily_geo_detail (project_key, day_at, country, region, city, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score, top_device)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             country,
             region,
             city,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score,
-            (SELECT top_device FROM pv_hourly_geo_detail WHERE project_key = pv_hourly_geo_detail.project_key AND country = pv_hourly_geo_detail.country AND region = pv_hourly_geo_detail.region AND city = pv_hourly_geo_detail.city AND hour >= ${dayStart} AND hour <= ${dayEnd} ORDER BY session_count DESC LIMIT 1) as top_device
+            (SELECT top_device FROM pv_hourly_geo_detail WHERE project_key = pv_hourly_geo_detail.project_key AND country = pv_hourly_geo_detail.country AND region = pv_hourly_geo_detail.region AND city = pv_hourly_geo_detail.city AND hour_at >= ${dayStart} AND hour_at <= ${dayEnd} ORDER BY session_count DESC LIMIT 1) as top_device
         FROM pv_hourly_geo_detail
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, country, region, city
-        ON CONFLICT(project_key, day, country, region, city) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, country, region, city) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score,
             top_device = excluded.top_device
     `;
 
     const pvEnv = `
-        INSERT INTO pv_daily_env (project_key, day, device_type, browser, os, connection_type, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_daily_env (project_key, day_at, device_type, browser, os, connection_type, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             device_type,
             browser,
             os,
             connection_type,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score
         FROM pv_hourly_env
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, device_type, browser, os, connection_type
-        ON CONFLICT(project_key, day, device_type, browser, os, connection_type) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, device_type, browser, os, connection_type) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
     const pvEnvGeo = `
-        INSERT INTO pv_daily_env_geo (project_key, day, device_type, browser, os, connection_type, country, session_count, avg_lcp, avg_fcp, avg_cls, avg_inp, avg_vitals_score)
+        INSERT INTO pv_daily_env_geo (project_key, day_at, device_type, browser, os, connection_type, country, session_count, avg_lcp_ms, avg_fcp_ms, avg_cls_score, avg_inp_ms, avg_vitals_score)
         SELECT 
             project_key,
-            ${dayTimestamp} as day,
+            ${dayTimestamp} as day_at,
             device_type,
             browser,
             os,
             connection_type,
             country,
             SUM(session_count) as session_count,
-            SUM(avg_lcp * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp,
-            SUM(avg_fcp * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp,
-            SUM(avg_cls * session_count) / NULLIF(SUM(session_count), 0) as avg_cls,
-            SUM(avg_inp * session_count) / NULLIF(SUM(session_count), 0) as avg_inp,
+            SUM(avg_lcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_lcp_ms,
+            SUM(avg_fcp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_fcp_ms,
+            SUM(avg_cls_score * session_count) / NULLIF(SUM(session_count), 0) as avg_cls_score,
+            SUM(avg_inp_ms * session_count) / NULLIF(SUM(session_count), 0) as avg_inp_ms,
             SUM(avg_vitals_score * session_count) / NULLIF(SUM(session_count), 0) as avg_vitals_score
         FROM pv_hourly_env_geo
-        WHERE hour >= ${dayStart} AND hour <= ${dayEnd}
+        WHERE hour_at >= ${dayStart} AND hour_at <= ${dayEnd}
         GROUP BY project_key, device_type, browser, os, connection_type, country
-        ON CONFLICT(project_key, day, device_type, browser, os, connection_type, country) DO UPDATE SET
+        ON CONFLICT(project_key, day_at, device_type, browser, os, connection_type, country) DO UPDATE SET
             session_count = excluded.session_count,
-            avg_lcp = excluded.avg_lcp,
-            avg_fcp = excluded.avg_fcp,
-            avg_cls = excluded.avg_cls,
-            avg_inp = excluded.avg_inp,
+            avg_lcp_ms = excluded.avg_lcp_ms,
+            avg_fcp_ms = excluded.avg_fcp_ms,
+            avg_cls_score = excluded.avg_cls_score,
+            avg_inp_ms = excluded.avg_inp_ms,
             avg_vitals_score = excluded.avg_vitals_score
     `;
 
@@ -917,7 +918,9 @@ export async function cleanupHourlyRollups(): Promise<void> {
     const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
     const eventDBClient = getEventDBClient();
     await Promise.all(
-        HOURLY_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE hour < ${cutoff24h}` }))
+        HOURLY_TABLES.map(table =>
+            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE hour_at < ${cutoff24h}` })
+        )
     );
 }
 
@@ -929,7 +932,7 @@ export async function cleanupOldData(): Promise<void> {
             eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE timestamp < ${cutoff32Days}` })
         ),
         ...DAILY_TABLES.map(table =>
-            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE day < ${cutoff32Days}` })
+            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE day_at < ${cutoff32Days}` })
         ),
     ]);
 }
@@ -946,7 +949,7 @@ export async function fetchRollupTables(
         mainDB.query.projects.findFirst({ where: eq(projects.id, projectId) }),
         mainDB.query.plans.findFirst({ where: eq(plans.user_id, userId) }),
     ]);
-    
+
     if (!project || project.user_id !== userId) {
         throw new APIErrorResponse("UnauthorizedUserError", "Forbidden", "Project not found or access denied", 403);
     }
@@ -965,7 +968,8 @@ export async function fetchRollupTables(
     const rangeMs = isDays ? days * 24 * 60 * 60 * 1000 : days * 60 * 60 * 1000;
     const startTime = now - rangeMs;
 
-    const data: Record<string, any[]> = {};
+    const data: Record<string, unknown[]> = {};
+    const timeColumn = isHourly ? 'hour_at' : 'day_at';
 
     const queries = tableNames.map(async (tableName) => {
         const validTables = isHourly ? new Set(HOURLY_TABLES) : new Set(DAILY_TABLES);
@@ -974,7 +978,6 @@ export async function fetchRollupTables(
             return { tableName, data: [] };
         }
 
-        const timeColumn = isHourly ? 'hour' : 'day';
         const sql = `SELECT * FROM ${tableName} WHERE project_key = ? AND ${timeColumn} >= ? AND ${timeColumn} <= ?`;
 
         const result = await eventDBClient.execute({
@@ -982,8 +985,7 @@ export async function fetchRollupTables(
             args: [project.project_key, startTime, now],
         });
 
-        const rows = result.rows.map(({ project_key, ...rest }) => rest)
-
+        const rows = result.rows.map(({ project_key, ...rest }) => rest);
         return { tableName, data: rows };
     });
 
