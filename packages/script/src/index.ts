@@ -14,7 +14,7 @@ import { onCLS, onFCP, onINP, onLCP } from "web-vitals";
 
         const EVENTS_URL = `${WORKER_URL}/ingest/events`;
         const VITALS_URL = `${WORKER_URL}/ingest/vitals`;
-        const BATCH_INTERVAL_MS = 10_000;
+        const BATCH_INTERVAL_MS = 15_000;
         const SESSION_ID = `sess_${PROJECT_KEY}_${Math.random().toString(36).slice(2, 12)}`;
 
         // ─── Environment (captured once on load) ──────────────────────────────────
