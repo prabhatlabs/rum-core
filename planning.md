@@ -356,10 +356,28 @@ rum-core/
 │   ├── db/           → Drizzle schemas + clients (maindb + eventdb)
 │   │   ├── src/
 │   │   │   ├── maindb/    → Neon (Postgres) — users, projects, plans, usage
+│   │   │   │   ├── schema/   → schema.ts, relations.ts, index.ts
+│   │   │   │   └── client.ts
 │   │   │   ├── eventdb/   → Turso (SQLite) — request_events, page_vitals
+│   │   │   │   ├── schema/
+│   │   │   │   │   ├── request-events.ts
+│   │   │   │   │   ├── page-vitals.ts
+│   │   │   │   │   ├── rollups/
+│   │   │   │   │   │   ├── request-events.ts  (8 re_* tables)
+│   │   │   │   │   │   └── page-vitals.ts     (8 pv_* tables)
+│   │   │   │   │   └── index.ts
+│   │   │   │   └── client.ts
 │   │   │   ├── services/  → shared DB service functions
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── cron.service.ts
+│   │   │   │   ├── events.service.ts
+│   │   │   │   ├── projects.service.ts
+│   │   │   │   ├── rollup.service.ts
+│   │   │   │   └── usage.service.ts
 │   │   │   └── index.ts
-│   │   └── drizzle.config.ts
+│   │   ├── drizzle.config.ts          → maindb (Postgres)
+│   │   └── drizzle.eventdb.config.ts  → eventdb (Turso/SQLite)
+│   ├── shared/       → Shared types, constants, utilities
 │   └── script/       → Browser script (rum-core.js)
 ├── .github/
 │   └── workflows/
@@ -533,6 +551,7 @@ name          VARCHAR(255)  NOT NULL
 project_key   VARCHAR(64)   UNIQUE NOT NULL  -- immutable, never changes
 origin        TEXT          NOT NULL
 created_at    TIMESTAMP     DEFAULT NOW()
+updated_at    TIMESTAMP     DEFAULT NOW()
 ```
 
 **Project rules:**
@@ -555,6 +574,7 @@ updated_at    TIMESTAMP     DEFAULT NOW()
 id            UUID          PRIMARY KEY DEFAULT gen_random_uuid()
 user_id       UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE
 project_key   VARCHAR(64)   NOT NULL
+project_id    UUID          NOT NULL REFERENCES projects(id)
 date          DATE          NOT NULL
 calls_used    INTEGER       NOT NULL DEFAULT 0
 created_at    TIMESTAMP     DEFAULT NOW()
@@ -582,6 +602,15 @@ CREATE INDEX idx_usage_user_date ON usage(user_id, date);
 CREATE INDEX idx_usage_user_project_date ON usage(user_id, project_key, date);
 CREATE INDEX idx_monthly_usage_user_month ON monthly_usage(user_id, month);
 ```
+
+**Drizzle Relations**
+```typescript
+usersRelations  → one(plans)        // user has one plan
+plansRelations  → one(users)        // plan belongs to one user
+projectsRelations → many(usage)     // project has many usage rows (via project_usage relationName)
+usageRelations  → one(projects)     // usage belongs to one project (via project_usage, using project_id FK)
+```
+Relations are defined in `src/maindb/schema/relations.ts` and re-exported via `src/maindb/schema/index.ts`.
 
 ---
 
@@ -736,21 +765,21 @@ Used by: Summary page — requests over time chart, stat cards
 ```sql
 -- re_hourly_summary
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL  -- Unix timestamp, rounded to hour (e.g. 1710000000)
+hour_at           INTEGER  NOT NULL  -- Unix timestamp (ms), start of hour
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL  -- status_code >= 400
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, hour)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, hour_at)
 
 -- re_daily_summary
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL  -- Unix timestamp, rounded to day (midnight UTC)
+day_at            INTEGER  NOT NULL  -- Unix timestamp (ms), start of day (midnight UTC)
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, day)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, day_at)
 ```
 
 ---
@@ -760,35 +789,35 @@ Used by: Endpoints list, Endpoint detail — over time charts
 ```sql
 -- re_hourly_endpoints
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 url               TEXT     NOT NULL
 method            TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-avg_dns           REAL
-avg_tcp           REAL
-avg_tls           REAL
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+avg_dns_ms        REAL
+avg_tcp_ms        REAL
+avg_tls_ms        REAL
 top_country       TEXT                -- most frequent country this hour
-device_mobile_pct REAL                -- % of requests from mobile
-PRIMARY KEY (project_key, hour, url, method)
+device_mobile_pct REAL                -- 0.0 - 1.0, % of requests from mobile
+PRIMARY KEY (project_key, hour_at, url, method)
 
 -- re_daily_endpoints
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 url               TEXT     NOT NULL
 method            TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-avg_dns           REAL
-avg_tcp           REAL
-avg_tls           REAL
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+avg_dns_ms        REAL
+avg_tcp_ms        REAL
+avg_tls_ms        REAL
 top_country       TEXT
 device_mobile_pct REAL
-PRIMARY KEY (project_key, day, url, method)
+PRIMARY KEY (project_key, day_at, url, method)
 ```
 
 ---
@@ -798,27 +827,27 @@ Used by: Endpoint detail — by country table, Geography country detail — top 
 ```sql
 -- re_hourly_endpoint_geo
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 url               TEXT     NOT NULL
 method            TEXT     NOT NULL
 country           TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, hour, url, method, country)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, hour_at, url, method, country)
 
 -- re_daily_endpoint_geo
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 url               TEXT     NOT NULL
 method            TEXT     NOT NULL
 country           TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, day, url, method, country)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, day_at, url, method, country)
 ```
 
 ---
@@ -828,29 +857,29 @@ Used by: Endpoint detail — by device/browser table, Environment detail — top
 ```sql
 -- re_hourly_endpoint_env
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 url               TEXT     NOT NULL
 method            TEXT     NOT NULL
 device_type       TEXT
 browser           TEXT
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, hour, url, method, device_type, browser)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, hour_at, url, method, device_type, browser)
 
 -- re_daily_endpoint_env
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 url               TEXT     NOT NULL
 method            TEXT     NOT NULL
 device_type       TEXT
 browser           TEXT
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, day, url, method, device_type, browser)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, day_at, url, method, device_type, browser)
 ```
 
 ---
@@ -860,25 +889,25 @@ Used by: Geography list — country table
 ```sql
 -- re_hourly_geo
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 country           TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
 top_device        TEXT                -- most frequent device_type
-PRIMARY KEY (project_key, hour, country)
+PRIMARY KEY (project_key, hour_at, country)
 
 -- re_daily_geo
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 country           TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
 top_device        TEXT
-PRIMARY KEY (project_key, day, country)
+PRIMARY KEY (project_key, day_at, country)
 ```
 
 ---
@@ -888,29 +917,29 @@ Used by: Geography country detail — city/region table, Geography region detail
 ```sql
 -- re_hourly_geo_detail
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 country           TEXT     NOT NULL
 region            TEXT
 city              TEXT
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
 top_device        TEXT
-PRIMARY KEY (project_key, hour, country, region, city)
+PRIMARY KEY (project_key, hour_at, country, region, city)
 
 -- re_daily_geo_detail
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 country           TEXT     NOT NULL
 region            TEXT
 city              TEXT
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
 top_device        TEXT
-PRIMARY KEY (project_key, day, country, region, city)
+PRIMARY KEY (project_key, day_at, country, region, city)
 ```
 
 ---
@@ -920,29 +949,29 @@ Used by: Environment list — unified table + charts
 ```sql
 -- re_hourly_env
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
 connection_type   TEXT
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, hour, device_type, browser, os, connection_type)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, hour_at, device_type, browser, os, connection_type)
 
 -- re_daily_env
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
 connection_type   TEXT
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-avg_duration      REAL
-PRIMARY KEY (project_key, day, device_type, browser, os, connection_type)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, day_at, device_type, browser, os, connection_type)
 ```
 
 ---
@@ -952,7 +981,7 @@ Used by: Environment detail — by country table
 ```sql
 -- re_hourly_env_geo
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
@@ -960,12 +989,13 @@ connection_type   TEXT
 country           TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-PRIMARY KEY (project_key, hour, device_type, browser, os, connection_type, country)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, hour_at, device_type, browser, os, connection_type, country)
 
 -- re_daily_env_geo
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
@@ -973,8 +1003,9 @@ connection_type   TEXT
 country           TEXT     NOT NULL
 total_requests    INTEGER  NOT NULL
 error_count       INTEGER  NOT NULL
-avg_ttfb          REAL
-PRIMARY KEY (project_key, day, device_type, browser, os, connection_type, country)
+avg_ttfb_ms       REAL
+avg_duration_ms   REAL
+PRIMARY KEY (project_key, day_at, device_type, browser, os, connection_type, country)
 ```
 
 ---
@@ -988,25 +1019,25 @@ Used by: Summary page — vitals score over time
 ```sql
 -- pv_hourly_summary
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL  -- Unix timestamp (ms), start of hour
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, hour)
+PRIMARY KEY (project_key, hour_at)
 
 -- pv_daily_summary
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL  -- Unix timestamp (ms), start of day
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, day)
+PRIMARY KEY (project_key, day_at)
 ```
 
 ---
@@ -1016,31 +1047,31 @@ Used by: Pages list, Page detail — score over time chart
 ```sql
 -- pv_hourly_pages
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 page_url          TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
 top_country       TEXT
-device_mobile_pct REAL
-PRIMARY KEY (project_key, hour, page_url)
+device_mobile_pct REAL                -- 0.0 - 1.0
+PRIMARY KEY (project_key, hour_at, page_url)
 
 -- pv_daily_pages
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 page_url          TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
 top_country       TEXT
 device_mobile_pct REAL
-PRIMARY KEY (project_key, day, page_url)
+PRIMARY KEY (project_key, day_at, page_url)
 ```
 
 ---
@@ -1050,29 +1081,29 @@ Used by: Page detail — by country table, Geography country detail — top page
 ```sql
 -- pv_hourly_page_geo
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 page_url          TEXT     NOT NULL
 country           TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, hour, page_url, country)
+PRIMARY KEY (project_key, hour_at, page_url, country)
 
 -- pv_daily_page_geo
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 page_url          TEXT     NOT NULL
 country           TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, day, page_url, country)
+PRIMARY KEY (project_key, day_at, page_url, country)
 ```
 
 ---
@@ -1082,31 +1113,31 @@ Used by: Page detail — by device/browser table, Environment detail — top pag
 ```sql
 -- pv_hourly_page_env
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 page_url          TEXT     NOT NULL
 device_type       TEXT
 browser           TEXT
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, hour, page_url, device_type, browser)
+PRIMARY KEY (project_key, hour_at, page_url, device_type, browser)
 
 -- pv_daily_page_env
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 page_url          TEXT     NOT NULL
 device_type       TEXT
 browser           TEXT
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, day, page_url, device_type, browser)
+PRIMARY KEY (project_key, day_at, page_url, device_type, browser)
 ```
 
 ---
@@ -1116,29 +1147,29 @@ Used by: Geography list — vitals by country table
 ```sql
 -- pv_hourly_geo
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 country           TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
 top_device        TEXT
-PRIMARY KEY (project_key, hour, country)
+PRIMARY KEY (project_key, hour_at, country)
 
 -- pv_daily_geo
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 country           TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
 top_device        TEXT
-PRIMARY KEY (project_key, day, country)
+PRIMARY KEY (project_key, day_at, country)
 ```
 
 ---
@@ -1148,33 +1179,33 @@ Used by: Geography country detail — vitals by region/city, Geography region de
 ```sql
 -- pv_hourly_geo_detail
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 country           TEXT     NOT NULL
 region            TEXT
 city              TEXT
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
 top_device        TEXT
-PRIMARY KEY (project_key, hour, country, region, city)
+PRIMARY KEY (project_key, hour_at, country, region, city)
 
 -- pv_daily_geo_detail
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 country           TEXT     NOT NULL
 region            TEXT
 city              TEXT
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
 top_device        TEXT
-PRIMARY KEY (project_key, day, country, region, city)
+PRIMARY KEY (project_key, day_at, country, region, city)
 ```
 
 ---
@@ -1184,33 +1215,33 @@ Used by: Environment list — vitals by env table + charts
 ```sql
 -- pv_hourly_env
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
 connection_type   TEXT
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, hour, device_type, browser, os, connection_type)
+PRIMARY KEY (project_key, hour_at, device_type, browser, os, connection_type)
 
 -- pv_daily_env
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
 connection_type   TEXT
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, day, device_type, browser, os, connection_type)
+PRIMARY KEY (project_key, day_at, device_type, browser, os, connection_type)
 ```
 
 ---
@@ -1220,45 +1251,46 @@ Used by: Environment detail — by country table
 ```sql
 -- pv_hourly_env_geo
 project_key       TEXT     NOT NULL
-hour              INTEGER  NOT NULL
+hour_at           INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
 connection_type   TEXT
 country           TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, hour, device_type, browser, os, connection_type, country)
+PRIMARY KEY (project_key, hour_at, device_type, browser, os, connection_type, country)
 
 -- pv_daily_env_geo
 project_key       TEXT     NOT NULL
-day               INTEGER  NOT NULL
+day_at            INTEGER  NOT NULL
 device_type       TEXT
 browser           TEXT
 os                TEXT
 connection_type   TEXT
 country           TEXT     NOT NULL
 session_count     INTEGER  NOT NULL
-avg_lcp           REAL
-avg_fcp           REAL
-avg_cls           REAL
-avg_inp           REAL
+avg_lcp_ms        REAL
+avg_fcp_ms        REAL
+avg_cls_score     REAL
+avg_inp_ms        REAL
 avg_vitals_score  REAL
-PRIMARY KEY (project_key, day, device_type, browser, os, connection_type, country)
+PRIMARY KEY (project_key, day_at, device_type, browser, os, connection_type, country)
 ```
 
 ---
 
 ### Rollup Table Notes
 - All rollup tables use composite PRIMARY KEY — serves as both uniqueness constraint and index, no extra indexes needed
-- `hour` and `day` stored as Unix timestamps (INTEGER) rounded to hour/day boundary in UTC — fast range queries, no timezone math at query time
-- `avg_*` fields are weighted correctly during daily rollup: `SUM(avg_ttfb * total_requests) / SUM(total_requests)` not `AVG(avg_ttfb)`
+- `hour_at` and `day_at` stored as Unix timestamps in ms (INTEGER), marking the start of the hour/day boundary in UTC — fast range queries, no timezone math at query time
+- Column naming convention: `avg_*_ms` for timing fields (e.g. `avg_ttfb_ms`, `avg_duration_ms`, `avg_lcp_ms`, `avg_inp_ms`), `avg_cls_score` for CLS (unitless), `avg_vitals_score` for computed score
+- `avg_*` fields are weighted correctly during daily rollup: `SUM(avg_ttfb_ms * total_requests) / SUM(total_requests)` not `AVG(avg_ttfb_ms)`
 - `top_country` and `top_device` are denormalized for list views — avoids extra join to get the most common value
-- `device_mobile_pct` denormalized on endpoint/page rollups — needed for list view device split column
+- `device_mobile_pct` denormalized on endpoint/page rollups — needed for list view device split column (stored as 0.0 - 1.0)
 - NULL dimensions (e.g. unknown device_type) stored as empty string `''` not NULL — keeps PRIMARY KEY constraint valid in SQLite
 - Dashboard always queries hourly rollups for 12h/24h views, daily rollups for 7d/30d views
 - On project delete → hard delete all rows across all 34 tables for that `project_key`
