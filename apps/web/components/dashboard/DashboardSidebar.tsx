@@ -5,6 +5,7 @@ import {
     type DashboardPage,
     type TabType,
 } from "@/components/dashboard/pages";
+import { Progress } from "@/components/ui/progress";
 import {
     Sidebar,
     SidebarContent,
@@ -18,6 +19,7 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useProjects } from "@/hooks/api/use-projects";
+import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProjectSelector } from "./DashboardNavbar";
@@ -70,7 +72,8 @@ export function DashboardSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter>
+            <SidebarFooter className="gap-4 py-4">
+                <UsageProgressBars />
                 <div className="flex gap-1 text-xs text-muted-foreground">
                     <span>*</span>
                     <span>
@@ -84,4 +87,39 @@ export function DashboardSidebar() {
 
 export function DashboardSidebarTrigger() {
     return <SidebarTrigger className="lg:hidden" />;
+}
+
+function UsageProgressBars() {
+    const { user } = useAuth();
+    const { projects } = useProjects();
+
+    const callsLimit = user?.plan_limits.calls_per_day ?? 0;
+    const projectsLimit = user?.plan_limits.projects ?? 0;
+
+    const callsUsed = projects?.reduce(
+        (sum, p) => sum + (p.usage[0]?.calls_used || 0), 0
+    ) ?? 0;
+    const projectsUsed = projects?.length ?? 0;
+
+    const callsPercent = callsLimit > 0 ? (callsUsed / callsLimit) * 100 : 0;
+    const projectsPercent = projectsLimit > 0 ? (projectsUsed / projectsLimit) * 100 : 0;
+
+    return (
+        <div className="space-y-3 px-2 py-1">
+            <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Daily Calls</span>
+                    <span className="font-medium">{callsUsed.toLocaleString()} / {callsLimit.toLocaleString()}</span>
+                </div>
+                <Progress value={Math.min(callsPercent, 100)} />
+            </div>
+            <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Projects</span>
+                    <span className="font-medium">{projectsUsed} / {projectsLimit}</span>
+                </div>
+                <Progress value={Math.min(projectsPercent, 100)} />
+            </div>
+        </div>
+    );
 }

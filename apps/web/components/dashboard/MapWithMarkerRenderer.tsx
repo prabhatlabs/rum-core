@@ -148,7 +148,7 @@ export function MapWithMarkerRenderer({
                             </clipPath>
                         ))}
                     </defs>
-                    <ZoomableGroup center={[0, 20]} zoom={1}>
+                    <ZoomableGroup center={[0, -40]} zoom={1}>
                         <Geographies geography={TOPO_URL}>
                             {({ geographies }) =>
                                 geographies.map((geo) => {
