@@ -7,12 +7,14 @@ import {
     getPreviousHourTimestamp,
     type TimeRange
 } from "@rum-core/shared";
-import { eq } from "drizzle-orm";
+import { eq, isNull, or } from "drizzle-orm";
 import { getEventDBClient } from "../eventdb/client";
 import { getMainDB } from "../maindb/client";
 import { plans, projects } from "../maindb/schema";
 
 const RETENTION = constants.plans.RETENTION;
+const FREE_RETENTION_WITH_BUFFER = constants.plans.PLAN_LIMITS.free.retention_days + 2;   // 9 days
+const PRO_RETENTION_WITH_BUFFER = constants.plans.PLAN_LIMITS.pro.retention_days + 2;     // 32 days
 const RAW_TABLES = ["request_events", "page_vitals"];
 const HOURLY_TABLES = [
     "re_hourly_summary",
@@ -926,15 +928,37 @@ export async function cleanupHourlyRollups(): Promise<void> {
 }
 
 export async function cleanupOldData(): Promise<void> {
-    const cutoff32Days = getCutoffTimestamp(RETENTION.events_max_days);
     const eventDBClient = getEventDBClient();
+    const mainDB = getMainDB();
+
+    const freeCutoff = getCutoffTimestamp(FREE_RETENTION_WITH_BUFFER);
+    const proCutoff = getCutoffTimestamp(PRO_RETENTION_WITH_BUFFER);
+
+    const freeProjects = await mainDB
+        .select({ project_key: projects.project_key })
+        .from(projects)
+        .leftJoin(plans, eq(plans.user_id, projects.user_id))
+        .where(or(eq(plans.type, 'free'), isNull(plans.type)));
+
+    const freeKeys = freeProjects.map(p => p.project_key);
+    const freePh = freeKeys.map(() => '?').join(', ');
+
+    const buildWhere = (timeCol: string) => {
+        if (freeKeys.length === 0) {
+            return { clause: `${timeCol} < ?`, args: [proCutoff] };
+        }
+        return {
+            clause: `(project_key IN (${freePh}) AND ${timeCol} < ?) OR (project_key NOT IN (${freePh}) AND ${timeCol} < ?)`,
+            args: [...freeKeys, freeCutoff, ...freeKeys, proCutoff],
+        };
+    };
+
+    const raw = buildWhere('timestamp');
+    const daily = buildWhere('day_at');
+
     await Promise.all([
-        ...RAW_TABLES.map(table =>
-            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE timestamp < ${cutoff32Days}` })
-        ),
-        ...DAILY_TABLES.map(table =>
-            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE day_at < ${cutoff32Days}` })
-        ),
+        ...RAW_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE ${raw.clause}`, args: raw.args })),
+        ...DAILY_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE ${daily.clause}`, args: daily.args })),
     ]);
 }
 
