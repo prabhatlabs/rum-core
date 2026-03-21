@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export function aggregateField(rows: unknown[], field: string): number | null {
     if (rows.length === 0) return null;
@@ -25,15 +26,16 @@ interface TotalCardProps {
     value: number | null;
     unit?: string;
     isLoading?: boolean;
+    className?: string;
 }
 
-export function TotalCard({ title, value, unit, isLoading }: TotalCardProps) {
+export function TotalCard({ title, value, unit, isLoading, className }: TotalCardProps) {
     if (isLoading) {
         return <TotalCardSkeleton />;
     }
 
     return (
-        <Card>
+        <Card className={cn(className)}>
             <CardHeader>
                 <CardTitle className="capitalize">{title}</CardTitle>
             </CardHeader>

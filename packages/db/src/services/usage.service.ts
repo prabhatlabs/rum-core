@@ -150,3 +150,43 @@ export async function cleanupUsage(): Promise<void> {
     const db = getMainDB();
     await db.delete(usage).where(lt(usage.date, cutoffDate));
 }
+
+export interface UsageByDate {
+    date: string;
+    calls_used: number;
+}
+
+export async function getUserUsageByDate(userId: string, timeRange: 'today' | '7d' | '30d' | '60d'): Promise<UsageByDate[]> {
+    const db = getMainDB();
+    const today = getCurrentDate();
+
+    let startDate: string;
+    if (timeRange === 'today') {
+        startDate = today;
+    } else {
+        const days = timeRange === '7d' ? 7 : timeRange === "30d" ? 30 : 60;
+        const startTimestamp = getCutoffTimestamp(days);
+        startDate = new Date(startTimestamp).toISOString().split('T')[0]!;
+    }
+
+    const result = await db
+        .select({
+            date: usage.date,
+            calls_used: sql<number>`SUM(${usage.calls_used})`,
+        })
+        .from(usage)
+        .where(
+            and(
+                eq(usage.user_id, userId),
+                sql`${usage.date} >= ${startDate}`,
+                sql`${usage.date} <= ${today}`,
+            )
+        )
+        .groupBy(usage.date)
+        .orderBy(usage.date);
+
+    return result.map(row => ({
+        date: row.date,
+        calls_used: Number(row.calls_used),
+    }));
+}

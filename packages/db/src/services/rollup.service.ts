@@ -1,6 +1,7 @@
 import {
     APIErrorResponse,
     constants,
+    getCurrentTime,
     getCutoffTimestamp,
     getPreviousDayTimestamp,
     getPreviousHourTimestamp,
@@ -961,7 +962,7 @@ export async function fetchRollupTables(
         throw new APIErrorResponse("LimitExceeded", "Forbidden", `Time range '${timeRange}' not allowed for your plan`, 403);
     }
 
-    const now = Date.now();
+    const now = getCurrentTime();
     const isHourly = timeRange === '12h' || timeRange === '24h';
     const days = parseInt(timeRange.replace('h', '').replace('d', ''));
     const isDays = timeRange.includes('d');

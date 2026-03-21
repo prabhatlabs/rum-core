@@ -7,6 +7,7 @@ import { ENV } from './constants/envvars'
 import authRoute from './routes/auth.routes'
 import cronRoutes from './routes/cron.routes'
 import projectsRoutes from './routes/projects.routes'
+import usageRoutes from './routes/usage.routes'
 
 // db init
 initMainDB(process.env.DATABASE_URL!);
@@ -37,6 +38,7 @@ const app = new Elysia({
     })
     .use(authRoute)
     .use(projectsRoutes)
+    .use(usageRoutes)
     .use(cronRoutes)
     .use(html())
     .get('/', ({ set }) => {
