@@ -1,3 +1,5 @@
+"use client"
+
 import { fetcher } from '@/lib/fetcher'
 import type { User } from '@/types/api'
 import { useRouter } from 'next/navigation'
@@ -6,7 +8,7 @@ import useSWR from 'swr'
 export function useAuth() {
     const { data, isLoading, error } = useSWR<User | null>('/auth/me', {
         revalidateOnFocus: true,
-        dedupingInterval: 10,
+        dedupingInterval: 20,
     })
     const router = useRouter()
 

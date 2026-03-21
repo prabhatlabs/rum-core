@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingSpinner } from "@/components/Loading";
+import { LoadingPage } from "@/components/Loading";
 import { fetcher } from "@/lib/fetcher";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -18,12 +18,5 @@ export default function AuthSessionCallback() {
         );
     }, []);
 
-    return (
-        <div
-            className={"flex h-dvh w-screen items-center justify-center gap-2"}
-        >
-            <LoadingSpinner />
-            <span className="text-muted-foreground">redirecting...</span>
-        </div>
-    );
+    return <LoadingPage message="redirecting..." />;
 }

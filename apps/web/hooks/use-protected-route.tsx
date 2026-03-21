@@ -16,7 +16,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }, [isAuthenticated, isLoading, router])
 
     if (isLoading && !user) {
-        return <LoadingPage />
+        return <LoadingPage message="authenticating..." />
     }
 
     if (!isAuthenticated) {

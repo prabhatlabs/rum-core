@@ -11,17 +11,21 @@ export function LoadingSpinner({ className }: LoadingSpinnerProps) {
 
 interface LoadingPageProps {
     className?: string;
+    message?: string;
 }
 
-export function LoadingPage({ className }: LoadingPageProps) {
+export function LoadingPage({ className, message }: LoadingPageProps) {
     return (
         <div
             className={cn(
-                "flex h-dvh w-screen items-center justify-center",
+                "flex h-dvh w-screen items-center justify-center gap-2",
                 className,
             )}
         >
-            <LoadingSpinner className="size-5 text-foreground" />
+            <LoadingSpinner />
+            {message && (
+                <span className="text-muted-foreground">{message}</span>
+            )}
         </div>
     );
 }

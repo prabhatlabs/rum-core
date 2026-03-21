@@ -1,5 +1,6 @@
 "use client";
 
+import { Providers } from "@/app/dashboard/layout";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -8,14 +9,33 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { useLogin } from "@/hooks/use-auth";
+import { useAuth, useLogin } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
 export default function Login() {
+    return (
+        <Providers>
+            <LoginCard />
+        </Providers>
+    );
+}
+
+export function LoginCard() {
     const { loginWithGithub, loginWithGoogle } = useLogin();
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const router = useRouter();
+
+    function handleLogin(cb: () => void) {
+        if (isAuthenticated && user) {
+            router.push("/dashboard");
+        } else {
+            cb();
+        }
+    }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="flex min-h-dvh w-screen items-center justify-center bg-background p-4">
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
                     <CardTitle>Welcome back</CardTitle>
@@ -27,7 +47,8 @@ export default function Login() {
                     <Button
                         variant="outline"
                         className="w-full"
-                        onClick={loginWithGoogle}
+                        onClick={() => handleLogin(loginWithGoogle)}
+                        disabled={isLoading}
                     >
                         <FaGoogle />
                         <span>Continue with Google</span>
@@ -35,7 +56,8 @@ export default function Login() {
                     <Button
                         variant="outline"
                         className="w-full"
-                        onClick={loginWithGithub}
+                        onClick={() => handleLogin(loginWithGithub)}
+                        disabled={isLoading}
                     >
                         <FaGithub />
                         <span>Continue with GitHub</span>
