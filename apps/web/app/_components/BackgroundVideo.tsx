@@ -71,7 +71,7 @@ export function BackgroundVideo() {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed inset-0 w-full h-full -z-10 blur-xs scale-110"
+            className="fixed inset-0 w-full h-full -z-10 scale-110"
         />
     );
 }
