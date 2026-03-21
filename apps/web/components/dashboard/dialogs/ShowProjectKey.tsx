@@ -1,4 +1,5 @@
 import ProjectKey from "@/components/ProjectKey";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -8,14 +9,21 @@ import {
 } from "@/components/ui/dialog";
 import { useProjects } from "@/hooks/api/use-projects";
 import { useDialog } from "@/hooks/use-dialog";
+import { Code } from "lucide-react";
 
 export default function ShowProjectKey() {
     const {
         closeShowProjectKey,
+        openConnectProject,
         showProjectKey: { isOpen, projectId },
     } = useDialog();
     const { getProject } = useProjects();
     const project = projectId ? getProject(projectId) : null;
+
+    function handleConnect() {
+        closeShowProjectKey();
+        openConnectProject();
+    }
 
     return (
         <Dialog
@@ -36,6 +44,10 @@ export default function ShowProjectKey() {
                         <ProjectKey projectKey={project?.project_key} />
                     )}
                 </div>
+                <Button variant="outline" className="w-full" onClick={handleConnect}>
+                    <Code className="size-4" />
+                    Connect to your site
+                </Button>
             </DialogContent>
         </Dialog>
     );

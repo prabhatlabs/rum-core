@@ -30,6 +30,10 @@ interface DialogState {
     deleteProject: DeleteProjectData
     openDeleteProject: (projectId: string) => void
     closeDeleteProject: () => void
+
+    connectProject: DialogData
+    openConnectProject: () => void
+    closeConnectProject: () => void
 }
 
 export const useDialog = create<DialogState>((set) => ({
@@ -56,5 +60,13 @@ export const useDialog = create<DialogState>((set) => ({
         set({ deleteProject: { isOpen: true, projectId } }),
     closeDeleteProject: () =>
         set({ deleteProject: { isOpen: false, projectId: "" } }),
+
+    connectProject: {
+        isOpen: false,
+    },
+    openConnectProject: () =>
+        set({ connectProject: { isOpen: true } }),
+    closeConnectProject: () =>
+        set({ connectProject: { isOpen: false } }),
 }))
 

@@ -16,14 +16,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    useKeepCurrentProjectInSync,
-    useProjects,
-} from "@/hooks/api/use-projects";
+import { useKeepCurrentProjectInSync, useProjects } from "@/hooks/api/use-projects";
 import { useAuth } from "@/hooks/use-auth";
 import { useDialog } from "@/hooks/use-dialog";
 import { cn } from "@/lib/utils";
-import { Folder, Plus } from "lucide-react";
+import { Code, Folder, Plus } from "lucide-react";
 import { Suspense } from "react";
 import { ThemeToggle } from "../ui/theme-toggle";
 
@@ -37,7 +34,7 @@ export function DashboardNavbar() {
                 <Suspense>
                     <ProjectSelector className="hidden sm:block max-w-50" />
                 </Suspense>
-                <TotalCallUsage />
+                <SetupButton />
             </div>
             <div className="flex items-center gap-2">
                 <ThemeToggle />
@@ -114,27 +111,12 @@ export function ProjectSelector({ className }: { className?: string }) {
     );
 }
 
-function TotalCallUsage() {
-    const { user } = useAuth();
-    const { projects } = useProjects();
-    const totalCalls =
-        projects?.reduce(
-            (acc, project) => acc + (project?.usage?.[0]?.calls_used || 0),
-            0,
-        ) || 0;
-    const maxCalls = user?.plan_limits.calls_per_day || 0;
-    const percentage = (totalCalls / (maxCalls || 1)) * 100;
-    const borderClass =
-        percentage >= 90
-            ? "border-destructive"
-            : percentage >= 70
-              ? "border-warning"
-              : "border-success";
+function SetupButton() {
+    const { openConnectProject } = useDialog();
     return (
-        <Button variant="outline">
-            <span
-                className={cn("border-b", borderClass)}
-            >{`${totalCalls} / ${maxCalls}`}</span>
+        <Button variant="outline" onClick={() => openConnectProject()}>
+            <Code className="size-4" />
+            <span className="hidden sm:inline">Connect</span>
         </Button>
     );
 }
