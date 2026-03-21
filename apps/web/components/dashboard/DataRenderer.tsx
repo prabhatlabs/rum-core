@@ -66,7 +66,9 @@ export function DataRenderer({
     const columns = rows[0]
         ? Object.keys(rows[0] as Record<string, unknown>)
         : [];
-    const countryCol = columns.find((col) => col === "country" || col === "top_country");
+    const countryCol = columns.find(
+        (col) => col === "country" || col === "top_country",
+    );
     const hasMap =
         showCards && !!countryCol && !isRefreshing && rows.length > 0;
 
@@ -114,15 +116,24 @@ export function DataRenderer({
                 </div>
             </div>
 
-            <div className={`grid gap-6 ${hasMap ? "xl:grid-cols-2" : ""}`}>
-                <div className="space-y-6">
-                    {showCards && (show === "cards" ? tables : activeTable ? [activeTable] : []).map((table) => {
+            <div className="space-y-6">
+                {showCards &&
+                    (show === "cards"
+                        ? tables
+                        : activeTable
+                          ? [activeTable]
+                          : []
+                    ).map((table) => {
                         const tableRows = (data?.[table] ?? []) as unknown[];
                         const tableColumns = tableRows[0]
-                            ? Object.keys(tableRows[0] as Record<string, unknown>)
+                            ? Object.keys(
+                                  tableRows[0] as Record<string, unknown>,
+                              )
                             : [];
                         const numericCols = tableColumns.filter((col) => {
-                            const val = (tableRows[0] as Record<string, unknown>)[col];
+                            const val = (
+                                tableRows[0] as Record<string, unknown>
+                            )[col];
                             if (typeof val !== "number") return false;
                             return !isTimestamp(val);
                         });
@@ -134,7 +145,9 @@ export function DataRenderer({
                                         {tableNames[table] ?? table}
                                     </p>
                                 )}
-                                <div className="grid gap-4 sm:grid-cols-2">
+                                <div
+                                    className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`}
+                                >
                                     {isRefreshing ? (
                                         <>
                                             <TotalCardSkeleton />
@@ -146,7 +159,10 @@ export function DataRenderer({
                                             <TotalCard
                                                 key={col}
                                                 title={columnNameFormatter(col)}
-                                                value={aggregateField(tableRows, col)}
+                                                value={aggregateField(
+                                                    tableRows,
+                                                    col,
+                                                )}
                                                 unit={unitForField(col)}
                                             />
                                         ))
@@ -161,14 +177,11 @@ export function DataRenderer({
                             </div>
                         );
                     })}
-                </div>
-                {hasMap && countryCol && (
-                    <MapWithMarkerRenderer
-                        rows={rows}
-                        countryColumn={countryCol}
-                    />
-                )}
             </div>
+            
+            {hasMap && countryCol && (
+                <MapWithMarkerRenderer rows={rows} countryColumn={countryCol} />
+            )}
 
             {showTable && activeTable && (
                 <TableBox
