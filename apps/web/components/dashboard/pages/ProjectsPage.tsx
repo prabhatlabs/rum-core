@@ -46,7 +46,8 @@ export function ProjectsPage() {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
+            <h1 className="text-2xl font-bold">Projects</h1>
             <div className="flex items-center justify-end">
                 <Button onClick={() => openAddEditProject()}>
                     <Plus />

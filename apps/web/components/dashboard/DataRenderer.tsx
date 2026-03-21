@@ -75,7 +75,7 @@ export function DataRenderer({
     return (
         <div className="space-y-6">
             {/* header */}
-            <div className="flex items-end justify-between gap-2">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-2">
                 {/* titles */}
                 <div>
                     <h1 className="text-2xl font-bold">{title || ""}</h1>
@@ -87,7 +87,7 @@ export function DataRenderer({
                 </div>
 
                 {/* dropdown */}
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                     {showTable && onTableSelect && (
                         <Select
                             value={activeTable ?? ""}

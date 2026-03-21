@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@/types/api'
+import { useDialog } from '@/hooks/use-dialog'
 import { toast } from 'sonner'
 
 interface FetcherError extends Error {
@@ -41,13 +42,19 @@ export async function fetcher<T>(url: string, options: FetcherOptions = { showTo
     const json: ApiResponse<T> = await res.json()
 
     if (!res.ok || !json.success) {
-        const error = new Error(json.message) as FetcherError
-        error.status = res.status
-        error.message = json.error ?? json.message
-        if (showToast)
+        const isLimitExceeded = json.error?.includes('LimitExceeded');
+
+        if (isLimitExceeded) {
+            useDialog.getState().openUpgrade(json.message ?? 'You have reached your plan limit.');
+        } else if (showToast) {
             toast.error(json.message, {
                 description: json.error,
             });
+        }
+
+        const error = new Error(json.message) as FetcherError
+        error.status = res.status
+        error.message = json.error ?? json.message
         throw error
     }
 

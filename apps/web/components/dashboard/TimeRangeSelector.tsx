@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Select,
     SelectContent,
@@ -5,6 +7,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { useAuth } from "@/hooks/use-auth"
+import { useDialog } from "@/hooks/use-dialog"
 import type { TimeRange } from "@rum-core/shared"
 
 interface TimeRangeSelectorProps {
@@ -23,14 +27,29 @@ const OPTION_LABELS: Record<string, string> = {
 }
 
 export function TimeRangeSelector({ value, onChange, options = DEFAULT_OPTIONS }: TimeRangeSelectorProps) {
+    const { user } = useAuth();
+    const { openUpgrade } = useDialog();
+    const allowedRanges = (user?.plan_limits.time_ranges ?? []) as readonly string[];
+
+    function handleChange(selected: TimeRange) {
+        if (!allowedRanges.includes(selected)) {
+            openUpgrade(`The "${OPTION_LABELS[selected]}" time range is not available on your current plan.`);
+            return;
+        }
+        onChange(selected);
+    }
+
     return (
-        <Select value={value} onValueChange={onChange}>
+        <Select value={value} onValueChange={handleChange}>
             <SelectTrigger className="w-32">
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
                 {options.map((option) => (
-                    <SelectItem key={option} value={option}>
+                    <SelectItem
+                        key={option}
+                        value={option}
+                    >
                         {OPTION_LABELS[option] ?? option}
                     </SelectItem>
                 ))}

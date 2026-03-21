@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { type ProjectInput, useProjects } from "@/hooks/api/use-projects";
+import { useAuth } from "@/hooks/use-auth";
 import { useDialog } from "@/hooks/use-dialog";
 import { Plus, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -29,11 +30,13 @@ export default function AddEditProject() {
     const {
         closeAddEditProject,
         addEditProject: { isOpen, projectId },
-        openShowProjectKey
+        openShowProjectKey,
+        openUpgrade,
     } = useDialog();
     const isEdit = !!projectId;
 
-    const { getProject, createProject, updateProject } = useProjects();
+    const { getProject, createProject, updateProject, projects } = useProjects();
+    const { user } = useAuth();
 
     const [fields, setFields] = useState<ProjectInput>(initialState);
     const [isLoading, setIsLoading] = useState(false);
@@ -83,6 +86,16 @@ export default function AddEditProject() {
         e.preventDefault();
         try {
             validateInput();
+
+            if (!isEdit) {
+                const maxProjects = user?.plan_limits.projects ?? 0;
+                const currentCount = projects?.length ?? 0;
+                if (currentCount >= maxProjects) {
+                    openUpgrade(`You have reached the maximum of ${maxProjects} projects on your current plan.`);
+                    return;
+                }
+            }
+
             setIsLoading(true);
             const isSuccess = isEdit
                 ? await updateProject(projectId, fields)

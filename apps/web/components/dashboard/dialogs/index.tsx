@@ -1,9 +1,10 @@
 "use client"
 
 import AddEditProject from "./AddEditProject"
-import DeleteProject from "./DeleteProject"
 import ConnectProject from "./ConnectProject"
+import DeleteProject from "./DeleteProject"
 import ShowProjectKey from "./ShowProjectKey"
+import UpgradeDialog from "./UpgradeDialog"
 
 export function DashboardDialogs() {
     return (
@@ -12,6 +13,7 @@ export function DashboardDialogs() {
             <ShowProjectKey />
             <DeleteProject />
             <ConnectProject />
+            <UpgradeDialog />
         </>
     )
 }

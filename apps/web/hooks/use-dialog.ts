@@ -18,6 +18,10 @@ interface DeleteProjectData extends DialogData {
     projectId?: string
 }
 
+interface UpgradeData extends DialogData {
+    reason?: string
+}
+
 interface DialogState {
     addEditProject: AddEditProjectData
     openAddEditProject: (projectId?: string) => void
@@ -34,6 +38,10 @@ interface DialogState {
     connectProject: DialogData
     openConnectProject: () => void
     closeConnectProject: () => void
+
+    upgrade: UpgradeData
+    openUpgrade: (reason?: string) => void
+    closeUpgrade: () => void
 }
 
 export const useDialog = create<DialogState>((set) => ({
@@ -68,5 +76,13 @@ export const useDialog = create<DialogState>((set) => ({
         set({ connectProject: { isOpen: true } }),
     closeConnectProject: () =>
         set({ connectProject: { isOpen: false } }),
+
+    upgrade: {
+        isOpen: false,
+    },
+    openUpgrade: (reason) =>
+        set({ upgrade: { isOpen: true, reason } }),
+    closeUpgrade: () =>
+        set({ upgrade: { isOpen: false, reason: undefined } }),
 }))
 
