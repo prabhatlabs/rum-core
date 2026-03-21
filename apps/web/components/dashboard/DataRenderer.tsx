@@ -1,3 +1,4 @@
+import { MapWithMarkerRenderer } from "@/components/dashboard/MapWithMarkerRenderer";
 import { tableNames } from "@/components/dashboard/pages";
 import { RefreshButton } from "@/components/dashboard/RefreshButton";
 import {
@@ -56,21 +57,24 @@ export function DataRenderer({
 
     const showTable = show === "table" || show === "both";
     const showCards = show === "cards" || show === "both";
-    const cardTables = showCards
-        ? show === "cards"
-            ? tables
-            : activeTable
-              ? [activeTable]
-              : []
-        : [];
 
     const activeLabel = activeTable
         ? (tableNames[activeTable] ?? activeTable)
         : null;
 
+    const rows = activeTable ? ((data?.[activeTable] ?? []) as unknown[]) : [];
+    const columns = rows[0]
+        ? Object.keys(rows[0] as Record<string, unknown>)
+        : [];
+    const countryCol = columns.find((col) => col === "country" || col === "top_country");
+    const hasMap =
+        showCards && !!countryCol && !isRefreshing && rows.length > 0;
+
     return (
         <div className="space-y-6">
+            {/* header */}
             <div className="flex items-end justify-between gap-2">
+                {/* titles */}
                 <div>
                     <h1 className="text-2xl font-bold">{title || ""}</h1>
                     {activeLabel && show !== "cards" && (
@@ -79,6 +83,8 @@ export function DataRenderer({
                         </p>
                     )}
                 </div>
+
+                {/* dropdown */}
                 <div className="flex items-center justify-end gap-2">
                     {showTable && onTableSelect && (
                         <Select
@@ -107,44 +113,40 @@ export function DataRenderer({
                     />
                 </div>
             </div>
-            {showCards && cardTables.length > 0 && (
+
+            <div className={`grid gap-6 ${hasMap ? "xl:grid-cols-2" : ""}`}>
                 <div className="space-y-6">
-                    {cardTables.map((table) => {
-                        const rows = (data?.[table] ?? []) as unknown[];
-                        const columns = rows[0]
-                            ? Object.keys(rows[0] as Record<string, unknown>)
+                    {showCards && (show === "cards" ? tables : activeTable ? [activeTable] : []).map((table) => {
+                        const tableRows = (data?.[table] ?? []) as unknown[];
+                        const tableColumns = tableRows[0]
+                            ? Object.keys(tableRows[0] as Record<string, unknown>)
                             : [];
-                        const numericColumns = columns.filter((col) => {
-                            const val = (rows[0] as Record<string, unknown>)[
-                                col
-                            ];
+                        const numericCols = tableColumns.filter((col) => {
+                            const val = (tableRows[0] as Record<string, unknown>)[col];
                             if (typeof val !== "number") return false;
                             return !isTimestamp(val);
                         });
 
                         return (
-                            <div key={table} className="space-y-2">
+                            <div key={table}>
                                 {show === "cards" && (
-                                    <p className="text-muted-foreground text-sm">
-                                        {tableNames[table]}
+                                    <p className="text-muted-foreground text-sm mb-2">
+                                        {tableNames[table] ?? table}
                                     </p>
                                 )}
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
+                                <div className="grid gap-4 sm:grid-cols-2">
                                     {isRefreshing ? (
                                         <>
                                             <TotalCardSkeleton />
                                             <TotalCardSkeleton />
                                             <TotalCardSkeleton />
                                         </>
-                                    ) : numericColumns.length > 0 ? (
-                                        numericColumns.map((col) => (
+                                    ) : numericCols.length > 0 ? (
+                                        numericCols.map((col) => (
                                             <TotalCard
                                                 key={col}
                                                 title={columnNameFormatter(col)}
-                                                value={aggregateField(
-                                                    rows,
-                                                    col,
-                                                )}
+                                                value={aggregateField(tableRows, col)}
                                                 unit={unitForField(col)}
                                             />
                                         ))
@@ -160,7 +162,14 @@ export function DataRenderer({
                         );
                     })}
                 </div>
-            )}
+                {hasMap && countryCol && (
+                    <MapWithMarkerRenderer
+                        rows={rows}
+                        countryColumn={countryCol}
+                    />
+                )}
+            </div>
+
             {showTable && activeTable && (
                 <TableBox
                     title={activeTable}

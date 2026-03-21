@@ -14,8 +14,10 @@ export function aggregateField(rows: unknown[], field: string): number | null {
         : sum;
 }
 
-export function unitForField(field: string): string {
-    return field.endsWith("_ms") ? "ms" : field.endsWith("_pct") ? "%" : "";
+export function unitForField(field: string): string | undefined {
+    if (field.endsWith("_ms")) return "ms";
+    if (field.endsWith("_pct")) return "%";
+    return undefined;
 }
 
 interface TotalCardProps {

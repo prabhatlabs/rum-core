@@ -978,7 +978,7 @@ export async function fetchRollupTables(
             return { tableName, data: [] };
         }
 
-        const sql = `SELECT * FROM ${tableName} WHERE project_key = ? AND ${timeColumn} >= ? AND ${timeColumn} <= ?`;
+        const sql = `SELECT * FROM ${tableName} WHERE project_key = ? AND ${timeColumn} >= ? AND ${timeColumn} <= ? ORDER BY ${timeColumn} DESC`;
 
         const result = await eventDBClient.execute({
             sql,
