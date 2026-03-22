@@ -6,11 +6,11 @@ import { BackgroundVideo } from "./BackgroundVideo";
 
 export default function HeroSection() {
     return (
-        <div className="mask-b-from-70% md:mask-b-from-60% lg:mask-b-from-50% h-[92dvh]">
-            <BackgroundVideo src="/bg.mp4" className="absolute top-0 left-0 inset-0 w-full h-full max-h-[90dvh] -z-10" />
+        <div className="h-dvh" id="home">
+            <BackgroundVideo src="/bg.mp4" className="absolute top-0 left-0 inset-0 w-full h-full max-h-dvh -z-10 mask-b-from-10%" />
 
             <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col items-center justify-center pt-40 md:pt-60">
+                <div className="flex flex-col items-center justify-center pt-50 sm:pt-70">
                     <TextAnimate
                         animation="blurInDown"
                         by="character"
@@ -45,7 +45,7 @@ export default function HeroSection() {
                         <ShimmerButton
                             background="color-mix(in oklab, var(--foreground) 5%, transparent)"
                             shimmerColor="color-mix(in oklab, var(--foreground) 10%, transparent)"
-                            className="backdrop-blur-lg"
+                            className="backdrop-blur-lg border"
                         >
                             Start Tracking
                         </ShimmerButton>

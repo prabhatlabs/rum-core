@@ -2,7 +2,7 @@ import { Highlighter } from "@/components/ui/highlighter";
 
 export default function HowTo() {
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto" id="how-to-use">
             <div className="space-y-2 relative h-fit px-6 pt-30 lg:pt-40">
                 <h3 className="text-xl sm:text-3xl lg:text-5xl max-w-md md:max-w-xl lg:max-w-2xl leading-tight">
                     Integrated in{" "}

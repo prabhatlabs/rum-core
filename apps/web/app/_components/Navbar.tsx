@@ -10,21 +10,40 @@ export default function Navbar() {
                     <Logo />
                 </div>
 
-                <div className="hidden md:flex items-center justify-center gap-2 md:gap-4 text-xs md:text-sm">
-                    <Link href={"#home"} className="hover:border-b border-foreground">
+                <div className="hidden md:flex w-full items-center justify-center gap-2 md:gap-4 text-xs md:text-sm">
+                    <Link
+                        href={"#home"}
+                        className="hover:border-b border-foreground"
+                    >
                         Home
                     </Link>
-                    <Link href={"#features"} className="hover:border-b border-foreground">
+                    <Link
+                        href={"#features"}
+                        className="hover:border-b border-foreground"
+                    >
                         Features
                     </Link>
-                    <Link href={"#pricing"} className="hover:border-b border-foreground">
+                    <Link
+                        href={"#pricing"}
+                        className="hover:border-b border-foreground"
+                    >
                         Pricing
                     </Link>
                 </div>
 
-                <Link href={"/login"}>
-                    <Button variant={"outline"} size="lg">Login</Button>
-                </Link>
+                <div className="flex items-center justify-center gap-2">
+                    <Link href={"#how-to-use"}>
+                        <Button variant={"ghost"} size="lg">
+                            How to use?
+                        </Button>
+                    </Link>
+
+                    <Link href={"/login"}>
+                        <Button variant={"outline"} size="lg">
+                            Login
+                        </Button>
+                    </Link>
+                </div>
             </div>
         </nav>
     );
