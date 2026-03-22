@@ -180,9 +180,9 @@ Default time range: **24h**
 
 | Time Range | Cache TTL |
 |---|---|
-| 12h | 1 min |
-| 24h (default) | 5 min |
-| 7d | 30 min |
+| 12h | 30 min |
+| 24h (default) | 30 min |
+| 7d | 1 hour |
 | 30d | 1 hour |
 
 > Cache is keyed by `project_key + tab + time_range`. One API call per tab, returns all aggregated data for that tab only. No pagination — data is pre-aggregated on backend (~50-100 rows max per tab). Frontend does client-side sort/filter only.

@@ -34,8 +34,8 @@ export const RETENTION = {
 } as const
 
 export const CACHE_TTL: Record<TimeRange, number> = {
-  '12h': 60,          // 1 min in seconds
-  '24h': 300,         // 5 min
-  '7d': 1800,         // 30 min
+  '12h': 1800,        // 30 min
+  '24h': 1800,        // 30 min
+  '7d': 3600,         // 1 hour
   '30d': 3600,        // 1 hour
 } as const
