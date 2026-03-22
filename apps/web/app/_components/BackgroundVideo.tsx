@@ -2,7 +2,13 @@
 
 import { useEffect, useRef } from "react";
 
-export function BackgroundVideo() {
+export function BackgroundVideo({
+    src,
+    className
+}: {
+    src: string;
+    className?: string;
+}) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -14,7 +20,7 @@ export function BackgroundVideo() {
         if (!ctx) return;
 
         const video = document.createElement("video");
-        video.src = "/bg.mp4";
+        video.src = src;
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
@@ -66,12 +72,12 @@ export function BackgroundVideo() {
             video.src = "";
             window.removeEventListener("resize", resize);
         };
-    }, []);
+    }, [src]);
 
     return (
         <canvas
             ref={canvasRef}
-            className="fixed inset-0 w-full h-full -z-10 scale-110"
+            className={className}
         />
     );
 }

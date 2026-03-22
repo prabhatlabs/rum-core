@@ -1,5 +1,5 @@
 export const hero = {
-    herotext: "Stop guessing. See exactly what your users experience.",
+    herotext: ["Stop guessing.", "See exactly what your users experience."],
     herodesc: "Go beyond Lighthouse scores. Monitor real-world interactions across every ISP, region, and device. Get deep visibility into broken APIs and slow page loads with one simple script.",
 
     secondarytext: "Performance monitoring that doesnt cost you performance.",
