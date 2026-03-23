@@ -10,10 +10,10 @@ const bento = [
         description: "Add our ~5kb vanilla JS snippet to your <head>.",
         href: "#",
         background: (
-            <div className="h-full w-full absolute -z-10 top-0 right-0 mask-l-from-90% mask-r-from-80% mask-b-from-20% opacity-75">
-                <LightRays color="#3949AB48" />
+            <div className="h-full w-full absolute -z-10 top-0 right-0 mask-l-from-50% mask-b-from-20% opacity-75">
+                <LightRays color="#3949ABA6" />
                 <Image
-                    src={"/code-snippet.png"}
+                    src={"/step-1.webp"}
                     loading="eager"
                     width={700}
                     height={500}
@@ -29,14 +29,14 @@ const bento = [
         description: "Provide your unique project API key.",
         href: "#",
         background: (
-            <div className="h-full w-full absolute -z-10 top-0 right-0 mask-l-from-90% mask-r-from-80% mask-b-from-20% opacity-75">
-                <LightRays color="#AD145748" />
+            <div className="h-full w-full absolute -z-10 top-0 right-0 mask-l-from-50% mask-b-from-20% opacity-75">
+                <LightRays color="#AD1457A6" />
                 <Image
-                    src={"/code-snippet2.png"}
+                    src={"/step-2.webp"}
                     loading="eager"
                     width={700}
                     height={500}
-                    alt="Lightweight Script (~5kb)"
+                    alt="Project API Key"
                     className="h-full object-cover"
                 />
             </div>
@@ -48,14 +48,14 @@ const bento = [
         description: "Get insights and analytics for events.",
         href: "#",
         background: (
-            <div className="h-full w-full absolute -z-10 top-0 right-0 mask-l-from-90% mask-r-from-80% mask-b-from-20% opacity-75">
-                <LightRays color="#0097A748" />
+            <div className="h-full w-full absolute -z-10 top-0 right-0 mask-l-from-50% mask-b-from-20% opacity-75">
+                <LightRays color="#0097A7A6" />
                 <Image
-                    src={"/code-snippet3.png"}
+                    src={"/step-3.webp"}
                     loading="eager"
                     width={700}
                     height={500}
-                    alt="Lightweight Script (~5kb)"
+                    alt="Analytics & Insights"
                     className="h-full object-cover"
                 />
             </div>

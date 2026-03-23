@@ -1,51 +1,26 @@
-"use client";
+import { BackgroundVideo } from "@/app/_components/BackgroundVideo";
+import ForceDark from "@/app/_components/ForceDark";
+import { Rubik } from "next/font/google";
+import LoginCard from "./_components/LoginCard";
 
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { useLogin } from "@/hooks/use-auth";
-import { FaGithub, FaGoogle } from "react-icons/fa";
+const rubik = Rubik({
+    subsets: ["latin"],
+    variable: "--font-rubik",
+});
 
 export default function Login() {
-    return <LoginCard />;
-}
-
-export function LoginCard() {
-    const { loginWithGithub, loginWithGoogle } = useLogin();
-
     return (
-        <div className="flex min-h-dvh w-screen items-center justify-center bg-background p-4">
-            <Card className="w-full max-w-sm">
-                <CardHeader className="text-center">
-                    <CardTitle>Welcome back</CardTitle>
-                    <CardDescription>
-                        Sign in to your account to continue
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                    <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={loginWithGoogle}
-                    >
-                        <FaGoogle />
-                        <span>Continue with Google</span>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={loginWithGithub}
-                    >
-                        <FaGithub />
-                        <span>Continue with GitHub</span>
-                    </Button>
-                </CardContent>
-            </Card>
+        <div className={rubik.className}>
+            <ForceDark />
+            <div className="relative z-10 min-h-dvh">
+                <BackgroundVideo
+                    src="/ocean-wave.mp4"
+                    className="absolute top-0 left-0 inset-0 w-full h-full max-h-dvh -z-10 mask-b-from-10% opacity-90"
+                />
+                <div className="max-w-7xl mx-auto min-h-dvh h-full flex items-center justify-center">
+                    <LoginCard />
+                </div>
+            </div>
         </div>
     );
 }
