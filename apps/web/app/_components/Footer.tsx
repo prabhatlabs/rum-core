@@ -8,7 +8,7 @@ export default function Footer() {
     return (
         <footer className="mask-t-from-70% md:mask-t-from-60% lg:mask-t-from-50% h-[30dvh] relative">
             <BackgroundVideo
-                src="/bg3.mp4"
+                src="/purple-arura.mp4"
                 className="absolute top-0 left-0 inset-0 w-full h-full -z-10 rotate-180"
             />
 

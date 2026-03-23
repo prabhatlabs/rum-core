@@ -1,13 +1,15 @@
 import { Highlighter } from "@/components/ui/highlighter";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { TextAnimate } from "@/components/ui/text-animate";
-import Link from "next/link";
 import { BackgroundVideo } from "./BackgroundVideo";
+import CtaButton from "./CtaButton";
 
 export default function HeroSection() {
     return (
         <div className="h-dvh" id="home">
-            <BackgroundVideo src="/bg.mp4" className="absolute top-0 left-0 inset-0 w-full h-full max-h-dvh -z-10 mask-b-from-10%" />
+            <BackgroundVideo
+                src="/ocean-wave.mp4"
+                className="absolute top-0 left-0 inset-0 w-full h-full max-h-dvh -z-10 mask-b-from-10% opacity-90"
+            />
 
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col items-center justify-center pt-50 sm:pt-70">
@@ -19,9 +21,7 @@ export default function HeroSection() {
                     >
                         Stop guessing!
                     </TextAnimate>
-                    <h3
-                        className="text-xl sm:text-3xl lg:text-5xl mt-2 md:mt-3 lg:mt-4 text-center"
-                    >
+                    <h3 className="text-xl sm:text-3xl lg:text-5xl mt-2 md:mt-3 lg:mt-4 text-center">
                         See exactly what your users experience.
                     </h3>
                     <p className="max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-5xl text-xs md:text-sm text-center mt-2 md:mt-3 lg:mt-4">
@@ -40,17 +40,7 @@ export default function HeroSection() {
                     </p>
                 </div>
 
-                <div className="flex items-center justify-center py-15">
-                    <Link href={"/dashboard"}>
-                        <ShimmerButton
-                            background="color-mix(in oklab, var(--foreground) 5%, transparent)"
-                            shimmerColor="color-mix(in oklab, var(--foreground) 10%, transparent)"
-                            className="backdrop-blur-lg border"
-                        >
-                            Start Tracking
-                        </ShimmerButton>
-                    </Link>
-                </div>
+                <CtaButton />
             </div>
         </div>
     );
