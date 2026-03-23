@@ -1,6 +1,6 @@
 import { cors } from '@elysiajs/cors'
 import html from '@elysiajs/html'
-import { initEventDB, initMainDB } from '@rum-core/db'
+import { initEventDB, initMainDB, cacheService } from '@rum-core/db'
 import { APIErrorResponse, failResponse } from '@rum-core/shared'
 import Elysia from 'elysia'
 import { ENV } from './constants/envvars'
@@ -12,6 +12,7 @@ import usageRoutes from './routes/usage.routes'
 // db init
 initMainDB(process.env.DATABASE_URL!);
 initEventDB(process.env.TURSO_DATABASE_URL!, process.env.TURSO_AUTH_TOKEN!);
+cacheService.initRedis(ENV.UPSTASH_REDIS_REST_URL, ENV.UPSTASH_REDIS_REST_TOKEN);
 
 const app = new Elysia({
     prefix: "/api/v1",

@@ -11,6 +11,7 @@ import { eq, isNull, or } from "drizzle-orm";
 import { getEventDBClient } from "../eventdb/client";
 import { getMainDB } from "../maindb/client";
 import { plans, projects } from "../maindb/schema";
+import * as cacheService from "./cache.service";
 
 const RETENTION = constants.plans.RETENTION;
 const FREE_RETENTION_WITH_BUFFER = constants.plans.PLAN_LIMITS.free.retention_days + 2;   // 9 days
@@ -993,6 +994,11 @@ export async function fetchRollupTables(
     const rangeMs = isDays ? days * 24 * 60 * 60 * 1000 : days * 60 * 60 * 1000;
     const startTime = now - rangeMs;
 
+    const cached = await cacheService.get(project.project_key, timeRange, tableNames);
+    if (cached !== null) {
+        return cached;
+    }
+
     const data: Record<string, unknown[]> = {};
     const timeColumn = isHourly ? 'hour_at' : 'day_at';
 
@@ -1019,6 +1025,8 @@ export async function fetchRollupTables(
     for (const { tableName, data: tableData } of results) {
         data[tableName] = tableData;
     }
+
+    cacheService.set(project.project_key, timeRange, tableNames, data).catch(() => {});
 
     return data;
 }

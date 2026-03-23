@@ -8,12 +8,14 @@ export const jwtConfig = jwt({
     name: 'jwt',
     secret: ENV.JWT_SECRET,
     schema: t.Object({
-        sub: t.String()
+        sub: t.String(),
+        status: t.Boolean()
     })
 });
 
 export const cookieConfig = {
     cookie: t.Object({
+        pending_auth: t.Optional(t.String()), 
         auth: t.Optional(t.String()), 
         google_state: t.Optional(t.String()),
         google_verifier: t.Optional(t.String()),
@@ -32,6 +34,10 @@ export const authMiddleware = new Elysia()
 
         const payload = await jwt.verify(token)
         if (!payload) {
+            throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
+        }
+
+        if (!payload.status) {
             throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
         }
 
