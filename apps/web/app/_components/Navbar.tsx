@@ -38,7 +38,7 @@ export default function Navbar() {
                         </Button>
                     </Link>
 
-                    <Link href={"/login"}>
+                    <Link href={"/dashboard"}>
                         <Button variant={"outline"} size="lg">
                             Login
                         </Button>

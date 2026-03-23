@@ -22,7 +22,7 @@ export default function BottomHero() {
                 <br /> Stop optimizing for robots and start building for people.
             </p>
             <div className="flex items-center justify-center py-15">
-                <Link href={"/login"}>
+                <Link href={"/dashboard"}>
                     <ShimmerButton
                         background="color-mix(in oklab, var(--foreground) 5%, transparent)"
                         shimmerColor="color-mix(in oklab, var(--foreground) 10%, transparent)"

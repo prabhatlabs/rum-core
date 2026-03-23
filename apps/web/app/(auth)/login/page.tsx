@@ -1,6 +1,5 @@
 "use client";
 
-import { Providers } from "@/app/dashboard/layout";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -9,30 +8,15 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { useAuth, useLogin } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+import { useLogin } from "@/hooks/use-auth";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
 export default function Login() {
-    return (
-        <Providers>
-            <LoginCard />
-        </Providers>
-    );
+    return <LoginCard />;
 }
 
 export function LoginCard() {
     const { loginWithGithub, loginWithGoogle } = useLogin();
-    const { user, isAuthenticated, isLoading } = useAuth();
-    const router = useRouter();
-
-    function handleLogin(cb: () => void) {
-        if (isAuthenticated && user) {
-            router.push("/dashboard");
-        } else {
-            cb();
-        }
-    }
 
     return (
         <div className="flex min-h-dvh w-screen items-center justify-center bg-background p-4">
@@ -47,8 +31,7 @@ export function LoginCard() {
                     <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => handleLogin(loginWithGoogle)}
-                        disabled={isLoading}
+                        onClick={loginWithGoogle}
                     >
                         <FaGoogle />
                         <span>Continue with Google</span>
@@ -56,8 +39,7 @@ export function LoginCard() {
                     <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => handleLogin(loginWithGithub)}
-                        disabled={isLoading}
+                        onClick={loginWithGithub}
                     >
                         <FaGithub />
                         <span>Continue with GitHub</span>
