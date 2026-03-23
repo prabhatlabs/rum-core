@@ -8,8 +8,7 @@ export const jwtConfig = jwt({
     name: 'jwt',
     secret: ENV.JWT_SECRET,
     schema: t.Object({
-        sub: t.String(),
-        status: t.Boolean()
+        sub: t.String()
     })
 });
 
@@ -34,10 +33,6 @@ export const authMiddleware = new Elysia()
 
         const payload = await jwt.verify(token)
         if (!payload) {
-            throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
-        }
-
-        if (!payload.status) {
             throw new APIErrorResponse("UnauthorizedUserError", 'Unauthorized', 'Invalid token', 401)
         }
 

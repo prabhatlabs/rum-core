@@ -2,6 +2,7 @@ import { constants } from "@rum-core/shared";
 import { eq } from 'drizzle-orm';
 import { getMainDB } from '../maindb/client';
 import { plans, users } from '../maindb/schema';
+import { getRedis } from "./cache.service";
 
 
 interface UpsertUserParams {
@@ -95,4 +96,17 @@ export async function getUserWithPlan(user_id: string) {
     type PlansType = keyof typeof PLAN_LIMITS 
     const planLimits = PLAN_LIMITS[(user?.plan.type || 'free') as PlansType];
     return { ...user, plan_limits: planLimits };
+}
+
+export async function setUserSession(userId: string) {
+    const r = getRedis();
+    const sessionId = crypto.randomUUID();
+    await r.set(sessionId, userId, { ex: 120 });
+    return sessionId
+}
+
+export async function exchangeSessionForUserId(sessionId: string) {
+    const r = getRedis();
+    const userId = await r.get<string>(sessionId);
+    return userId
 }

@@ -1,5 +1,5 @@
-import { Redis } from "@upstash/redis";
 import { constants, type TimeRange } from "@rum-core/shared";
+import { Redis } from "@upstash/redis";
 
 let _redis: Redis | null = null;
 
@@ -9,7 +9,7 @@ export function initRedis(url: string, token: string) {
     console.log("Connected to Upstash Redis");
 }
 
-function getRedis(): Redis {
+export function getRedis(): Redis {
     if (!_redis) {
         throw new Error("Redis not initialized");
     }

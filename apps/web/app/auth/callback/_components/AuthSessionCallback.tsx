@@ -9,8 +9,11 @@ export default function AuthSessionCallback() {
     const router = useRouter();
 
     useEffect(() => {
+        const ref = new URLSearchParams(window.location.search).get("ref");
+        if (!ref) return;
+
         // this fetch sets the cookie properly — credentialed, same flow as all other requests
-        fetcher(`/auth/session`, { method: "GET" }).then(() =>
+        fetcher(`/auth/session?ref=${ref}`, { method: "GET" }).then(() =>
             router.replace("/dashboard"),
         );
     }, []);
