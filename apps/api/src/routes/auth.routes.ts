@@ -2,7 +2,7 @@ import { cookie } from '@elysiajs/cookie'
 import { authService } from '@rum-core/db'
 import { APIErrorResponse, failResponse, okResponse } from '@rum-core/shared'
 import { generateCodeVerifier, generateState } from 'arctic'
-import { Elysia, t } from 'elysia'
+import { Elysia } from 'elysia'
 import { AUTH_COOKIE_CLEAR_CONFIG, AUTH_COOKIE_CONFIG } from '../constants/cookie'
 import { ENV } from '../constants/envvars'
 import { github, google } from '../lib/oauth'
@@ -74,14 +74,12 @@ const authRoutes = new Elysia({ prefix: '/auth' })
             return failResponse('Failed to create user')
         }
 
-        const token = await jwt.sign({ sub: user.id })
-        // cookie.auth?.set({
-        //     value: token,
-        //     ...AUTH_COOKIE_CONFIG
-        // })
-        // return redirect(`${ENV.FRONTEND_URL}/dashboard`)
-
-        return redirect(`${ENV.FRONTEND_URL}/auth/callback?token=${token}`)
+        const token = await jwt.sign({ sub: user.id, status: false })
+        cookie.pending_auth?.set({
+            value: token,
+            ...AUTH_COOKIE_CONFIG
+        })
+        return redirect(`${ENV.FRONTEND_URL}/auth/callback`)
     })
 
     // GITHUB oauth
@@ -154,31 +152,39 @@ const authRoutes = new Elysia({ prefix: '/auth' })
         }
 
         const token = await jwt.sign({ sub: user.id })
-        // cookie.auth?.set({
-        //     value: token,
-        //     ...AUTH_COOKIE_CONFIG
-        // })
+        cookie.auth?.set({
+            value: token,
+            ...AUTH_COOKIE_CONFIG
+        })
 
-        // return redirect(`${ENV.FRONTEND_URL}/dashboard`)
-        return redirect(`${ENV.FRONTEND_URL}/auth/callback?token=${token}`)
+        return redirect(`${ENV.FRONTEND_URL}/auth/callback`)
     })
-    .get('/session', async ({ query, cookie, set }) => {
-        const { token } = query
+    .get('/session', async ({ cookie, set, jwt }) => {
+        const token = cookie.pending_auth?.value
         if (!token) {
             set.status = 400
             return failResponse('Missing token')
         }
 
+        cookie.pending_auth.set({
+            ...AUTH_COOKIE_CLEAR_CONFIG
+        })
+
+        // status -> true = session created; false = session pending
+        const payload = await jwt.verify(token)
+        if (!payload || payload.status) {
+            set.status = 400
+            return failResponse('Invalid token')
+        }
+
+        const newToken = await jwt.sign({ sub: payload.sub, status: true });
+
         cookie.auth.set({
-            value: token,
+            value: newToken,
             ...AUTH_COOKIE_CONFIG
         })
 
         return okResponse(null, 'Session created')
-    }, {
-        query: t.Object({
-            token: t.String()
-        })
     })
     .use(authMiddleware)
     .get('/me', async ({ user }) => {
