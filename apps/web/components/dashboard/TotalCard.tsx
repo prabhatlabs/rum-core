@@ -10,8 +10,8 @@ export function aggregateField(rows: unknown[], field: string): number | null {
     }, 0);
 
     // avg or sum
-    return field.endsWith("_ms") || field.startsWith("avg_")
-        ? Math.round(sum / rows.length)
+    return field.endsWith("_ms") || field.startsWith("avg_") || field.endsWith("_pct")
+        ? (sum / rows.length)
         : sum;
 }
 
@@ -42,7 +42,7 @@ export function TotalCard({ title, value, unit, isLoading, className }: TotalCar
             <CardContent>
                 <span className="text-2xl font-semibold">
                     {value !== null
-                        ? `${value.toLocaleString()}${unit ? ` ${unit}` : ""}`
+                        ? `${value.toFixed(2)}${unit ? ` ${unit}` : ""}`
                         : "-"}
                 </span>
             </CardContent>
