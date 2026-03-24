@@ -17,7 +17,7 @@ export default function Login() {
                     src="/ocean-wave.mp4"
                     className="absolute top-0 left-0 inset-0 w-full h-full max-h-dvh -z-10 mask-b-from-10% opacity-90"
                 />
-                <div className="max-w-7xl mx-auto min-h-dvh h-full flex items-center justify-center">
+                <div className="max-w-7xl mx-auto px-6 min-h-dvh h-full flex items-center justify-center">
                     <LoginCard />
                 </div>
             </div>

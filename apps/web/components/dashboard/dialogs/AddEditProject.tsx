@@ -17,6 +17,7 @@ import { type ProjectInput, useProjects } from "@/hooks/api/use-projects";
 import { useAuth } from "@/hooks/use-auth";
 import { useDialog } from "@/hooks/use-dialog";
 import { Plus, Save } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 
 const MAX_NAME_LENGTH = 100;
@@ -82,8 +83,7 @@ export default function AddEditProject() {
         throw new Error("Invalid input");
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         try {
             validateInput();
 
@@ -117,66 +117,77 @@ export default function AddEditProject() {
             open={isOpen}
             onOpenChange={(open) => !open && closeAddEditProject()}
         >
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>
-                        {isEdit ? "Edit Project" : "Add Project"}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {isEdit
-                            ? "Update your project details below."
-                            : "Create a new project to start tracking."}
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit}>
-                    <div className="grid gap-4 mb-4">
-                        <Field
-                            inputProps={{
-                                id: "name",
-                                placeholder: "My Project",
-                                value: fields.name,
-                                onChange: handleFieldChange,
-                                required: true,
-                                maxLength: MAX_NAME_LENGTH,
-                            }}
-                            labelProps={{
-                                children: "Name",
-                            }}
-                        />
-                        <Field
-                            inputProps={{
-                                id: "origin",
-                                placeholder: "https://example.com",
-                                value: fields.origin,
-                                onChange: handleFieldChange,
-                                required: true,
-                                maxLength: MAX_ORIGIN_LENGTH,
-                            }}
-                            labelProps={{
-                                children: "Origin",
-                            }}
+            <DialogContent className="overflow-hidden block! p-0">
+                <div className="flex flex-col lg:flex-row">
+                    <div className="w-full lg:w-1/3 lg:shrink-0 overflow-hidden">
+                        <Image
+                            src="/dialog-add-edit.jpg"
+                            alt="Add Project"
+                            width={300}
+                            height={600}
+                            className="w-full h-48 lg:h-full object-cover"
                         />
                     </div>
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={closeAddEditProject}
-                        >
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={isLoading}>
-                            {isLoading ? (
-                                <LoadingSpinner />
-                            ) : isEdit ? (
-                                <Save />
-                            ) : (
-                                <Plus />
-                            )}
-                            <span>{isEdit ? "Save Changes" : "Create"}</span>
-                        </Button>
-                    </DialogFooter>
-                </form>
+                    <div className="w-full lg:w-2/3 min-w-0 p-6 flex flex-col">
+                        <DialogHeader>
+                            <DialogTitle>
+                                {isEdit ? "Edit Project" : "Add Project"}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {isEdit
+                                    ? "Update your project details below."
+                                    : "Create a new project to start tracking."}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 my-4">
+                            <Field
+                                inputProps={{
+                                    id: "name",
+                                    placeholder: "My Project",
+                                    value: fields.name,
+                                    onChange: handleFieldChange,
+                                    required: true,
+                                    maxLength: MAX_NAME_LENGTH,
+                                }}
+                                labelProps={{
+                                    children: "Name",
+                                }}
+                            />
+                            <Field
+                                inputProps={{
+                                    id: "origin",
+                                    placeholder: "https://example.com",
+                                    value: fields.origin,
+                                    onChange: handleFieldChange,
+                                    required: true,
+                                    maxLength: MAX_ORIGIN_LENGTH,
+                                }}
+                                labelProps={{
+                                    children: "Origin",
+                                }}
+                            />
+                        </div>
+                        <DialogFooter className="mt-auto pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={closeAddEditProject}
+                            >
+                                Cancel
+                            </Button>
+                            <Button onClick={handleSubmit} disabled={isLoading}>
+                                {isLoading ? (
+                                    <LoadingSpinner />
+                                ) : isEdit ? (
+                                    <Save />
+                                ) : (
+                                    <Plus />
+                                )}
+                                <span>{isEdit ? "Save Changes" : "Create"}</span>
+                            </Button>
+                        </DialogFooter>
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );
