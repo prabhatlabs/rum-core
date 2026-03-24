@@ -8,7 +8,7 @@ export default function BottomHero() {
                 <h4 className="text-xl sm:text-2xl lg:text-3xl text-center leading-tight">
                     Your users
                 </h4>
-                <div className="relative h-[12vw] w-full overflow-hidden ">
+                <div className="relative h-[13vw] w-full overflow-hidden ">
                     <VideoText src="/ocean-wave.mp4">aren't</VideoText>
                 </div>
                 <h4 className="text-xl sm:text-2xl lg:text-3xl text-center leading-tight">
