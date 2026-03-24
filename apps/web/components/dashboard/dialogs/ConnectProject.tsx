@@ -48,7 +48,7 @@ export default function ConnectProject() {
                 <div className="flex flex-col lg:flex-row">
                     <div className="w-full lg:w-1/3 lg:shrink-0 overflow-hidden">
                         <Image
-                            src="/dialog-connect.jpg"
+                            src="/dialog-connect.webp"
                             alt="Connect Project"
                             width={300}
                             height={600}

@@ -38,7 +38,7 @@ export default function DeleteProject() {
                 <div className="flex flex-col lg:flex-row">
                     <div className="w-full lg:w-1/3 lg:shrink-0 overflow-hidden">
                         <Image
-                            src="/dialog-delete.jpg"
+                            src="/dialog-delete.webp"
                             alt="Delete Project"
                             width={300}
                             height={600}

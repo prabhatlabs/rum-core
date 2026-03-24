@@ -36,7 +36,7 @@ export default function ShowProjectKey() {
                 <div className="flex flex-col lg:flex-row">
                     <div className="w-full lg:w-1/3 lg:shrink-0 overflow-hidden">
                         <Image
-                            src="/dialog-project-key.jpg"
+                            src="/dialog-project-key.webp"
                             alt="Project Key"
                             width={300}
                             height={600}

@@ -24,7 +24,7 @@ export default function UpgradeDialog() {
                 <div className="flex flex-col lg:flex-row">
                     <div className="w-full lg:w-1/3 lg:shrink-0 overflow-hidden">
                         <Image
-                            src="/dialog-upgrade.jpg"
+                            src="/dialog-upgrade.webp"
                             alt="Upgrade Required"
                             width={300}
                             height={600}
