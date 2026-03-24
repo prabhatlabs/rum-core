@@ -27,7 +27,7 @@ export default function Footer() {
                                 <FaXTwitter />
                             </Button>
                         </Link>
-                        <Link href={"https://github.com/IsayAyase"}>
+                        <Link href={"https://github.com/prabhatlabs"}>
                             <Button size="icon-sm" variant="ghost">
                                 <FaGithub />
                             </Button>
