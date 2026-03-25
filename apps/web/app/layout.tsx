@@ -20,6 +20,8 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
+const URL = "https://rum-core.prabhatlabs.dev";
+
 export const metadata: Metadata = {
     title: "RUM Core — Real User Monitoring for the Modern Web",
     description:
@@ -37,19 +39,19 @@ export const metadata: Metadata = {
         "Geo enrichment",
         "ISP breakdown",
     ],
-    authors: [{ name: "RUM Core" }],
-    creator: "RUM Core",
+    authors: [{ name: "prabhatlabs" }],
+    creator: "prabhatlabs",
     openGraph: {
         type: "website",
         locale: "en_US",
-        url: "",
-        title: "RUM Core — Real User Monitoring for the Modern Web",
+        url: URL,
+        title: "RUM Core - Real User Monitoring for the Modern Web",
         description:
             "Track Core Web Vitals, API latency, and real user sessions. See performance by country, ISP, device, and browser — all from a single lightweight script.",
         siteName: "RUM Core",
         images: [
             {
-                url: "",
+                url: `${URL}/preview.webp`,
                 width: 1200,
                 height: 630,
                 alt: "RUM Core — Real User Monitoring",
@@ -58,10 +60,10 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "RUM Core — Real User Monitoring for the Modern Web",
+        title: "RUM Core - Real User Monitoring for the Modern Web",
         description:
             "Track Core Web Vitals, API latency, and real user sessions. See performance by country, ISP, device, and browser — all from a single lightweight script.",
-        images: [""],
+        images: [`${URL}/preview.webp`],
     },
     robots: {
         index: true,
