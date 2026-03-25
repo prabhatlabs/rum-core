@@ -1,7 +1,8 @@
 import { cors } from '@elysiajs/cors'
-import html from '@elysiajs/html'
-import { initEventDB, initMainDB, cacheService } from '@rum-core/db'
+import { staticPlugin } from '@elysiajs/static'
+import { cacheService, initEventDB, initMainDB } from '@rum-core/db'
 import { APIErrorResponse, failResponse } from '@rum-core/shared'
+import { file } from 'bun'
 import Elysia from 'elysia'
 import { ENV } from './constants/envvars'
 import authRoute from './routes/auth.routes'
@@ -25,6 +26,9 @@ const app = new Elysia({
         exposeHeaders: ['Set-Cookie'],
         preflight: true,
     }))
+    .use(staticPlugin({
+        assets: 'public'
+    }))
     .onError(({ error, set, request }) => {
         if (error instanceof APIErrorResponse) {
             set.status = error.code
@@ -41,24 +45,6 @@ const app = new Elysia({
     .use(projectsRoutes)
     .use(usageRoutes)
     .use(cronRoutes)
-    .use(html())
-    .get('/', ({ set }) => {
-        const url = "https://ref.prabhatlabs.dev"
-        set.headers
-        return `
-            <!DOCTYPE html>
-            <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="refresh" content="1;url=${url}" />
-                    <script>window.location.href = "${url}";</script>
-                </head>
-                <body>
-                    <p>${url ? "Redirecting..." : "Ahoy! Something went wrong"}</p>
-                    <p>Click <a href="${url}">here</a>,if you are not redirected.</p>
-                </body>
-            </html>
-        `
-    })
+    .get('/favicon.ico', () => file('public/favicon.ico'))
     .get('/health', () => ({ status: 'ok' }))
     .listen(ENV.PORT, () => console.log(`[INFO] rum-core api running on port ${ENV.PORT}\n`))

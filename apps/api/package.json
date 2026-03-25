@@ -17,8 +17,8 @@
   "dependencies": {
     "@elysiajs/cookie": "^0.8.0",
     "@elysiajs/cors": "^1.4.1",
-    "@elysiajs/html": "^1.4.0",
     "@elysiajs/jwt": "^1.4.1",
+    "@elysiajs/static": "^1.4.7",
     "@neondatabase/serverless": "^1.0.2",
     "@rum-core/db": "workspace:*",
     "@rum-core/shared": "workspace:*",
