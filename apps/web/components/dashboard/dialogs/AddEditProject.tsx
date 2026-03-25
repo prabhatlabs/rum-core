@@ -36,7 +36,8 @@ export default function AddEditProject() {
     } = useDialog();
     const isEdit = !!projectId;
 
-    const { getProject, createProject, updateProject, projects } = useProjects();
+    const { getProject, createProject, updateProject, projects } =
+        useProjects();
     const { user } = useAuth();
 
     const [fields, setFields] = useState<ProjectInput>(initialState);
@@ -91,7 +92,9 @@ export default function AddEditProject() {
                 const maxProjects = user?.plan_limits.projects ?? 0;
                 const currentCount = projects?.length ?? 0;
                 if (currentCount >= maxProjects) {
-                    openUpgrade(`You have reached the maximum of ${maxProjects} projects on your current plan.`);
+                    openUpgrade(
+                        `You have reached the maximum of ${maxProjects} projects on your current plan.`,
+                    );
                     return;
                 }
             }
@@ -183,7 +186,9 @@ export default function AddEditProject() {
                                 ) : (
                                     <Plus />
                                 )}
-                                <span>{isEdit ? "Save Changes" : "Create"}</span>
+                                <span>
+                                    {isEdit ? "Save Changes" : "Create"}
+                                </span>
                             </Button>
                         </DialogFooter>
                     </div>

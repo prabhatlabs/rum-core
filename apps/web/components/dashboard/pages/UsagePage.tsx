@@ -165,7 +165,10 @@ function PlanLimitsDropdown() {
     const rows = [
         { label: "Plan", value: plan?.type?.toUpperCase() ?? "FREE" },
         { label: "Max Projects", value: String(limits.projects) },
-        { label: "Daily Calls Limit", value: limits.calls_per_day.toLocaleString() },
+        {
+            label: "Daily Calls Limit",
+            value: limits.calls_per_day.toLocaleString(),
+        },
         { label: "Data Retention", value: `${limits.retention_days} days` },
         { label: "Time Ranges", value: limits.time_ranges.join(", ") },
     ];
@@ -185,13 +188,14 @@ function PlanLimitsDropdown() {
                     </p>
                     <div className="space-y-2">
                         {rows.map((row) => (
-                            <div key={row.label} className="flex justify-between text-xs">
+                            <div
+                                key={row.label}
+                                className="flex justify-between text-xs"
+                            >
                                 <span className="text-muted-foreground">
                                     {row.label}
                                 </span>
-                                <span className="font-medium">
-                                    {row.value}
-                                </span>
+                                <span className="font-medium">{row.value}</span>
                             </div>
                         ))}
                     </div>

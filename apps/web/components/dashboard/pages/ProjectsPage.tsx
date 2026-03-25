@@ -29,8 +29,12 @@ import { DashboardDialogs } from "../dialogs";
 export function ProjectsPage() {
     const { projects, isLoading, setCurrentProject } = useProjects();
     const { openAddEditProject, openDeleteProject } = useDialog();
-    
-    const totalCalls = projects?.reduce((acc, project) => acc + (project.usage[0]?.calls_used || 0), 0) || 0;
+
+    const totalCalls =
+        projects?.reduce(
+            (acc, project) => acc + (project.usage[0]?.calls_used || 0),
+            0,
+        ) || 0;
 
     function renderUsageBar(project: Project) {
         const calls = project.usage[0]?.calls_used || 0;
@@ -61,7 +65,9 @@ export function ProjectsPage() {
                         <TableHead className="border-r">Name</TableHead>
                         <TableHead className="border-r">Key</TableHead>
                         <TableHead className="border-r">Origin</TableHead>
-                        <TableHead className="border-r">Usage out of Total (today)</TableHead>
+                        <TableHead className="border-r">
+                            Usage out of Total (today)
+                        </TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -89,8 +95,12 @@ export function ProjectsPage() {
                                         projectKey={project.project_key}
                                     />
                                 </TableCell>
-                                <TableCell className="border-r">{project.origin}</TableCell>
-                                <TableCell className="border-r">{renderUsageBar(project)}</TableCell>
+                                <TableCell className="border-r">
+                                    {project.origin}
+                                </TableCell>
+                                <TableCell className="border-r">
+                                    {renderUsageBar(project)}
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <ActionDropdown
                                         onEdit={() =>

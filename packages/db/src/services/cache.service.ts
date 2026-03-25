@@ -16,18 +16,31 @@ export function getRedis(): Redis {
     return _redis;
 }
 
-function buildKey(projectKey: string, timeRange: TimeRange, tableNames: string[]): string {
+function buildKey(
+    projectKey: string,
+    timeRange: TimeRange,
+    tableNames: string[],
+): string {
     const sorted = [...tableNames].sort().join(",");
     return `cache:${projectKey}:${timeRange}:${sorted}`;
 }
 
-export async function get(projectKey: string, timeRange: TimeRange, tableNames: string[]): Promise<Record<string, unknown[]> | null> {
+export async function get(
+    projectKey: string,
+    timeRange: TimeRange,
+    tableNames: string[],
+): Promise<Record<string, unknown[]> | null> {
     const key = buildKey(projectKey, timeRange, tableNames);
     const data = await getRedis().get(key);
     return data as Record<string, unknown[]> | null;
 }
 
-export async function set(projectKey: string, timeRange: TimeRange, tableNames: string[], data: Record<string, unknown[]>): Promise<void> {
+export async function set(
+    projectKey: string,
+    timeRange: TimeRange,
+    tableNames: string[],
+    data: Record<string, unknown[]>,
+): Promise<void> {
     const key = buildKey(projectKey, timeRange, tableNames);
     const ttl = constants.plans.CACHE_TTL[timeRange];
     await getRedis().set(key, JSON.stringify(data), { ex: ttl });
@@ -38,7 +51,10 @@ export async function invalidateProject(projectKey: string): Promise<void> {
     const pattern = `cache:${projectKey}:*`;
     let cursor = 0;
     do {
-        const [nextCursor, keys] = await redis.scan(cursor, { match: pattern, count: 100 });
+        const [nextCursor, keys] = await redis.scan(cursor, {
+            match: pattern,
+            count: 100,
+        });
         cursor = Number(nextCursor);
         if (keys.length > 0) {
             await redis.del(...keys);

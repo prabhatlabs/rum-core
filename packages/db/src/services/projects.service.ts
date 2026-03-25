@@ -1,7 +1,7 @@
 import { APIErrorResponse } from "@rum-core/shared";
 import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { getMainDB } from '../maindb/client';
+import { getMainDB } from "../maindb/client";
 import { projects, usage } from "../maindb/schema";
 import { isValidOrigin } from "../utils/links";
 
@@ -43,14 +43,29 @@ export async function createProject(
     user_id: string,
     origin: string,
     name: string,
-    maxProjectCountAllowed = 0
+    maxProjectCountAllowed = 0,
 ) {
     const db = getMainDB();
-    const existing = await db.$count(projects, sql`projects.user_id = ${user_id}`);
-    if (maxProjectCountAllowed <= existing) throw new APIErrorResponse("LimitExceeded", "Limit exceeded", "You have reached the maximum number of projects", 400);
+    const existing = await db.$count(
+        projects,
+        sql`projects.user_id = ${user_id}`,
+    );
+    if (maxProjectCountAllowed <= existing)
+        throw new APIErrorResponse(
+            "LimitExceeded",
+            "Limit exceeded",
+            "You have reached the maximum number of projects",
+            400,
+        );
 
     const isValid = isValidOrigin(origin);
-    if (!isValid) throw new APIErrorResponse("ValueError", "Invalid origin", "Origin is not a valid URL", 400);
+    if (!isValid)
+        throw new APIErrorResponse(
+            "ValueError",
+            "Invalid origin",
+            "Origin is not a valid URL",
+            400,
+        );
 
     const projectKey = nanoid(24);
     const [project] = await db
@@ -59,7 +74,12 @@ export async function createProject(
         .returning();
 
     if (!project) {
-        throw new APIErrorResponse("InternalServerError", "Something went wrong", "Something went wrong", 500);
+        throw new APIErrorResponse(
+            "InternalServerError",
+            "Something went wrong",
+            "Something went wrong",
+            500,
+        );
     }
     return { ...project, usage: [] };
 }
@@ -71,7 +91,13 @@ export async function updateProject(
     origin: string,
 ) {
     const isValid = isValidOrigin(origin);
-    if (!isValid) throw new APIErrorResponse("ValueError", "Invalid origin", "Origin is not a valid URL", 400);
+    if (!isValid)
+        throw new APIErrorResponse(
+            "ValueError",
+            "Invalid origin",
+            "Origin is not a valid URL",
+            400,
+        );
 
     const db = getMainDB();
     const [project] = await db
@@ -81,7 +107,12 @@ export async function updateProject(
         .returning();
 
     if (!project) {
-        throw new APIErrorResponse("InternalServerError", "Something went wrong", "Something went wrong", 500);
+        throw new APIErrorResponse(
+            "InternalServerError",
+            "Something went wrong",
+            "Something went wrong",
+            500,
+        );
     }
     return { ...project, usage: [] };
 }

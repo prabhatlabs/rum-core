@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Generated files
+*.generated.ts
+*.generated.js
+
+# Turso / SQLite
+*.db
+*.sqlite
+
+# Drizzle migrations (auto-generated)
+**/drizzle/
+
+# Coverage
+coverage/
+
+# Env files
+.env
+.env.*
+
+# Package manager files
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Cloudflare
+.wrangler/
+
+# OS
+.DS_Store

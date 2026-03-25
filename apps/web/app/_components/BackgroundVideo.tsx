@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 export function BackgroundVideo({
     src,
-    className
+    className,
 }: {
     src: string;
     className?: string;
@@ -44,7 +44,10 @@ export function BackgroundVideo({
             const videoAspect = vw / vh;
             const canvasAspect = cw / ch;
 
-            let sx = 0, sy = 0, sw = vw, sh = vh;
+            let sx = 0,
+                sy = 0,
+                sw = vw,
+                sh = vh;
 
             if (videoAspect > canvasAspect) {
                 sw = vh * canvasAspect;
@@ -74,10 +77,5 @@ export function BackgroundVideo({
         };
     }, [src]);
 
-    return (
-        <canvas
-            ref={canvasRef}
-            className={className}
-        />
-    );
+    return <canvas ref={canvasRef} className={className} />;
 }

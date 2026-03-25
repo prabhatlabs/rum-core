@@ -1,25 +1,28 @@
-'use client'
+"use client";
 
-import { tabTables } from '@/components/dashboard/pages'
-import { DataRenderer } from '@/components/dashboard/DataRenderer'
-import { getTablesByTimeRange, useProjectTables } from '@/hooks/api/use-project-tables'
-import { useCurrentProject } from '@/hooks/api/use-projects'
-import { useTabState } from '@/hooks/use-tab-state'
+import { tabTables } from "@/components/dashboard/pages";
+import { DataRenderer } from "@/components/dashboard/DataRenderer";
+import {
+    getTablesByTimeRange,
+    useProjectTables,
+} from "@/hooks/api/use-project-tables";
+import { useCurrentProject } from "@/hooks/api/use-projects";
+import { useTabState } from "@/hooks/use-tab-state";
 
 export function GeographyPage() {
-    const timeRange = useTabState((s) => s.getTimeRange('geography'))
-    const setTimeRange = useTabState((s) => s.setTimeRange)
-    const selectedTable = useTabState((s) => s.getSelectedTable('geography'))
-    const setSelectedTable = useTabState((s) => s.setSelectedTable)
-    const { projectId } = useCurrentProject()
+    const timeRange = useTabState((s) => s.getTimeRange("geography"));
+    const setTimeRange = useTabState((s) => s.setTimeRange);
+    const selectedTable = useTabState((s) => s.getSelectedTable("geography"));
+    const setSelectedTable = useTabState((s) => s.setSelectedTable);
+    const { projectId } = useCurrentProject();
 
     const { tableData, isLoading, isValidating, mutate } = useProjectTables({
-        projectId: projectId ?? '',
-        tab: 'geography',
-        timeRange
-    })
+        projectId: projectId ?? "",
+        tab: "geography",
+        timeRange,
+    });
 
-    const tables = getTablesByTimeRange(tabTables['geography'], timeRange)
+    const tables = getTablesByTimeRange(tabTables["geography"], timeRange);
 
     return (
         <DataRenderer
@@ -27,11 +30,11 @@ export function GeographyPage() {
             tableNames={tables}
             data={tableData}
             timeRange={timeRange}
-            onTimeRangeChange={(range) => setTimeRange('geography', range)}
+            onTimeRangeChange={(range) => setTimeRange("geography", range)}
             onRefresh={mutate}
             isRefreshing={isLoading || isValidating}
             selectedTable={selectedTable}
-            onTableSelect={(table) => setSelectedTable('geography', table)}
+            onTableSelect={(table) => setSelectedTable("geography", table)}
         />
-    )
+    );
 }

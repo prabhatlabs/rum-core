@@ -4,9 +4,11 @@ import * as schema from "./schema";
 
 let _sql: Client | null = null;
 
-let _db: LibSQLDatabase<typeof schema> & {
-    $client: Client;
-} | null = null;
+let _db:
+    | (LibSQLDatabase<typeof schema> & {
+          $client: Client;
+      })
+    | null = null;
 
 export function initEventDB(url: string, authToken: string) {
     if (_db) {
@@ -15,10 +17,10 @@ export function initEventDB(url: string, authToken: string) {
 
     _sql = createClient({
         url,
-        authToken
+        authToken,
     });
-    _db = drizzle(_sql, { schema }); 
-    console.log('Connected to eventdb');
+    _db = drizzle(_sql, { schema });
+    console.log("Connected to eventdb");
 }
 
 export function getEventDB() {

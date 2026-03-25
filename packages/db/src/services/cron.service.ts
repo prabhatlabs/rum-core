@@ -1,16 +1,12 @@
-import {
-    getCurrentMonthStr,
-    getPreviousMonthStr
-} from "@rum-core/shared";
-import { getMainDB } from '../maindb/client';
+import { getCurrentMonthStr, getPreviousMonthStr } from "@rum-core/shared";
+import { getMainDB } from "../maindb/client";
 import {
     aggregateDailyFromHourly,
     aggregateHourlyFromRaw,
     cleanupHourlyRollups,
-    cleanupOldData
-} from './rollup.service';
-import { cleanupUsage } from './usage.service';
-
+    cleanupOldData,
+} from "./rollup.service";
+import { cleanupUsage } from "./usage.service";
 
 export async function runHourlyCron(): Promise<void> {
     await aggregateHourlyFromRaw();
@@ -25,7 +21,7 @@ export async function runDailyCron(): Promise<void> {
 
 export async function runMonthlySummary(): Promise<void> {
     const db = getMainDB();
-    
+
     const previousMonthStr = getPreviousMonthStr();
     const currentMonthStr = getCurrentMonthStr();
 

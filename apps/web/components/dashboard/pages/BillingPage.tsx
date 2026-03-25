@@ -4,5 +4,5 @@ export function BillingPage() {
             <h1 className="text-2xl font-bold">Billing</h1>
             <p className="text-muted-foreground">Coming soon.</p>
         </div>
-    )
+    );
 }

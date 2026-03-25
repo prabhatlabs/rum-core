@@ -47,7 +47,9 @@ export default function ShowProjectKey() {
                         <DialogHeader>
                             <DialogTitle>{"Project Key"}</DialogTitle>
                             <DialogDescription>
-                                {"Copy the project key and save it somewhere safe."}
+                                {
+                                    "Copy the project key and save it somewhere safe."
+                                }
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex items-center justify-center">
@@ -58,7 +60,11 @@ export default function ShowProjectKey() {
                             )}
                         </div>
                         <DialogFooter className="mt-auto pt-4">
-                            <Button variant="outline" className="w-full" onClick={handleConnect}>
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={handleConnect}
+                            >
                                 <Code className="size-4" />
                                 Connect to your site
                             </Button>

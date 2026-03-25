@@ -1,36 +1,39 @@
 export interface ApiResponse<T = null> {
-    success: boolean
-    message: string
-    data: T | null
-    error: string | null
+    success: boolean;
+    message: string;
+    data: T | null;
+    error: string | null;
 }
 
-export type PlanLimits = {
-    readonly projects: 2;
-    readonly calls_per_day: 80000;
-    readonly retention_days: 7;
-    readonly time_ranges: readonly ["12h", "24h", "7d"];
-} | {
-    readonly projects: 8;
-    readonly calls_per_day: 800000;
-    readonly retention_days: 30;
-    readonly time_ranges: readonly["12h", "24h", "7d", "30d"];
-} | {
-    readonly projects: number;
-    readonly calls_per_day: number;
-    readonly retention_days: number;
-    readonly time_ranges: readonly["12h", "24h", "7d", "30d"];
-}
+export type PlanLimits =
+    | {
+          readonly projects: 2;
+          readonly calls_per_day: 80000;
+          readonly retention_days: 7;
+          readonly time_ranges: readonly ["12h", "24h", "7d"];
+      }
+    | {
+          readonly projects: 8;
+          readonly calls_per_day: 800000;
+          readonly retention_days: 30;
+          readonly time_ranges: readonly ["12h", "24h", "7d", "30d"];
+      }
+    | {
+          readonly projects: number;
+          readonly calls_per_day: number;
+          readonly retention_days: number;
+          readonly time_ranges: readonly ["12h", "24h", "7d", "30d"];
+      };
 
 export interface User {
-    plan_limits: PlanLimits,
-    id: string
-    name: string
-    email: string
-    avatar_url: string | null
-    provider: 'google' | 'github'
-    created_at: string
-    plan: Plan
+    plan_limits: PlanLimits;
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+    provider: "google" | "github";
+    created_at: string;
+    plan: Plan;
 }
 
 export interface Plan {
@@ -40,7 +43,7 @@ export interface Plan {
     type: string;
     status: string;
     updated_at: Date | null;
-};
+}
 
 export interface Usage {
     date: string;

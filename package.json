@@ -1,26 +1,26 @@
 {
-  "name": "rum-core",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md,html}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md,html}\"",
-    "build:script": "bun run --cwd packages/script build",
-    "run:api": "cd apps/api && bun start",
-    "docker:build": "docker build -t rum-core ."
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@upstash/redis": "^1.37.0"
-  }
+    "name": "rum-core",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md,html}\"",
+        "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md,html}\"",
+        "build:script": "bun run --cwd packages/script build",
+        "run:api": "cd apps/api && bun start",
+        "docker:build": "docker build -t rum-core ."
+    },
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@upstash/redis": "^1.37.0"
+    }
 }

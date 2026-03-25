@@ -29,7 +29,11 @@ export function isTimestamp(value: number): boolean {
     return value > 1_000_000_000_000;
 }
 
-function formatValue(value: unknown, showDate: boolean, showTime: boolean): string {
+function formatValue(
+    value: unknown,
+    showDate: boolean,
+    showTime: boolean,
+): string {
     if (value === null || value === undefined || value === "") return "-";
     if (typeof value === "number") {
         if (isTimestamp(value)) {
@@ -47,7 +51,14 @@ function formatValue(value: unknown, showDate: boolean, showTime: boolean): stri
     return String(value);
 }
 
-export function TableBox({ title, data = [], className, timeRange = "24h", isLoading, showTitle = true }: TableBoxProps) {
+export function TableBox({
+    title,
+    data = [],
+    className,
+    timeRange = "24h",
+    isLoading,
+    showTitle = true,
+}: TableBoxProps) {
     const isHourly = timeRange === "12h" || timeRange === "24h";
     const isDaily = timeRange === "7d" || timeRange === "30d";
     const showDate = !isHourly;
@@ -90,15 +101,26 @@ export function TableBox({ title, data = [], className, timeRange = "24h", isLoa
                         <TableBody>
                             {isLoading ? (
                                 <>
-                                    {Array.from({ length: 2 }).map((_, rowIdx) => (
-                                        <TableRow key={rowIdx}>
-                                            {Array.from({ length: 5 }).map((_, colIdx) => (
-                                                <TableCell key={colIdx} className={colIdx !== 0 ? "border-l" : ""}>
-                                                    <Skeleton className="h-4 w-full rounded" />
-                                                </TableCell>
-                                            ))}
-                                        </TableRow>
-                                    ))}
+                                    {Array.from({ length: 2 }).map(
+                                        (_, rowIdx) => (
+                                            <TableRow key={rowIdx}>
+                                                {Array.from({ length: 5 }).map(
+                                                    (_, colIdx) => (
+                                                        <TableCell
+                                                            key={colIdx}
+                                                            className={
+                                                                colIdx !== 0
+                                                                    ? "border-l"
+                                                                    : ""
+                                                            }
+                                                        >
+                                                            <Skeleton className="h-4 w-full rounded" />
+                                                        </TableCell>
+                                                    ),
+                                                )}
+                                            </TableRow>
+                                        ),
+                                    )}
                                 </>
                             ) : data.length === 0 ? (
                                 <TableRow>
@@ -113,7 +135,12 @@ export function TableBox({ title, data = [], className, timeRange = "24h", isLoa
                                 data.map((row, idx) => (
                                     <TableRow key={idx}>
                                         {columns.map((col, key) => (
-                                            <TableCell key={col} className={key !== 0 ? "border-l" : ""}>
+                                            <TableCell
+                                                key={col}
+                                                className={
+                                                    key !== 0 ? "border-l" : ""
+                                                }
+                                            >
                                                 {formatValue(
                                                     (
                                                         row as Record<

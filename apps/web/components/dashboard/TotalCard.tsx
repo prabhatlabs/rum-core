@@ -10,8 +10,10 @@ export function aggregateField(rows: unknown[], field: string): number | null {
     }, 0);
 
     // avg or sum
-    return field.endsWith("_ms") || field.startsWith("avg_") || field.endsWith("_pct")
-        ? (sum / rows.length)
+    return field.endsWith("_ms") ||
+        field.startsWith("avg_") ||
+        field.endsWith("_pct")
+        ? sum / rows.length
         : sum;
 }
 
@@ -29,7 +31,13 @@ interface TotalCardProps {
     className?: string;
 }
 
-export function TotalCard({ title, value, unit, isLoading, className }: TotalCardProps) {
+export function TotalCard({
+    title,
+    value,
+    unit,
+    isLoading,
+    className,
+}: TotalCardProps) {
     if (isLoading) {
         return <TotalCardSkeleton />;
     }

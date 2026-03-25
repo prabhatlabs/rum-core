@@ -1,8 +1,8 @@
 export function getCurrentDate(): string {
     const now = new Date();
     const year = now.getUTCFullYear();
-    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(now.getUTCDate()).padStart(2, '0');
+    const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(now.getUTCDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
 }
 
@@ -31,26 +31,38 @@ export function getDayTimestamp(timestamp: number): number {
 }
 
 export function getCutoffTimestamp(days: number): number {
-    return Date.now() - (days * 24 * 60 * 60 * 1000);
+    return Date.now() - days * 24 * 60 * 60 * 1000;
 }
 
 export function getPreviousMonthTimestamp(): number {
     const now = new Date();
-    const firstDayOfPreviousMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
+    const firstDayOfPreviousMonth = new Date(
+        now.getUTCFullYear(),
+        now.getUTCMonth() - 1,
+        1,
+    );
     return firstDayOfPreviousMonth.getTime();
 }
 
 export function getPreviousMonthStr(): string {
     const now = new Date();
-    const firstDayOfMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() - 1, 1);
-    return firstDayOfMonth.toISOString().split('T')[0] ?? '';
+    const firstDayOfMonth = new Date(
+        now.getUTCFullYear(),
+        now.getUTCMonth() - 1,
+        1,
+    );
+    return firstDayOfMonth.toISOString().split("T")[0] ?? "";
 }
 
 export function getCurrentMonthStr(): string {
-    return new Date().toISOString().split('T')[0] ?? '';
+    return new Date().toISOString().split("T")[0] ?? "";
 }
 
-export function formatDateTime(timestamp: number, showDate = true, showTime = true): string {
+export function formatDateTime(
+    timestamp: number,
+    showDate = true,
+    showTime = true,
+): string {
     const date = new Date(timestamp);
     if (!showDate && !showTime) return "";
     if (showDate && !showTime) {

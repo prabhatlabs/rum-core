@@ -1,20 +1,23 @@
-import { fetcher } from '@/lib/fetcher'
-import useSWR from 'swr'
+import { fetcher } from "@/lib/fetcher";
+import useSWR from "swr";
 
-export type UsageTimeRange = 'today' | '7d' | '30d' | '60d'
+export type UsageTimeRange = "today" | "7d" | "30d" | "60d";
 
 export interface UsageByDate {
-    date: string
-    calls_used: number
+    date: string;
+    calls_used: number;
 }
 
-export function useUserUsage(range: UsageTimeRange = '7d') {
+export function useUserUsage(range: UsageTimeRange = "7d") {
     const { data, isLoading, error, mutate } = useSWR<UsageByDate[]>(
         `/usage?range=${range}`,
-        () => fetcher<UsageByDate[]>(`/usage?range=${range}`, { showToast: false }),
-    )
+        () =>
+            fetcher<UsageByDate[]>(`/usage?range=${range}`, {
+                showToast: false,
+            }),
+    );
 
-    const totalCalls = data?.reduce((sum, d) => sum + d.calls_used, 0) ?? 0
+    const totalCalls = data?.reduce((sum, d) => sum + d.calls_used, 0) ?? 0;
 
     return {
         data: data ?? [],
@@ -22,5 +25,5 @@ export function useUserUsage(range: UsageTimeRange = '7d') {
         isLoading,
         error,
         mutate,
-    }
+    };
 }

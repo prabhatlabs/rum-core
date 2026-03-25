@@ -1,20 +1,20 @@
 {
-  "version": "1.0.9",
-  "name": "@rum-core/script",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "esbuild src/index.ts --bundle --minify --outfile=dist/rum-core.js --platform=browser --target=es2018 --global-name=rumCore"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "esbuild": "^0.24.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "web-vitals": "^5.1.0"
-  }
+    "version": "1.0.9",
+    "name": "@rum-core/script",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "build": "esbuild src/index.ts --bundle --minify --outfile=dist/rum-core.js --platform=browser --target=es2018 --global-name=rumCore"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "esbuild": "^0.24.0"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "web-vitals": "^5.1.0"
+    }
 }

@@ -5,7 +5,7 @@ import {
     getCutoffTimestamp,
     getPreviousDayTimestamp,
     getPreviousHourTimestamp,
-    type TimeRange
+    type TimeRange,
 } from "@rum-core/shared";
 import { eq, isNull, or } from "drizzle-orm";
 import { getEventDBClient } from "../eventdb/client";
@@ -14,8 +14,10 @@ import { plans, projects } from "../maindb/schema";
 import * as cacheService from "./cache.service";
 
 const RETENTION = constants.plans.RETENTION;
-const FREE_RETENTION_WITH_BUFFER = constants.plans.PLAN_LIMITS.free.retention_days + 2;   // 9 days
-const PRO_RETENTION_WITH_BUFFER = constants.plans.PLAN_LIMITS.pro.retention_days + 2;     // 32 days
+const FREE_RETENTION_WITH_BUFFER =
+    constants.plans.PLAN_LIMITS.free.retention_days + 2; // 9 days
+const PRO_RETENTION_WITH_BUFFER =
+    constants.plans.PLAN_LIMITS.pro.retention_days + 2; // 32 days
 const RAW_TABLES = ["request_events", "page_vitals"];
 const HOURLY_TABLES = [
     "re_hourly_summary",
@@ -922,9 +924,11 @@ export async function cleanupHourlyRollups(): Promise<void> {
     const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
     const eventDBClient = getEventDBClient();
     await Promise.all(
-        HOURLY_TABLES.map(table =>
-            eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE hour_at < ${cutoff24h}` })
-        )
+        HOURLY_TABLES.map((table) =>
+            eventDBClient.execute({
+                sql: `DELETE FROM ${table} WHERE hour_at < ${cutoff24h}`,
+            }),
+        ),
     );
 }
 
@@ -939,10 +943,10 @@ export async function cleanupOldData(): Promise<void> {
         .select({ project_key: projects.project_key })
         .from(projects)
         .leftJoin(plans, eq(plans.user_id, projects.user_id))
-        .where(or(eq(plans.type, 'free'), isNull(plans.type)));
+        .where(or(eq(plans.type, "free"), isNull(plans.type)));
 
-    const freeKeys = freeProjects.map(p => p.project_key);
-    const freePh = freeKeys.map(() => '?').join(', ');
+    const freeKeys = freeProjects.map((p) => p.project_key);
+    const freePh = freeKeys.map(() => "?").join(", ");
 
     const buildWhere = (timeCol: string) => {
         if (freeKeys.length === 0) {
@@ -954,12 +958,22 @@ export async function cleanupOldData(): Promise<void> {
         };
     };
 
-    const raw = buildWhere('timestamp');
-    const daily = buildWhere('day_at');
+    const raw = buildWhere("timestamp");
+    const daily = buildWhere("day_at");
 
     await Promise.all([
-        ...RAW_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE ${raw.clause}`, args: raw.args })),
-        ...DAILY_TABLES.map(table => eventDBClient.execute({ sql: `DELETE FROM ${table} WHERE ${daily.clause}`, args: daily.args })),
+        ...RAW_TABLES.map((table) =>
+            eventDBClient.execute({
+                sql: `DELETE FROM ${table} WHERE ${raw.clause}`,
+                args: raw.args,
+            }),
+        ),
+        ...DAILY_TABLES.map((table) =>
+            eventDBClient.execute({
+                sql: `DELETE FROM ${table} WHERE ${daily.clause}`,
+                args: daily.args,
+            }),
+        ),
     ]);
 }
 
@@ -967,7 +981,7 @@ export async function fetchRollupTables(
     userId: string,
     projectId: string,
     timeRange: TimeRange,
-    tableNames: string[]
+    tableNames: string[],
 ): Promise<Record<string, unknown[]>> {
     const eventDBClient = getEventDBClient();
     const mainDB = getMainDB();
@@ -977,33 +991,52 @@ export async function fetchRollupTables(
     ]);
 
     if (!project || project.user_id !== userId) {
-        throw new APIErrorResponse("UnauthorizedUserError", "Forbidden", "Project not found or access denied", 403);
+        throw new APIErrorResponse(
+            "UnauthorizedUserError",
+            "Forbidden",
+            "Project not found or access denied",
+            403,
+        );
     }
 
-    const planType = (userPlan?.type ?? 'free') as keyof typeof constants.plans.PLAN_LIMITS;
-    const allowedTimeRanges: TimeRange[] = [...constants.plans.PLAN_LIMITS[planType].time_ranges];
+    const planType = (userPlan?.type ??
+        "free") as keyof typeof constants.plans.PLAN_LIMITS;
+    const allowedTimeRanges: TimeRange[] = [
+        ...constants.plans.PLAN_LIMITS[planType].time_ranges,
+    ];
 
     if (!allowedTimeRanges.includes(timeRange)) {
-        throw new APIErrorResponse("LimitExceeded", "Forbidden", `Time range '${timeRange}' not allowed for your plan`, 403);
+        throw new APIErrorResponse(
+            "LimitExceeded",
+            "Forbidden",
+            `Time range '${timeRange}' not allowed for your plan`,
+            403,
+        );
     }
 
     const now = getCurrentTime();
-    const isHourly = timeRange === '12h' || timeRange === '24h';
-    const days = parseInt(timeRange.replace('h', '').replace('d', ''));
-    const isDays = timeRange.includes('d');
+    const isHourly = timeRange === "12h" || timeRange === "24h";
+    const days = parseInt(timeRange.replace("h", "").replace("d", ""));
+    const isDays = timeRange.includes("d");
     const rangeMs = isDays ? days * 24 * 60 * 60 * 1000 : days * 60 * 60 * 1000;
     const startTime = now - rangeMs;
 
-    const cached = await cacheService.get(project.project_key, timeRange, tableNames);
+    const cached = await cacheService.get(
+        project.project_key,
+        timeRange,
+        tableNames,
+    );
     if (cached !== null) {
         return cached;
     }
 
     const data: Record<string, unknown[]> = {};
-    const timeColumn = isHourly ? 'hour_at' : 'day_at';
+    const timeColumn = isHourly ? "hour_at" : "day_at";
 
     const queries = tableNames.map(async (tableName) => {
-        const validTables = isHourly ? new Set(HOURLY_TABLES) : new Set(DAILY_TABLES);
+        const validTables = isHourly
+            ? new Set(HOURLY_TABLES)
+            : new Set(DAILY_TABLES);
 
         if (!validTables.has(tableName)) {
             return { tableName, data: [] };
@@ -1026,7 +1059,9 @@ export async function fetchRollupTables(
         data[tableName] = tableData;
     }
 
-    cacheService.set(project.project_key, timeRange, tableNames, data).catch(() => {});
+    cacheService
+        .set(project.project_key, timeRange, tableNames, data)
+        .catch(() => {});
 
     return data;
 }

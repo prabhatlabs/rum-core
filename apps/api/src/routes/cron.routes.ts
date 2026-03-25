@@ -3,14 +3,16 @@ import Elysia from "elysia";
 import { cronMiddleware } from "../middleware/cron.middleware";
 
 const cronRoutes = new Elysia({
-    prefix: "/cron"
+    prefix: "/cron",
 })
     .use(cronMiddleware)
     .post("/hourly", async () => {
         await cronService.runHourlyCron();
-    }).post("/daily", async () => {
+    })
+    .post("/daily", async () => {
         await cronService.runDailyCron();
-    }).post("/monthly", async () => {
+    })
+    .post("/monthly", async () => {
         await cronService.runMonthlySummary();
     });
 

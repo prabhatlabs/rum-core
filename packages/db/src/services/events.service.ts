@@ -1,12 +1,11 @@
-import type { InferInsertModel } from 'drizzle-orm';
-import { getEventDB } from '../eventdb/client';
-import { pageVitals } from '../eventdb/schema/page-vitals';
-import { requestEvents } from '../eventdb/schema/request-events';
-import { incrementUsageHttp } from './usage.service';
+import type { InferInsertModel } from "drizzle-orm";
+import { getEventDB } from "../eventdb/client";
+import { pageVitals } from "../eventdb/schema/page-vitals";
+import { requestEvents } from "../eventdb/schema/request-events";
+import { incrementUsageHttp } from "./usage.service";
 
 export type InsertRequestEvent = InferInsertModel<typeof requestEvents>;
 export type InsertPageVitals = InferInsertModel<typeof pageVitals>;
-
 
 export async function bulkInsertRequestEvents(events: InsertRequestEvent[]) {
     if (events.length === 0) return;

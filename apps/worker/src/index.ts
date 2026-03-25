@@ -16,8 +16,8 @@ app.use(
     "/*",
     cors({
         origin: (origin) => origin, // echo back whatever origin is requesting
-        allowMethods: ['GET', 'POST', 'OPTIONS'],
-        allowHeaders: ['Content-Type'],
+        allowMethods: ["GET", "POST", "OPTIONS"],
+        allowHeaders: ["Content-Type"],
     }),
 );
 

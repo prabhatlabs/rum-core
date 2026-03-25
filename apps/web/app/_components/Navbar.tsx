@@ -31,12 +31,8 @@ export default function Navbar() {
                     </Link>
                 </div>
 
-                <div className="flex items-center justify-center gap-2">
-                    <Link href={"#how-to-use"}>
-                        <Button variant={"ghost"} size="lg">
-                            How to use?
-                        </Button>
-                    </Link>
+                <div className="flex items-center justify-center gap-2 z-10 text-xs md:text-sm">
+                    <Link href={"#how-to-use"}>How to use?</Link>
 
                     <Link href={"/dashboard"}>
                         <Button variant={"outline"} size="lg">

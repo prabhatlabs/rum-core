@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { create } from "zustand"
-import type { TimeRange } from "@rum-core/shared"
-import type { TabType } from "@/components/dashboard/pages"
+import { create } from "zustand";
+import type { TimeRange } from "@rum-core/shared";
+import type { TabType } from "@/components/dashboard/pages";
 
 interface TabState {
-    ranges: Partial<Record<TabType, TimeRange>>
-    selectedTables: Partial<Record<TabType, string | null>>
-    getTimeRange: (tab: TabType) => TimeRange
-    setTimeRange: (tab: TabType, range: TimeRange) => void
-    getSelectedTable: (tab: TabType) => string | null
-    setSelectedTable: (tab: TabType, table: string | null) => void
+    ranges: Partial<Record<TabType, TimeRange>>;
+    selectedTables: Partial<Record<TabType, string | null>>;
+    getTimeRange: (tab: TabType) => TimeRange;
+    setTimeRange: (tab: TabType, range: TimeRange) => void;
+    getSelectedTable: (tab: TabType) => string | null;
+    setSelectedTable: (tab: TabType, table: string | null) => void;
 }
 
 export const useTabState = create<TabState>((set, get) => ({
@@ -21,5 +21,7 @@ export const useTabState = create<TabState>((set, get) => ({
         set((state) => ({ ranges: { ...state.ranges, [tab]: range } })),
     getSelectedTable: (tab) => get().selectedTables[tab] ?? null,
     setSelectedTable: (tab, table) =>
-        set((state) => ({ selectedTables: { ...state.selectedTables, [tab]: table } })),
-}))
+        set((state) => ({
+            selectedTables: { ...state.selectedTables, [tab]: table },
+        })),
+}));

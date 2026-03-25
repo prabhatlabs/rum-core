@@ -32,8 +32,17 @@ export default function ProjectKey({
             onClick={copy}
             disabled={isLoading}
         >
-            <span>{projectKey.slice(0, 8)}{new Array(projectKey.length - 8).fill("*").join("")}</span>
-            {isLoading ? <LoadingSpinner /> : copied ? <Check className="text-success" /> : <Copy />}
+            <span>
+                {projectKey.slice(0, 8)}
+                {new Array(projectKey.length - 8).fill("*").join("")}
+            </span>
+            {isLoading ? (
+                <LoadingSpinner />
+            ) : copied ? (
+                <Check className="text-success" />
+            ) : (
+                <Copy />
+            )}
         </Button>
     );
 }

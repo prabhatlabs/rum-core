@@ -16,7 +16,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useKeepCurrentProjectInSync, useProjects } from "@/hooks/api/use-projects";
+import {
+    useKeepCurrentProjectInSync,
+    useProjects,
+} from "@/hooks/api/use-projects";
 import { useAuth } from "@/hooks/use-auth";
 import { useDialog } from "@/hooks/use-dialog";
 import { cn } from "@/lib/utils";

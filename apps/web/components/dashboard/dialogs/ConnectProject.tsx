@@ -28,12 +28,12 @@ export default function ConnectProject() {
     const projectKey = currentProject?.project_key ?? "";
 
     const codeSnippet = [
-        '<script',
+        "<script",
         `  src="${scriptUrl}"`,
         `  data-worker="${workerUrl}"`,
         `  data-key="${projectKey}"`,
-        '/>',
-    ].join('\n');
+        "/>",
+    ].join("\n");
 
     async function copy() {
         await navigator.clipboard.writeText(codeSnippet);
@@ -43,7 +43,10 @@ export default function ConnectProject() {
     }
 
     return (
-            <Dialog open={isOpen} onOpenChange={(open) => !open && closeConnectProject()}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open) => !open && closeConnectProject()}
+        >
             <DialogContent className="sm:max-w-lg overflow-hidden block! p-0">
                 <div className="flex flex-col lg:flex-row">
                     <div className="w-full lg:w-1/3 lg:shrink-0 overflow-hidden">
@@ -59,27 +62,48 @@ export default function ConnectProject() {
                         <DialogHeader>
                             <DialogTitle>Connect Your Site</DialogTitle>
                             <DialogDescription>
-                                Add this script tag to your website to start tracking.
+                                Add this script tag to your website to start
+                                tracking.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="relative bg-muted/50 p-4 my-4 overflow-hidden">
                             <pre className="text-xs overflow-x-auto pb-1">
                                 <code className="whitespace-pre">
                                     <span className="text-blue-400">{"<"}</span>
-                                    <span className="text-blue-400">{"script"}</span>{"\n"}
+                                    <span className="text-blue-400">
+                                        {"script"}
+                                    </span>
+                                    {"\n"}
                                     {"  "}
-                                    <span className="text-pink-400">{"src"}</span>
-                                    <span className="text-muted-foreground">{"="}</span>
-                                    <span className="text-green-500">{`"${scriptUrl}"`}</span>{"\n"}
+                                    <span className="text-pink-400">
+                                        {"src"}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {"="}
+                                    </span>
+                                    <span className="text-green-500">{`"${scriptUrl}"`}</span>
+                                    {"\n"}
                                     {"  "}
-                                    <span className="text-pink-400">{"data-worker"}</span>
-                                    <span className="text-muted-foreground">{"="}</span>
-                                    <span className="text-green-500">{`"${workerUrl}"`}</span>{"\n"}
+                                    <span className="text-pink-400">
+                                        {"data-worker"}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {"="}
+                                    </span>
+                                    <span className="text-green-500">{`"${workerUrl}"`}</span>
+                                    {"\n"}
                                     {"  "}
-                                    <span className="text-pink-400">{"data-key"}</span>
-                                    <span className="text-muted-foreground">{"="}</span>
-                                    <span className="text-green-500">{`"${projectKey}"`}</span>{"\n"}
-                                    <span className="text-blue-400">{"/>"}</span>
+                                    <span className="text-pink-400">
+                                        {"data-key"}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {"="}
+                                    </span>
+                                    <span className="text-green-500">{`"${projectKey}"`}</span>
+                                    {"\n"}
+                                    <span className="text-blue-400">
+                                        {"/>"}
+                                    </span>
                                 </code>
                             </pre>
                             <Button
@@ -97,7 +121,9 @@ export default function ConnectProject() {
                         </div>
                         <p className="text-xs text-muted-foreground">
                             Place this script in the{" "}
-                            <code className="text-foreground">&lt;head&gt;</code>{" "}
+                            <code className="text-foreground">
+                                &lt;head&gt;
+                            </code>{" "}
                             section of your HTML, before any other scripts.
                         </p>
                     </div>

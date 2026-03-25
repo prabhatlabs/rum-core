@@ -56,7 +56,9 @@ export function DashboardSidebar() {
             <SidebarHeader>
                 <div className="flex gap-2 items-center">
                     <Logo />
-                    <h1 className="text-foreground font-bold text-xl">RUM CORE</h1>
+                    <h1 className="text-foreground font-bold text-xl">
+                        RUM CORE
+                    </h1>
                 </div>
             </SidebarHeader>
             <SidebarContent>

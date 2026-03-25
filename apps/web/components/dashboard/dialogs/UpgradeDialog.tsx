@@ -35,7 +35,8 @@ export default function UpgradeDialog() {
                         <DialogHeader>
                             <DialogTitle>Upgrade Required</DialogTitle>
                             <DialogDescription>
-                                {reason ?? "This feature is not available on your current plan."}
+                                {reason ??
+                                    "This feature is not available on your current plan."}
                             </DialogDescription>
                         </DialogHeader>
                         <p className="text-sm text-muted-foreground">

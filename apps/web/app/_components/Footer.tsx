@@ -40,7 +40,10 @@ export default function Footer() {
                     </div>
                     <span className="text-muted-foreground text-[10px] md:text-xs">
                         Built by{" "}
-                        <Link href={"https://prabhatlabs.dev"} className="hover:underline">
+                        <Link
+                            href={"https://prabhatlabs.dev"}
+                            className="hover:underline"
+                        >
                             prabhatlabs
                         </Link>
                     </span>

@@ -178,7 +178,7 @@ export function DataRenderer({
                         );
                     })}
             </div>
-            
+
             {hasMap && countryCol && (
                 <MapWithMarkerRenderer rows={rows} countryColumn={countryCol} />
             )}

@@ -39,14 +39,14 @@ rum-core/
 
 ## Tech Stack
 
-| Layer | Stack |
-|---|---|
+| Layer          | Stack                                       |
+| -------------- | ------------------------------------------- |
 | Browser Script | Vanilla JS (~5kb), esbuild, web-vitals/slim |
-| Edge Worker | Cloudflare Workers, Hono |
-| Backend | Bun, Elysia, Drizzle ORM |
-| Frontend | Next.js (SSG), SWR, Tailwind CSS, shadcn/ui |
-| Event DB | Turso (SQLite) |
-| Business DB | Neon (Postgres) |
+| Edge Worker    | Cloudflare Workers, Hono                    |
+| Backend        | Bun, Elysia, Drizzle ORM                    |
+| Frontend       | Next.js (SSG), SWR, Tailwind CSS, shadcn/ui |
+| Event DB       | Turso (SQLite)                              |
+| Business DB    | Neon (Postgres)                             |
 
 ## Getting Started
 

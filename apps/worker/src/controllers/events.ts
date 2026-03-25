@@ -7,11 +7,21 @@ export async function ingestRequestEvents(c: Context) {
     const { events } = await c.req.json();
 
     if (!events || !Array.isArray(events) || events.length === 0) {
-        throw new APIErrorResponse('ValueError', 'Invalid events', 'Events is not an array', 400);
+        throw new APIErrorResponse(
+            "ValueError",
+            "Invalid events",
+            "Events is not an array",
+            400,
+        );
     }
 
     if (events.length > 100) {
-        throw new APIErrorResponse('ValueError', 'Too many events', 'Events is too long', 400);
+        throw new APIErrorResponse(
+            "ValueError",
+            "Too many events",
+            "Events is too long",
+            400,
+        );
     }
 
     // compute once per batch, stamp on all events
@@ -34,7 +44,12 @@ export async function ingestPageVitals(c: Context) {
     const vitals = await c.req.json();
 
     if (!vitals || typeof vitals !== "object" || Array.isArray(vitals)) {
-        throw new APIErrorResponse('ValueError', 'Invalid vitals', 'Vitals must be an object', 400);
+        throw new APIErrorResponse(
+            "ValueError",
+            "Invalid vitals",
+            "Vitals must be an object",
+            400,
+        );
     }
 
     const geo = getGeo(c);
@@ -44,7 +59,7 @@ export async function ingestPageVitals(c: Context) {
         ...vitals,
         ...geo,
         timestamp: getCurrentTime(),
-        ip_hash: ipHash
+        ip_hash: ipHash,
     };
 
     await eventsService.bulkInsertPageVitals(enriched);

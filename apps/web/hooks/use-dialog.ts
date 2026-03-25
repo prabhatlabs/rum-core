@@ -1,47 +1,47 @@
-"use client"
+"use client";
 
-import { create } from "zustand"
+import { create } from "zustand";
 
 interface DialogData {
-    isOpen: boolean
+    isOpen: boolean;
 }
 
 interface AddEditProjectData extends DialogData {
-    projectId?: string
+    projectId?: string;
 }
 
 interface ShowProjectKeyData extends DialogData {
-    projectId?: string
+    projectId?: string;
 }
 
 interface DeleteProjectData extends DialogData {
-    projectId?: string
+    projectId?: string;
 }
 
 interface UpgradeData extends DialogData {
-    reason?: string
+    reason?: string;
 }
 
 interface DialogState {
-    addEditProject: AddEditProjectData
-    openAddEditProject: (projectId?: string) => void
-    closeAddEditProject: () => void
+    addEditProject: AddEditProjectData;
+    openAddEditProject: (projectId?: string) => void;
+    closeAddEditProject: () => void;
 
-    showProjectKey: ShowProjectKeyData
-    openShowProjectKey: (projectKey: string) => void
-    closeShowProjectKey: () => void
+    showProjectKey: ShowProjectKeyData;
+    openShowProjectKey: (projectKey: string) => void;
+    closeShowProjectKey: () => void;
 
-    deleteProject: DeleteProjectData
-    openDeleteProject: (projectId: string) => void
-    closeDeleteProject: () => void
+    deleteProject: DeleteProjectData;
+    openDeleteProject: (projectId: string) => void;
+    closeDeleteProject: () => void;
 
-    connectProject: DialogData
-    openConnectProject: () => void
-    closeConnectProject: () => void
+    connectProject: DialogData;
+    openConnectProject: () => void;
+    closeConnectProject: () => void;
 
-    upgrade: UpgradeData
-    openUpgrade: (reason?: string) => void
-    closeUpgrade: () => void
+    upgrade: UpgradeData;
+    openUpgrade: (reason?: string) => void;
+    closeUpgrade: () => void;
 }
 
 export const useDialog = create<DialogState>((set) => ({
@@ -72,17 +72,12 @@ export const useDialog = create<DialogState>((set) => ({
     connectProject: {
         isOpen: false,
     },
-    openConnectProject: () =>
-        set({ connectProject: { isOpen: true } }),
-    closeConnectProject: () =>
-        set({ connectProject: { isOpen: false } }),
+    openConnectProject: () => set({ connectProject: { isOpen: true } }),
+    closeConnectProject: () => set({ connectProject: { isOpen: false } }),
 
     upgrade: {
         isOpen: false,
     },
-    openUpgrade: (reason) =>
-        set({ upgrade: { isOpen: true, reason } }),
-    closeUpgrade: () =>
-        set({ upgrade: { isOpen: false, reason: undefined } }),
-}))
-
+    openUpgrade: (reason) => set({ upgrade: { isOpen: true, reason } }),
+    closeUpgrade: () => set({ upgrade: { isOpen: false, reason: undefined } }),
+}));
