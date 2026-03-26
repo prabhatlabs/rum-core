@@ -1,7 +1,13 @@
-import { Highlighter } from "@/components/ui/highlighter";
 import { TextAnimate } from "@/components/ui/text-animate";
+import { Poiret_One } from "next/font/google";
 import { BackgroundVideo } from "./BackgroundVideo";
 import CtaButton from "./CtaButton";
+
+const poiret = Poiret_One({
+    subsets: ["latin"],
+    variable: "--font-poiret",
+    weight: "400",
+});
 
 export default function HeroSection() {
     return (
@@ -11,36 +17,41 @@ export default function HeroSection() {
                 className="absolute top-0 left-0 inset-0 w-full h-full max-h-dvh -z-10 mask-b-from-10% opacity-90"
             />
 
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col items-center justify-center pt-50 sm:pt-70">
+            <div className="max-w-7xl min-h-dvh mx-auto px-6 relative">
+                <div className="absolute top-1/2 -translate-y-[50%] left-0 md:left-1/2 md:-translate-x-[50%] w-full px-6">
                     <TextAnimate
                         animation="blurInDown"
-                        by="character"
+                        by="word"
                         once
-                        className="text-5xl sm:text-7xl lg:text-8xl text-center whitespace-pre"
+                        className={`${poiret.className} text-[84px] leading-[0.8] sm:text-9xl lg:text-[150px] sm:text-center`}
                     >
                         Stop guessing!
                     </TextAnimate>
-                    <h3 className="text-xl sm:text-3xl lg:text-5xl mt-2 md:mt-3 lg:mt-4 text-center">
+                    <TextAnimate
+                        animation="blurInDown"
+                        by="word"
+                        once
+                        className="text-3xl lg:text-5xl sm:text-center mt-6 sm:mt-8 md:mt-10 lg:mt-12"
+                    >
                         See exactly what your users experience.
-                    </h3>
-                    <p className="max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-5xl text-xs md:text-sm text-center mt-2 md:mt-3 lg:mt-4">
-                        Go beyond Lighthouse scores. Monitor{" "}
-                        <Highlighter action="underline" color="var(--primary)">
-                            real-world interactions
-                        </Highlighter>{" "}
-                        across every ISP, region, and device. Get deep
-                        visibility into broken APIs and slow page loads with{" "}
-                        <Highlighter
-                            action="highlight"
-                            color="color-mix(in oklab, var(--primary) 50%, transparent)"
+                    </TextAnimate>
+                    <div className="mt-2 md:mt-4 flex flex-col w-full sm:items-center justify-center gap-4 md:gap-6">
+                        <TextAnimate
+                            animation="blurIn"
+                            by="word"
+                            once
+                            className="text-xs md:text-sm lg:text-base sm:text-center w-full md:max-w-2xl lg:max-w-3xl leading-tight"
                         >
-                            one simple script.
-                        </Highlighter>
-                    </p>
+                            Go beyond Lighthouse scores. Monitor real-world
+                            interactions across every ISP, region, and device.
+                            Get deep visibility into broken APIs and slow page
+                            loads with one simple script.
+                        </TextAnimate>
+                        <div className="flex sm:justify-center">
+                            <CtaButton />
+                        </div>
+                    </div>
                 </div>
-
-                <CtaButton />
             </div>
         </div>
     );

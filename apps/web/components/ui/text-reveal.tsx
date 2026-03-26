@@ -1,12 +1,12 @@
 "use client";
 
+import { motion, MotionValue, useScroll, useTransform } from "motion/react";
 import {
     useRef,
     type ComponentPropsWithoutRef,
     type FC,
     type ReactNode,
 } from "react";
-import { motion, MotionValue, useScroll, useTransform } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
@@ -33,12 +33,12 @@ export const TextReveal: FC<TextRevealProps> = ({ children, className }) => {
         >
             <div
                 className={
-                    "sticky top-0 mx-auto flex h-[50%] max-w-4xl items-center bg-transparent px-4 py-20"
+                    "sticky top-0 mx-auto flex h-screen max-w-4xl items-center bg-transparent px-4 py-20"
                 }
             >
                 <span
                     className={
-                        "flex flex-wrap p-5 text-2xl font-bold text-black/20 md:p-8 md:text-3xl lg:p-10 lg:text-4xl xl:text-5xl dark:text-white/20"
+                        "flex flex-wrap p-5 text-xl font-bold text-black/20 md:p-8 md:text-3xl lg:p-10 lg:text-4xl xl:text-5xl dark:text-white/20"
                     }
                 >
                     {words.map((word, i) => {
@@ -67,7 +67,11 @@ interface WordProps {
 }
 
 const Word: FC<WordProps> = ({ children, progress, range }) => {
-    const opacity = useTransform(progress, range, [0, 1]);
+    const opacity = useTransform(
+        progress,
+        [range[0] * 0.2, range[1] * 0.2],
+        [0, 1],
+    );
     return (
         <span className="xl:lg-3 relative mx-1 lg:mx-1.5">
             <span className="absolute opacity-30">{children}</span>

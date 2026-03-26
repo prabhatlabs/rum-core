@@ -31,7 +31,7 @@ export default function Navbar() {
                     </Link>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 z-10 text-xs md:text-sm">
+                <div className="flex items-center justify-center gap-4 z-10 text-xs md:text-sm">
                     <Link href={"#how-to-use"}>How to use?</Link>
 
                     <Link href={"/dashboard"}>

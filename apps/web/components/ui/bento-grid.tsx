@@ -3,6 +3,7 @@ import { type ComponentPropsWithoutRef, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { HyperText } from "./hyper-text";
 
 interface BentoGridProps extends ComponentPropsWithoutRef<"div"> {
     children: ReactNode;
@@ -60,7 +61,7 @@ const BentoCard = ({
             <div className="pointer-events-none z-10 flex transform-gpu flex-col gap-1 transition-all duration-300 lg:group-hover:-translate-y-10">
                 <Icon className="h-12 w-12 origin-left transform-gpu text-foreground/50 transition-all duration-300 ease-in-out group-hover:scale-75" />
                 <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">
-                    {name}
+                    <HyperText startOnView={true}>{name}</HyperText>
                 </h3>
                 <p className="max-w-lg text-neutral-400">{description}</p>
             </div>
