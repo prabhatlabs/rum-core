@@ -57,7 +57,7 @@ const app = new Elysia({
     .use(projectsRoutes)
     .use(usageRoutes)
     .use(cronRoutes)
-    .get("/favicon.ico", () => file("public/favicon.ico"))
+    .get("/favicon.ico", () => file("./public/favicon.ico"))
     .get("/health", () => ({ status: "ok" }))
     .listen(ENV.PORT, () =>
         console.log(`[INFO] rum-core api running on port ${ENV.PORT}\n`),

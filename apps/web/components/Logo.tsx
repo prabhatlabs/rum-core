@@ -4,7 +4,7 @@ export function Logo({ className }: { className?: string }) {
     return (
         <div
             className={cn(
-                "bg-primary text-primary-foreground size-10 flex flex-col items-center justify-center leading-0.5",
+                "bg-primary text-primary-foreground size-10 flex flex-col items-center justify-center leading-0.5 cursor-none select-none",
                 className,
             )}
         >
