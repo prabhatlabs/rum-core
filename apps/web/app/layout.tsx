@@ -86,7 +86,7 @@ export default function RootLayout({
     return (
         <html
             lang="en"
-            className={cn("font-mono", jetbrainsMono.variable)}
+            className={jetbrainsMono.variable}
             suppressHydrationWarning
         >
             <body

@@ -5,6 +5,7 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -126,6 +127,14 @@ export default function ConnectProject() {
                             </code>{" "}
                             section of your HTML, before any other scripts.
                         </p>
+                        <DialogFooter className="mt-auto pt-4">
+                            <Button
+                                variant="outline"
+                                onClick={closeConnectProject}
+                            >
+                                Close
+                            </Button>
+                        </DialogFooter>
                     </div>
                 </div>
             </DialogContent>
