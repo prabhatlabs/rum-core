@@ -9,6 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { formatFieldLabel } from "@/lib/field-config";
 import { cn } from "@/lib/utils";
 import { formatDateTime, type TimeRange } from "@rum-core/shared";
 
@@ -19,10 +20,6 @@ interface TableBoxProps {
     timeRange?: TimeRange;
     isLoading?: boolean;
     showTitle?: boolean;
-}
-
-export function columnNameFormatter(column: string): string {
-    return column.replace("_pct", " (%)").replaceAll("_", " ");
 }
 
 export function isTimestamp(value: number): boolean {
@@ -92,7 +89,7 @@ export function TableBox({
                                             key={key}
                                             className={`capitalize ${key !== 0 ? "border-l" : ""}`}
                                         >
-                                            {columnNameFormatter(col)}
+                                            {formatFieldLabel(col)}
                                         </TableHead>
                                     ))
                                 )}

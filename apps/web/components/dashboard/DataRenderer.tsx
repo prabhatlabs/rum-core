@@ -1,18 +1,9 @@
 import { MapWithMarkerRenderer } from "@/components/dashboard/MapWithMarkerRenderer";
 import { tableNames } from "@/components/dashboard/pages";
 import { RefreshButton } from "@/components/dashboard/RefreshButton";
-import {
-    columnNameFormatter,
-    isTimestamp,
-    TableBox,
-} from "@/components/dashboard/TableBox";
+import { isTimestamp, TableBox } from "@/components/dashboard/TableBox";
 import { TimeRangeSelector } from "@/components/dashboard/TimeRangeSelector";
-import {
-    aggregateField,
-    TotalCard,
-    TotalCardSkeleton,
-    unitForField,
-} from "@/components/dashboard/TotalCard";
+import { TotalCard, TotalCardSkeleton } from "@/components/dashboard/TotalCard";
 import { Card, CardContent } from "@/components/ui/card";
 import {
     Select,
@@ -21,6 +12,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    aggregateField,
+    formatFieldLabel,
+    unitForField,
+} from "@/lib/field-config";
 import type { TimeRange } from "@rum-core/shared";
 
 type ShowMode = "table" | "cards" | "both";
@@ -158,7 +154,8 @@ export function DataRenderer({
                                         numericCols.map((col) => (
                                             <TotalCard
                                                 key={col}
-                                                title={columnNameFormatter(col)}
+                                                fieldName={col}
+                                                title={formatFieldLabel(col)}
                                                 value={aggregateField(
                                                     tableRows,
                                                     col,
