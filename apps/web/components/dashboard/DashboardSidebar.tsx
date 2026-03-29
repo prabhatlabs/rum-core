@@ -20,9 +20,17 @@ import {
 } from "@/components/ui/sidebar";
 import { useProjects } from "@/hooks/api/use-projects";
 import { useAuth } from "@/hooks/use-auth";
+import { abbreviations } from "@/lib/field-config";
+import { Info } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "../Logo";
+import { Button } from "../ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { ProjectSelector } from "./DashboardNavbar";
 
 export function DashboardSidebar() {
@@ -77,6 +85,7 @@ export function DashboardSidebar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="gap-4 py-4">
+                <AbbreviationsDropDown />
                 <UsageProgressBars />
                 <div className="flex gap-1 text-xs text-muted-foreground">
                     <span>*</span>
@@ -132,5 +141,28 @@ function UsageProgressBars() {
                 <Progress value={Math.min(projectsPercent, 100)} />
             </div>
         </div>
+    );
+}
+
+function AbbreviationsDropDown() {
+    const abb = Object.entries(abbreviations);
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size={"icon-xs"} className="">
+                    <Info />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-full">
+                <div className="text-muted-foreground text-xs p-4">
+                    {abb.map(([abb, full], i) => (
+                        <div key={i} className="flex gap-1 items-center">
+                            <p className="w-10">{abb}</p>
+                            <p>:{full}</p>
+                        </div>
+                    ))}
+                </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

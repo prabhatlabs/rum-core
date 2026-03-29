@@ -1,7 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getFieldStatus } from "@/lib/field-config";
+import { getFieldStatus, getFieldThreshold } from "@/lib/field-config";
 import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
+import { Button } from "../ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface TotalCardProps {
     fieldName?: string;
@@ -24,6 +31,7 @@ export function TotalCard({
         return <TotalCardSkeleton />;
     }
 
+    const thresholds = getFieldThreshold(fieldName);
     const status =
         fieldName && value !== null
             ? getFieldStatus(fieldName, value)
@@ -39,8 +47,15 @@ export function TotalCard({
 
     return (
         <Card className={cn(className)}>
-            <CardHeader>
+            <CardHeader className="flex items-center justify-between gap-2">
                 <CardTitle className="capitalize">{title}</CardTitle>
+                {thresholds && (
+                    <ThresholdDropDown
+                        good={thresholds?.good}
+                        poor={thresholds?.poor}
+                        unit={unit}
+                    />
+                )}
             </CardHeader>
             <CardContent>
                 <span className={`${statusClassName} text-2xl font-semibold`}>
@@ -50,6 +65,42 @@ export function TotalCard({
                 </span>
             </CardContent>
         </Card>
+    );
+}
+
+export function ThresholdDropDown({
+    good,
+    poor,
+    unit,
+}: {
+    good: number;
+    poor: number;
+    unit?: string;
+}) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size={"icon-xs"} className="">
+                    <Info />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-36" align="end" forceMount>
+                <div className="text-muted-foreground text-sm p-2">
+                    <p>
+                        Good:{" "}
+                        <span className="text-foreground">
+                            {good} {unit && `(${unit})`}
+                        </span>
+                    </p>
+                    <p>
+                        Poor:{" "}
+                        <span className="text-foreground">
+                            {poor} {unit && `(${unit})`}
+                        </span>
+                    </p>
+                </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 

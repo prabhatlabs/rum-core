@@ -88,6 +88,18 @@ export const fieldConfig: Record<string, FieldConfig> = {
     },
 };
 
+export const abbreviations: Record<string, string> = {
+    TTFB: "Time to First Byte",
+    LCP: "Largest Contentful Paint",
+    FCP: "First Contentful Paint",
+    CLS: "Cumulative Layout Shift",
+    INP: "Interaction to Next Paint",
+    DNS: "Domain Name System",
+    TCP: "Transmission Control Protocol",
+    TLS: "Transport Layer Security",
+    RUM: "Real User Monitoring",
+};
+
 export function formatFieldLabel(field: string): string {
     const name = fieldConfig[field]?.label;
     const unit = fieldConfig[field]?.unit;
@@ -110,6 +122,10 @@ export function getFieldStatus(field: string, value: number): FieldStatus {
     if (value <= t.good) return "good";
     if (value >= t.poor) return "poor";
     return "warning";
+}
+
+export function getFieldThreshold(field?: string) {
+    return field ? fieldConfig[field]?.threshold : undefined;
 }
 
 export function aggregateField(rows: unknown[], field: string): number | null {
