@@ -42,6 +42,10 @@ interface DialogState {
     upgrade: UpgradeData;
     openUpgrade: (reason?: string) => void;
     closeUpgrade: () => void;
+
+    contactUs: DialogData;
+    openContactUs: () => void;
+    closeContactUs: () => void;
 }
 
 export const useDialog = create<DialogState>((set) => ({
@@ -80,4 +84,10 @@ export const useDialog = create<DialogState>((set) => ({
     },
     openUpgrade: (reason) => set({ upgrade: { isOpen: true, reason } }),
     closeUpgrade: () => set({ upgrade: { isOpen: false, reason: undefined } }),
+
+    contactUs: {
+        isOpen: false,
+    },
+    openContactUs: () => set({ contactUs: { isOpen: true } }),
+    closeContactUs: () => set({ contactUs: { isOpen: false } }),
 }));

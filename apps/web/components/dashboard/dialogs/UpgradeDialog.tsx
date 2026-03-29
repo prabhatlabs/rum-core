@@ -15,6 +15,7 @@ import Image from "next/image";
 export default function UpgradeDialog() {
     const {
         closeUpgrade,
+        openContactUs,
         upgrade: { isOpen, reason },
     } = useDialog();
 
@@ -43,6 +44,14 @@ export default function UpgradeDialog() {
                             Upgrade your plan to unlock this feature and more.
                         </p>
                         <DialogFooter className="mt-auto pt-4">
+                            <Button
+                                onClick={() => {
+                                    closeUpgrade();
+                                    openContactUs();
+                                }}
+                            >
+                                Upgrade
+                            </Button>
                             <Button variant="outline" onClick={closeUpgrade}>
                                 Close
                             </Button>
