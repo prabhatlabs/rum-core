@@ -54,6 +54,7 @@ export function TotalCard({
                         good={thresholds?.good}
                         poor={thresholds?.poor}
                         unit={unit}
+                        higherIsBetter={!!thresholds.higherIsBetter}
                     />
                 )}
             </CardHeader>
@@ -71,10 +72,12 @@ export function TotalCard({
 export function ThresholdDropDown({
     good,
     poor,
+    higherIsBetter,
     unit,
 }: {
     good: number;
     poor: number;
+    higherIsBetter: boolean;
     unit?: string;
 }) {
     return (
@@ -85,7 +88,12 @@ export function ThresholdDropDown({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-36" align="end" forceMount>
-                <div className="text-muted-foreground text-sm p-2">
+                <div className="text-muted-foreground text-xs p-2">
+                    <p>
+                        {higherIsBetter
+                            ? "higher is better."
+                            : "Lower is better."}
+                    </p>
                     <p>
                         Good:{" "}
                         <span className="text-foreground">
