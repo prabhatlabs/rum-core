@@ -1,15 +1,10 @@
 import type { ReactNode } from "react";
 import type { IconType } from "react-icons";
-import {
-    FaChartBar,
-    FaChartLine,
-    FaCreditCard,
-    FaFolder,
-    FaGlobe,
-    FaServer,
-    FaTable,
-} from "react-icons/fa";
-import { FaShieldHalved } from "react-icons/fa6";
+import { AiOutlineApi } from "react-icons/ai";
+import { FaChartBar, FaCreditCard, FaGlobe } from "react-icons/fa";
+import { GrOverview } from "react-icons/gr";
+import { MdOutlineNetworkCheck, MdWebAsset } from "react-icons/md";
+import { VscGithubProject } from "react-icons/vsc";
 import { BillingPage } from "./BillingPage";
 import { EndpointsPage } from "./EndpointsPage";
 import { EnvironmentPage } from "./EnvironmentPage";
@@ -42,21 +37,21 @@ export const dashboardPagesObj: Record<TabType, DashboardPage> = {
         component: <OverviewPage />,
         tab: "overview",
         title: "Overview",
-        icon: FaChartLine,
+        icon: GrOverview,
         grp: "projects",
     },
     pages: {
         component: <PagesPage />,
         tab: "pages",
         title: "Pages",
-        icon: FaServer,
+        icon: MdWebAsset,
         grp: "projects",
     },
     endpoints: {
         component: <EndpointsPage />,
         tab: "endpoints",
         title: "Endpoints",
-        icon: FaShieldHalved,
+        icon: AiOutlineApi,
         grp: "projects",
     },
     geography: {
@@ -70,14 +65,14 @@ export const dashboardPagesObj: Record<TabType, DashboardPage> = {
         component: <EnvironmentPage />,
         tab: "environment",
         title: "Environment",
-        icon: FaTable,
+        icon: MdOutlineNetworkCheck,
         grp: "projects",
     },
     projects: {
         component: <ProjectsPage />,
         tab: "projects",
         title: "Projects",
-        icon: FaFolder,
+        icon: VscGithubProject,
         grp: "user",
     },
     usage: {

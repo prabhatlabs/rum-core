@@ -91,7 +91,7 @@ export function ThresholdDropDown({
                 <div className="text-muted-foreground text-xs p-2">
                     <p>
                         {higherIsBetter
-                            ? "higher is better."
+                            ? "Higher is better."
                             : "Lower is better."}
                     </p>
                     <p>

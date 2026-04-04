@@ -52,7 +52,7 @@ export default function ShowProjectKey() {
                                 }
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center h-full">
                             {!project ? (
                                 "Project not found!"
                             ) : (
@@ -60,13 +60,15 @@ export default function ShowProjectKey() {
                             )}
                         </div>
                         <DialogFooter className="mt-auto pt-4">
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={handleConnect}
-                            >
+                            <Button onClick={handleConnect}>
                                 <Code className="size-4" />
                                 Connect to your site
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={closeShowProjectKey}
+                            >
+                                Close
                             </Button>
                         </DialogFooter>
                     </div>

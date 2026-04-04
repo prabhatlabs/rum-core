@@ -133,10 +133,8 @@ export function TableBox({
                                     <TableRow key={idx}>
                                         {columns.map((col, key) => (
                                             <TableCell
-                                                key={col}
-                                                className={
-                                                    key !== 0 ? "border-l" : ""
-                                                }
+                                                key={key}
+                                                className={`max-w-100 truncate ${key !== 0 ? "border-l" : ""}`}
                                             >
                                                 {formatValue(
                                                     (

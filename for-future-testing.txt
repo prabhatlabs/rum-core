@@ -1,6 +1,0 @@
-test backend in render
-try koyeb for worker
-cloudflare proxy for backend (ddos protection) 
-
-curl -X POST http://localhost:8000/api/v1/cron/hourly \
-  -H "x-cron-secret: shit_here_we_go_again"

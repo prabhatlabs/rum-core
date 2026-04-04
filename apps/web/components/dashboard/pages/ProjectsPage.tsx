@@ -1,7 +1,6 @@
 "use client";
 
 import { LoadingSpinner } from "@/components/Loading";
-import ProjectKey from "@/components/ProjectKey";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -22,13 +21,14 @@ import {
 import { useProjects } from "@/hooks/api/use-projects";
 import { useDialog } from "@/hooks/use-dialog";
 import type { Project } from "@/types/api";
-import { PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
+import { KeyIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import { Ellipsis, Folder, Plus } from "lucide-react";
 import { DashboardDialogs } from "../dialogs";
 
 export function ProjectsPage() {
     const { projects, isLoading, setCurrentProject } = useProjects();
-    const { openAddEditProject, openDeleteProject } = useDialog();
+    const { openAddEditProject, openDeleteProject, openShowProjectKey } =
+        useDialog();
 
     const totalCalls =
         projects?.reduce(
@@ -63,7 +63,6 @@ export function ProjectsPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead className="border-r">Name</TableHead>
-                        <TableHead className="border-r">Key</TableHead>
                         <TableHead className="border-r">Origin</TableHead>
                         <TableHead className="border-r">
                             Usage out of Total (today)
@@ -74,13 +73,13 @@ export function ProjectsPage() {
                 <TableBody>
                     {isLoading ? (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">
+                            <TableCell colSpan={4} className="h-24 text-center">
                                 <LoadingSpinner />
                             </TableCell>
                         </TableRow>
                     ) : projects?.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">
+                            <TableCell colSpan={4} className="h-24 text-center">
                                 No projects found
                             </TableCell>
                         </TableRow>
@@ -89,11 +88,6 @@ export function ProjectsPage() {
                             <TableRow key={project.id}>
                                 <TableCell className="font-medium border-r">
                                     {project.name}
-                                </TableCell>
-                                <TableCell className="border-r">
-                                    <ProjectKey
-                                        projectKey={project.project_key}
-                                    />
                                 </TableCell>
                                 <TableCell className="border-r">
                                     {project.origin}
@@ -112,6 +106,9 @@ export function ProjectsPage() {
                                         onSelect={() =>
                                             setCurrentProject(project.id)
                                         }
+                                        onShowKey={() =>
+                                            openShowProjectKey(project.id)
+                                        }
                                     />
                                 </TableCell>
                             </TableRow>
@@ -129,10 +126,12 @@ function ActionDropdown({
     onDelete,
     onEdit,
     onSelect,
+    onShowKey,
 }: {
     onDelete: () => void;
     onEdit: () => void;
     onSelect: () => void;
+    onShowKey: () => void;
 }) {
     return (
         <DropdownMenu>
@@ -145,6 +144,10 @@ function ActionDropdown({
                 <DropdownMenuItem onClick={onSelect}>
                     <Folder />
                     Select
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onShowKey}>
+                    <KeyIcon />
+                    Show Key
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onEdit}>
                     <PencilSimpleIcon />
