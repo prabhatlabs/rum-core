@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 const URL = "https://rum-core.prabhatlabs.dev";
 
 export const metadata: Metadata = {
-    title: "RUM Core — Real User Monitoring for the Modern Web",
+    title: "RUM Core - Real User Monitoring for the Modern Web",
     description:
         "Track Core Web Vitals, API latency, and real user sessions. See performance by country, ISP, device, and browser — all from a single lightweight script.",
     keywords: [

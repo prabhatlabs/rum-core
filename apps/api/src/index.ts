@@ -19,7 +19,7 @@ cacheService.initRedis(
 );
 
 const app = new Elysia({
-    prefix: "/api/v1",
+    prefix: "",
 })
     .use(
         cors({
@@ -53,10 +53,9 @@ const app = new Elysia({
         set.status = 500;
         return failResponse("InternalServerError", "Something went wrong");
     })
-    .use(authRoute)
-    .use(projectsRoutes)
-    .use(usageRoutes)
-    .use(cronRoutes)
+    .group("/api/v1", (grp) =>
+        grp.use(authRoute).use(projectsRoutes).use(usageRoutes).use(cronRoutes),
+    )
     .get("/favicon.ico", () => file("./public/favicon.ico"))
     .get("/health", () => ({ status: "ok" }))
     .listen(ENV.PORT, () =>

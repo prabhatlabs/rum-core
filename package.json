@@ -25,7 +25,8 @@
         "run:db:generate:eventdb": "bun run --cwd packages/db db:generate:eventdb",
         "run:db:migrate:eventdb": "bun run --cwd packages/db db:migrate:eventdb",
         "build:script": "bun run --cwd packages/script build",
-        "docker:build": "docker build -t rum-core ."
+        "docker:build": "docker build -t rum-core .",
+        "docker:run": "docker run -p 8000:8000 rum-core"
     },
     "workspaces": [
         "apps/*",
