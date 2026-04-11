@@ -1,6 +1,11 @@
 import { cookie } from "@elysiajs/cookie";
 import { authService } from "@rum-core/db";
-import { APIErrorResponse, failResponse, okResponse } from "@rum-core/shared";
+import {
+    APIErrorResponse,
+    failResponse,
+    okResponse,
+    validateSignupForm,
+} from "@rum-core/shared";
 import { generateCodeVerifier, generateState } from "arctic";
 import { Elysia, t } from "elysia";
 import {
@@ -14,11 +19,107 @@ import {
     cookieConfig,
     jwtConfig,
 } from "../middleware/auth.middleware";
+import { comparePassword, hashPassword } from "../lib/hashing";
 
 const authRoutes = new Elysia({ prefix: "/auth" })
     .use(jwtConfig)
     .guard(cookieConfig)
     .use(cookie())
+
+    .post(
+        "/emailpassword",
+        async ({ body, jwt, cookie }) => {
+            const { email, password } = body;
+            const user = await authService.getUserByEmail(email);
+            if (!user) {
+                return failResponse("User not found");
+            }
+
+            if (!user.password) {
+                return failResponse(
+                    "Password not set for this user, use different login method",
+                );
+            }
+
+            const isValid = comparePassword(password, user.password);
+            if (!isValid) {
+                return failResponse("Invalid email or password");
+            }
+
+            if (!user.verified) {
+                const sessionId = await authService.setUserSession(user.id);
+                const url = `${ENV.FRONTEND_URL}/auth/callback?ref=${sessionId}`;
+                console.log(url);
+                throw new APIErrorResponse(
+                    "UnauthorizedUserError",
+                    "Unauthorized",
+                    "User not verified, verification link has been sent to your email",
+                    401,
+                );
+            }
+
+            const token = await jwt.sign({ sub: user.id });
+            cookie.auth.set({
+                value: token,
+                ...AUTH_COOKIE_CONFIG,
+            });
+
+            return okResponse(null, `Logged in, Welcome back ${user.name}`);
+        },
+        {
+            body: t.Object({
+                email: t.String(),
+                password: t.String(),
+            }),
+        },
+    )
+    .post(
+        "/signup",
+        async ({ body }) => {
+            const { name, email, password, confirmPassword } = body;
+            const isCorrect = validateSignupForm({
+                name,
+                email,
+                password,
+                confirmPassword,
+            });
+            if (!isCorrect.isValid) {
+                return failResponse(Object.values(isCorrect.errors).join(", "));
+            }
+
+            const hashedPassword = password
+                ? hashPassword(password)
+                : undefined;
+
+            const user = await authService.upsertUser({
+                name,
+                email,
+                password: hashedPassword,
+                verified: false,
+                avatar_url: "",
+                provider: "emailpassword",
+                provider_id: email,
+            });
+
+            if (!user) {
+                return failResponse("Failed to create user");
+            }
+
+            const sessionId = await authService.setUserSession(user.id);
+            const url = `${ENV.FRONTEND_URL}/auth/callback?ref=${sessionId}`;
+            console.log(url);
+
+            return okResponse(null, "User created, Verification email sent!");
+        },
+        {
+            body: t.Object({
+                name: t.String(),
+                email: t.String(),
+                password: t.String(),
+                confirmPassword: t.String(),
+            }),
+        },
+    )
 
     // GOOGLE oauth
     .get("/google", async ({ cookie, redirect }) => {
@@ -83,6 +184,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
         const user = await authService.upsertUser({
             email: googleUser.email,
             name: googleUser.name,
+            verified: false,
             avatar_url: googleUser.picture,
             provider: "google",
             provider_id: googleUser.sub,
@@ -159,6 +261,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
         const user = await authService.upsertUser({
             email,
             name: githubUser.name,
+            verified: false,
             avatar_url: githubUser.avatar_url,
             provider: "github",
             provider_id: githubUser.id.toString(),
@@ -172,6 +275,8 @@ const authRoutes = new Elysia({ prefix: "/auth" })
         const sessionId = await authService.setUserSession(user.id);
         return redirect(`${ENV.FRONTEND_URL}/auth/callback?ref=${sessionId}`);
     })
+
+    // code-to-cookie-exchange
     .get(
         "/session",
         async ({ cookie, set, jwt, query }) => {
@@ -194,6 +299,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
                 ...AUTH_COOKIE_CONFIG,
             });
 
+            await authService.markUserVerified(userId);
             return okResponse(null, "Session created");
         },
         {
@@ -202,6 +308,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
             }),
         },
     )
+
     .use(authMiddleware)
     .get("/me", async ({ user }) => {
         if (!user) {
@@ -215,7 +322,6 @@ const authRoutes = new Elysia({ prefix: "/auth" })
 
         return okResponse(user);
     })
-
     .post("/logout", ({ cookie }) => {
         cookie.auth.set({
             ...AUTH_COOKIE_CLEAR_CONFIG,

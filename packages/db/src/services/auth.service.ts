@@ -7,12 +7,18 @@ import { getRedis } from "./cache.service";
 interface UpsertUserParams {
     email: string;
     name: string;
+    password?: string;
+    verified: boolean;
     avatar_url: string;
-    provider: "google" | "github";
+    provider: "google" | "github" | "emailpassword";
     provider_id: string;
 }
 
 export async function upsertUser(params: UpsertUserParams) {
+    if (params.provider === "emailpassword" && !params.password) {
+        return null;
+    }
+
     const db = getMainDB();
 
     const existingUser = await db.query.users.findFirst({
@@ -29,8 +35,10 @@ export async function upsertUser(params: UpsertUserParams) {
         const [updated] = await db
             .update(users)
             .set({
+                password: params.password,
                 provider: params.provider,
                 provider_id: params.provider_id,
+                verified: params.verified,
                 avatar_url: params.avatar_url,
             })
             .where(eq(users.id, existingUser.id))
@@ -46,6 +54,8 @@ export async function upsertUser(params: UpsertUserParams) {
                 .values({
                     email: params.email,
                     name: params.name,
+                    password: params.password,
+                    verified: params.verified,
                     avatar_url: params.avatar_url,
                     provider: params.provider,
                     provider_id: params.provider_id,
@@ -65,6 +75,25 @@ export async function upsertUser(params: UpsertUserParams) {
     );
 
     return user ?? null;
+}
+
+export async function markUserVerified(user_id: string) {
+    const db = getMainDB();
+    await db.update(users).set({ verified: true }).where(eq(users.id, user_id));
+}
+
+export async function getUserByEmail(email: string) {
+    const db = getMainDB();
+    return await db.query.users.findFirst({
+        where: eq(users.email, email),
+        columns: {
+            id: true,
+            email: true,
+            password: true,
+            name: true,
+            verified: true,
+        },
+    });
 }
 
 export async function getUserWithPlan(user_id: string) {
@@ -95,6 +124,10 @@ export async function getUserWithPlan(user_id: string) {
 
     if (!user) {
         return null;
+    }
+
+    if (user.password) {
+        delete (user as any).password;
     }
 
     const PLAN_LIMITS = constants.plans.PLAN_LIMITS;

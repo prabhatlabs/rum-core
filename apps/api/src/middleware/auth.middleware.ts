@@ -55,6 +55,13 @@ export const authMiddleware = new Elysia()
                 "Invalid token or user not found",
                 401,
             );
+        } else if (!user.verified) {
+            throw new APIErrorResponse(
+                "UnauthorizedUserError",
+                "Unauthorized",
+                "User not verified",
+                401,
+            );
         }
 
         return { user };

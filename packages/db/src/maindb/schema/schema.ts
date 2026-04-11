@@ -1,4 +1,5 @@
 import {
+    boolean,
     date,
     decimal,
     index,
@@ -17,6 +18,8 @@ export const users = pgTable(
         id: uuid("id").primaryKey().defaultRandom(),
         email: varchar("email", { length: 255 }).unique().notNull(),
         name: varchar("name", { length: 255 }).notNull(),
+        password: varchar("password", { length: 100 }),
+        verified: boolean("verified").default(false),
         avatar_url: text("avatar_url"),
         provider: varchar("provider", { length: 20 }).notNull(),
         provider_id: varchar("provider_id", { length: 255 }).notNull(),
