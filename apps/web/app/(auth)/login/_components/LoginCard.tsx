@@ -120,14 +120,14 @@ export default function LoginCard() {
                     {mode === "login" ? (
                         <>
                             <Input
-                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 text-lg"
+                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 lg:text-sm"
                                 placeholder="Email"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                             <Input
-                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 text-lg"
+                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 lg:text-sm"
                                 placeholder="Password"
                                 type="password"
                                 value={password}
@@ -144,28 +144,28 @@ export default function LoginCard() {
                     ) : (
                         <>
                             <Input
-                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 text-lg"
+                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 lg:text-sm"
                                 placeholder="Name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
                             <Input
-                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 text-lg"
+                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 lg:text-sm"
                                 placeholder="Email"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                             <Input
-                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 text-lg"
+                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 lg:text-sm"
                                 placeholder="Password"
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                             <Input
-                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 text-lg"
+                                className="w-full rounded-md dark:bg-foreground/5 dark:hover:bg-foreground/10 lg:text-sm"
                                 placeholder="Confirm Password"
                                 type="password"
                                 value={confirmPassword}

@@ -13,9 +13,9 @@ export default function AuthSessionCallback() {
         if (!ref) return;
 
         // this fetch sets the cookie properly — credentialed, same flow as all other requests
-        fetcher(`/auth/session?ref=${ref}`, { method: "GET" }).then(() =>
-            router.replace("/dashboard"),
-        );
+        fetcher(`/auth/session?ref=${ref}`, { method: "GET" })
+            .then(() => router.replace("/dashboard"))
+            .catch(() => router.replace("/login"));
     }, []);
 
     return <LoadingPage message="redirecting..." />;
