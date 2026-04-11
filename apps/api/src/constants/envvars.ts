@@ -12,4 +12,5 @@ export const ENV = {
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN!,
     TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL!,
     TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN!,
+    RESEND_API_KEY: process.env.RESEND_API_KEY!,
 } as const;

@@ -20,6 +20,7 @@ import {
     jwtConfig,
 } from "../middleware/auth.middleware";
 import { comparePassword, hashPassword } from "../lib/hashing";
+import mail from "../lib/mail";
 
 const authRoutes = new Elysia({ prefix: "/auth" })
     .use(jwtConfig)
@@ -49,7 +50,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
             if (!user.verified) {
                 const sessionId = await authService.setUserSession(user.id);
                 const url = `${ENV.FRONTEND_URL}/auth/callback?ref=${sessionId}`;
-                console.log(url);
+                await mail.sendEmailVerificationMail(user.email, url);
                 throw new APIErrorResponse(
                     "UnauthorizedUserError",
                     "Unauthorized",
@@ -107,7 +108,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
 
             const sessionId = await authService.setUserSession(user.id);
             const url = `${ENV.FRONTEND_URL}/auth/callback?ref=${sessionId}`;
-            console.log(url);
+            await mail.sendEmailVerificationMail(user.email, url);
 
             return okResponse(null, "User created, Verification email sent!");
         },
