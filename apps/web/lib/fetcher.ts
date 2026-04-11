@@ -18,10 +18,12 @@ interface FetcherOptions {
 
 export async function fetcher<T>(
     url: string,
-    options: FetcherOptions = { showToast: true },
+    options: FetcherOptions = {},
 ): Promise<T> {
     const { method = "GET", body, headers = {} } = options;
-    const showToast = method !== "GET" && options.showToast;
+    const showToast =
+        method !== "GET" &&
+        (options.showToast === undefined ? true : options.showToast);
 
     let loadingToastId: number | string | null = null;
     if (showToast) {
@@ -48,6 +50,7 @@ export async function fetcher<T>(
 
     const json: ApiResponse<T> = await res.json();
 
+    console.log(showToast, json);
     if (!res.ok || !json.success) {
         const isLimitExceeded = json.error?.includes("LimitExceeded");
 
