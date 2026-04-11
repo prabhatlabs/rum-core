@@ -139,7 +139,7 @@ export async function getUserWithPlan(user_id: string) {
 export async function setUserSession(userId: string) {
     const r = getRedis();
     const sessionId = crypto.randomUUID();
-    await r.set(sessionId, userId, { ex: 120 });
+    await r.set(sessionId, userId, { ex: 300 });
     return sessionId;
 }
 

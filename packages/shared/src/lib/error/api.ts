@@ -1,4 +1,5 @@
 type ErrorName =
+    | "MailError"
     | "InternalServerError"
     | "UnauthorizedUserError"
     | "RateLimitError"
