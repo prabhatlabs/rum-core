@@ -118,7 +118,12 @@ export function useKeepCurrentProjectInSync() {
 
     // URL -> state
     useEffect(() => {
-        if (!projects) return;
+        if (!projects) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("project_id");
+            router.replace(`${pathname}?${params.toString()}`);
+            return;
+        }
 
         const projectId = searchParams.get("project_id");
         if (!projectId || projectId === currentProject?.id) return;
@@ -128,7 +133,10 @@ export function useKeepCurrentProjectInSync() {
 
     // state -> URL
     useEffect(() => {
-        if (!projects) return;
+        if (!projects) {
+            setCurrentProject(null);
+            return;
+        }
 
         const project_id = searchParams.get("project_id");
         if (currentProject?.id === project_id) return;

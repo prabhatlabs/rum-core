@@ -164,7 +164,7 @@ function UserDropdown() {
                             {user?.email}
                         </p>
                         <p className="text-xs leading-none text-muted-foreground capitalize">
-                            ({user?.provider}) (plan: {user?.plan.type})
+                            (plan: {user?.plan.type})
                         </p>
                     </div>
                 </div>
