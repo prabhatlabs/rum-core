@@ -22,7 +22,9 @@
         "@neondatabase/serverless": "^1.0.2",
         "@rum-core/db": "workspace:*",
         "@rum-core/shared": "workspace:*",
+        "@types/bcrypt": "^6.0.0",
         "arctic": "^3.7.0",
+        "bcrypt": "^6.0.0",
         "drizzle-orm": "^0.45.1",
         "elysia": "^1.4.27",
         "nanoid": "^5.1.6"
