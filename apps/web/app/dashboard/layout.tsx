@@ -6,11 +6,11 @@ import { DashboardDialogs } from "@/components/dashboard/dialogs";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProtectedRoute } from "@/hooks/use-protected-route";
 import { fetcher } from "@/lib/fetcher";
+import { useState } from "react";
 import { SWRConfig } from "swr";
 
-const swrCache = new Map();
-
 export function Providers({ children }: { children: React.ReactNode }) {
+    const [swrCache] = useState(() => new Map());
     return (
         <SidebarProvider>
             {/* Auth call only needs revalidation on focus  */}

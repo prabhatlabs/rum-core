@@ -17,7 +17,12 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { toast } from "sonner";
 
 export default function LoginCard() {
-    const { loginWithGithub, loginWithGoogle } = useLogin();
+    const {
+        loginWithGithub,
+        loginWithGoogle,
+        loginWithEmail,
+        signupWithEmail,
+    } = useLogin();
     const [mode, setMode] = useState("login");
 
     // Form states
@@ -40,7 +45,7 @@ export default function LoginCard() {
                 return;
             }
             setErrors(null);
-            console.log("Login:", { email, password });
+            loginWithEmail(email, password);
         } else {
             const result = validateSignupForm({
                 name,
@@ -53,9 +58,17 @@ export default function LoginCard() {
                 return;
             }
             setErrors(null);
-            console.log("Sign Up:", { name, email, password });
+            signupWithEmail(name, email, password, confirmPassword);
         }
-    }, [confirmPassword, email, mode, name, password]);
+    }, [
+        confirmPassword,
+        email,
+        mode,
+        name,
+        password,
+        loginWithEmail,
+        signupWithEmail,
+    ]);
 
     useEffect(() => {
         if (!errors) return;
@@ -176,16 +189,18 @@ export default function LoginCard() {
                             onClick={toggleLoginForm}
                             type="button"
                         >
-                            {mode === "login" ? "Sign Up" : "Login"}
+                            {mode === "login"
+                                ? "Don't have an account? Sign Up"
+                                : "Already have an account? Login"}
                         </Button>
-                        {mode === "login" && (
+                        {/*{mode === "login" && (
                             <Button
                                 variant={"ghost"}
                                 className="hover:underline h-fit w-fit px-1 rounded"
                             >
                                 Forgot Password
                             </Button>
-                        )}
+                        )}*/}
                     </div>
                 </div>
 
