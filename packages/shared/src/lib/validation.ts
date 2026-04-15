@@ -15,6 +15,11 @@ export interface ValidationResult {
     errors: Record<string, string>;
 }
 
+export interface ResetPasswordFormData {
+    password: string;
+    confirmPassword: string;
+}
+
 export function validateEmail(email: string): string | null {
     if (!email) {
         return "Email is required";
@@ -69,6 +74,24 @@ export function validateSignupForm(data: SignupFormData): ValidationResult {
 
     const emailError = validateEmail(data.email);
     if (emailError) errors.email = emailError;
+
+    const passwordError = validatePassword(data.password);
+    if (passwordError) errors.password = passwordError;
+
+    if (data.password !== data.confirmPassword) {
+        errors.confirmPassword = "Passwords do not match";
+    }
+
+    return {
+        isValid: Object.keys(errors).length === 0,
+        errors,
+    };
+}
+
+export function validateResetPasswordForm(
+    data: ResetPasswordFormData,
+): ValidationResult {
+    const errors: Record<string, string> = {};
 
     const passwordError = validatePassword(data.password);
     if (passwordError) errors.password = passwordError;

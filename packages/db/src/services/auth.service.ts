@@ -77,6 +77,11 @@ export async function upsertUser(params: UpsertUserParams) {
     return user ?? null;
 }
 
+export async function updatePassword(user_id: string, password: string) {
+    const db = getMainDB();
+    await db.update(users).set({ password }).where(eq(users.id, user_id));
+}
+
 export async function markUserVerified(user_id: string) {
     const db = getMainDB();
     await db.update(users).set({ verified: true }).where(eq(users.id, user_id));
@@ -86,6 +91,20 @@ export async function getUserByEmail(email: string) {
     const db = getMainDB();
     return await db.query.users.findFirst({
         where: eq(users.email, email),
+        columns: {
+            id: true,
+            email: true,
+            password: true,
+            name: true,
+            verified: true,
+        },
+    });
+}
+
+export async function getUserById(user_id: string) {
+    const db = getMainDB();
+    return await db.query.users.findFirst({
+        where: eq(users.id, user_id),
         columns: {
             id: true,
             email: true,
@@ -147,4 +166,9 @@ export async function exchangeSessionForUserId(sessionId: string) {
     const r = getRedis();
     const userId = await r.get<string>(sessionId);
     return userId;
+}
+
+export async function removeSession(sessionId: string) {
+    const r = getRedis();
+    await r.del(sessionId);
 }

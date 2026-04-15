@@ -53,9 +53,18 @@ function sendEmailVerificationMail(email: string, verificationUrl: string) {
     );
 }
 
+function sendPasswordResetMail(email: string, resetUrl: string) {
+    return sendEmail(
+        email,
+        "RUM CORE - Password Reset",
+        `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
+    );
+}
+
 const mail = {
     sendEmail,
     sendEmailVerificationMail,
+    sendPasswordResetMail,
 };
 
 export default mail;

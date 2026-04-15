@@ -4,6 +4,7 @@ import {
     APIErrorResponse,
     failResponse,
     okResponse,
+    validateResetPasswordForm,
     validateSignupForm,
 } from "@rum-core/shared";
 import { generateCodeVerifier, generateState } from "arctic";
@@ -13,20 +14,21 @@ import {
     AUTH_COOKIE_CONFIG,
 } from "../constants/cookie";
 import { ENV } from "../constants/envvars";
+import { comparePassword, hashPassword } from "../lib/hashing";
+import mail from "../lib/mail";
 import { github, google } from "../lib/oauth";
 import {
     authMiddleware,
     cookieConfig,
     jwtConfig,
 } from "../middleware/auth.middleware";
-import { comparePassword, hashPassword } from "../lib/hashing";
-import mail from "../lib/mail";
 
 const authRoutes = new Elysia({ prefix: "/auth" })
     .use(jwtConfig)
     .guard(cookieConfig)
     .use(cookie())
 
+    // email/password login
     .post(
         "/emailpassword",
         async ({ body, jwt, cookie }) => {
@@ -88,14 +90,10 @@ const authRoutes = new Elysia({ prefix: "/auth" })
                 return failResponse(Object.values(isCorrect.errors).join(", "));
             }
 
-            const hashedPassword = password
-                ? hashPassword(password)
-                : undefined;
-
             const user = await authService.upsertUser({
                 name,
                 email,
-                password: hashedPassword,
+                password: hashPassword(password),
                 verified: false,
                 avatar_url: "",
                 provider: "emailpassword",
@@ -118,6 +116,68 @@ const authRoutes = new Elysia({ prefix: "/auth" })
                 email: t.String(),
                 password: t.String(),
                 confirmPassword: t.String(),
+            }),
+        },
+    )
+    .post(
+        "/forgot-password",
+        async ({ body }) => {
+            const { email } = body;
+            const user = await authService.getUserByEmail(email);
+            if (!user) {
+                return failResponse("User not found");
+            }
+
+            const sessionId = await authService.setUserSession(user.id);
+            const url = `${ENV.FRONTEND_URL}/auth/reset-password?ref=${sessionId}`;
+            await mail.sendPasswordResetMail(user.email, url);
+
+            return okResponse(null, "Password reset email sent!");
+        },
+        {
+            body: t.Object({
+                email: t.String(),
+            }),
+        },
+    )
+    .post(
+        "/reset-password",
+        async ({ body, query }) => {
+            const { password, confirmPassword } = body;
+
+            const isCorrect = validateResetPasswordForm({
+                password,
+                confirmPassword,
+            });
+            if (!isCorrect.isValid) {
+                return failResponse(Object.values(isCorrect.errors).join(", "));
+            }
+
+            const sessionId = query.ref;
+            const userId =
+                await authService.exchangeSessionForUserId(sessionId);
+            if (!userId) {
+                return failResponse("Invalid session");
+            }
+
+            const user = await authService.getUserById(userId);
+            if (!user) {
+                return failResponse("User not found");
+            }
+
+            const hashedPassword = hashPassword(password);
+            await authService.updatePassword(userId, hashedPassword);
+            await authService.removeSession(sessionId);
+
+            return okResponse(null, "Password reset successful!");
+        },
+        {
+            body: t.Object({
+                password: t.String(),
+                confirmPassword: t.String(),
+            }),
+            query: t.Object({
+                ref: t.String(),
             }),
         },
     )

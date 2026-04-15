@@ -193,14 +193,14 @@ export default function LoginCard() {
                                 ? "Don't have an account? Sign Up"
                                 : "Already have an account? Login"}
                         </Button>
-                        {/*{mode === "login" && (
+                        {mode === "login" && (
                             <Button
                                 variant={"ghost"}
                                 className="hover:underline h-fit w-fit px-1 rounded"
                             >
                                 Forgot Password
                             </Button>
-                        )}*/}
+                        )}
                     </div>
                 </div>
 
