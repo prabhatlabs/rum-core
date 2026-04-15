@@ -169,7 +169,12 @@ const authRoutes = new Elysia({ prefix: "/auth" })
             await authService.updatePassword(userId, hashedPassword);
             await authService.removeSession(sessionId);
 
-            return okResponse(null, "Password reset successful!");
+            return okResponse(
+                {
+                    status: "success",
+                },
+                "Password reset successful!",
+            );
         },
         {
             body: t.Object({

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/hooks/use-auth";
+import { fetcher } from "@/lib/fetcher";
 import { validateLoginForm, validateSignupForm } from "@rum-core/shared";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -35,6 +36,15 @@ export default function LoginCard() {
     function toggleLoginForm() {
         setMode(mode === "login" ? "signup" : "login");
         setErrors(null);
+    }
+
+    async function handleForgotPassword() {
+        await fetcher("/auth/forgot-password", {
+            method: "POST",
+            body: JSON.stringify({ email }),
+            headers: { "Content-Type": "application/json" },
+            showToast: true,
+        });
     }
 
     const handleSubmit = useCallback(() => {
@@ -97,7 +107,7 @@ export default function LoginCard() {
             <CardHeader className="px-7">
                 <div className="flex justify-between items-center">
                     <Link href="/" className="group">
-                        <Logo className="bg-foreground/10 text-foreground/80 group-hover:text-foreground backdrop-blur-lg" />
+                        <Logo mode="transparent" />
                     </Link>
                     <h4 className="text-foreground/20 text-2xl">rum core</h4>
                 </div>
@@ -195,6 +205,7 @@ export default function LoginCard() {
                         </Button>
                         {mode === "login" && (
                             <Button
+                                onClick={handleForgotPassword}
                                 variant={"ghost"}
                                 className="hover:underline h-fit w-fit px-1 rounded"
                             >
