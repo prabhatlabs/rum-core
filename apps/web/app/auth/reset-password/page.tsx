@@ -4,6 +4,7 @@ import { Rubik } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import ResetForm from "./_components/ResetForm";
+import { BackgroundVideo } from "@/app/_components/BackgroundVideo";
 
 const rubik = Rubik({
     subsets: ["latin"],
@@ -15,17 +16,14 @@ export default function ResetPasswordPage() {
         <div
             className={cn(
                 rubik.className,
-                "relative w-full h-dvh flex items-center justify-center gap-6 p-6",
+                "relative w-full h-dvh flex items-center justify-center gap-6 p-6 max-w-480 mx-auto",
             )}
         >
-            <Image
-                src={"/dialog-project-key.webp"}
-                alt="bg"
-                width={500}
-                height={750}
-                className="absolute top-0 left-0 object-cover w-screen h-dvh blur-3xl opacity-50"
+            <BackgroundVideo
+                src="/glass.mp4"
+                className="object-bottom fixed top-0 left-0 inset-0 w-screen h-full max-h-dvh -z-10"
             />
-            <div className="relative md:max-w-sm w-full h-full flex items-center justify-center p-6 rounded-2xl bg-foreground/10 border">
+            <div className="relative sm:max-w-md sm:max-h-150 w-full h-full flex items-center justify-center p-6 rounded-2xl bg-background/30 backdrop-blur-md border">
                 <div className="absolute top-0 left-0 p-6 w-full flex justify-between items-center">
                     <Link href="/" className="group">
                         <Logo mode="transparent" />
@@ -48,15 +46,6 @@ export default function ResetPasswordPage() {
                         rum-core.prabhatlabs.dev
                     </h3>
                 </div>
-            </div>
-            <div className="hidden lg:flex items-center justify-center w-full h-full">
-                <Image
-                    src={"/dialog-project-key.webp"}
-                    alt="bg"
-                    width={500}
-                    height={750}
-                    className="object-cover w-125 h-187.5 mask-b-from-80% mask-r-from-80% mask-t-from-80% mask-l-from-80%"
-                />
             </div>
         </div>
     );
