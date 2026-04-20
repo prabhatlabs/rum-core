@@ -1,10 +1,9 @@
+import { BackgroundVideo } from "@/app/_components/BackgroundVideo";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { Rubik } from "next/font/google";
-import Image from "next/image";
 import Link from "next/link";
 import ResetForm from "./_components/ResetForm";
-import { BackgroundVideo } from "@/app/_components/BackgroundVideo";
 
 const rubik = Rubik({
     subsets: ["latin"],
@@ -23,7 +22,7 @@ export default function ResetPasswordPage() {
                 src="/glass.mp4"
                 className="object-bottom fixed top-0 left-0 inset-0 w-screen h-full max-h-dvh -z-10"
             />
-            <div className="relative sm:max-w-md sm:max-h-150 w-full h-full flex items-center justify-center p-6 rounded-2xl bg-background/30 backdrop-blur-md border">
+            <div className="relative sm:max-w-sm sm:max-h-120 w-full h-full flex items-center justify-center p-6 rounded-2xl bg-background/30 backdrop-blur-md border">
                 <div className="absolute top-0 left-0 p-6 w-full flex justify-between items-center">
                     <Link href="/" className="group">
                         <Logo mode="transparent" />

@@ -125,7 +125,7 @@ const authRoutes = new Elysia({ prefix: "/auth" })
             const { email } = body;
             const user = await authService.getUserByEmail(email);
             if (!user) {
-                return failResponse("User not found");
+                return okResponse(null, "Password reset email sent!");
             }
 
             const sessionId = await authService.setUserSession(user.id);
