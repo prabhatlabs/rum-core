@@ -41,6 +41,7 @@ export function useProjectTables(params: ProjectDataParams) {
             fetcher<ProjectTableData>(`/projects/data/${projectId}`, {
                 method: "POST",
                 body: { time_range: timeRange, tables },
+                showToast: false,
             }),
         );
 

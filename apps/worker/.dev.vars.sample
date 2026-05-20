@@ -1,0 +1,5 @@
+# add this values in `.dev.vars` file.
+
+DATABASE_URL=
+TURSO_DATABASE_URL=
+TURSO_AUTH_TOKEN=
