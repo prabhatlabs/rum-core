@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { BsArrowRight } from "react-icons/bs";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function CtaButton() {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.3, delay: 0.3 }}
+            initial={{ opacity: 0, y: 80, filter: "blur(6px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ amount: 0.4, once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
         >
             <Link href="/dashboard">
                 <button

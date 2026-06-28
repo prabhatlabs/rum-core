@@ -127,7 +127,7 @@ export default function HowToUse() {
                 drop-in solution that works with any framework.
             </TextAnimate>
 
-            <BentoGrid className="mt-6 md:mt-8 lg:mt-10">
+            <BentoGrid className="mt-6 md:mt-8 lg:mt-10 gap-6">
                 {bento.map((card) => (
                     <BentoCard
                         key={card.name}
