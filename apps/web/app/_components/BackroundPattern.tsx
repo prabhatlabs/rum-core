@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 
 export default function BackgroundPattern({
     className,
+    direction = "up",
 }: {
     className?: string;
+    direction?: "up" | "down";
 }) {
     return (
         <motion.div
@@ -34,7 +36,8 @@ export default function BackgroundPattern({
                 },
             }}
             className={cn(
-                "fixed w-full h-full min-h-dvh bg-fixed bg-[repeating-linear-gradient(315deg,var(--border)_0,var(--border)_1px,transparent_0,transparent_50%)] bg-size-[10px_10px] mask-b-to-90%",
+                "fixed w-full h-full min-h-dvh bg-fixed bg-[repeating-linear-gradient(315deg,var(--border)_0,var(--border)_1px,transparent_0,transparent_50%)] bg-size-[10px_10px]",
+                direction === "down" ? "mask-b-to-90%" : "mask-t-to-90%",
                 className,
             )}
         ></motion.div>

@@ -111,7 +111,7 @@ export default function LoginCard() {
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="max-w-100 w-full"
         >
-            <Card className="w-full py-7 bg-background/90 rounded-lg gap-8">
+            <Card className="w-full py-7 bg-background/90 rounded-lg gap-6">
                 <CardHeader className="px-7">
                     <div className="flex justify-between items-center">
                         <Link href="/" className="group">
@@ -240,10 +240,10 @@ export default function LoginCard() {
                     </div>
 
                     {/* separator */}
-                    <div className="w-full border-t mb-8" />
+                    <div className="w-full border-t" />
 
                     {/* oauth */}
-                    <div className="flex flex-col gap-3 mb-6">
+                    <div className="flex flex-col gap-3 my-6">
                         <Button
                             variant="outline"
                             onClick={loginWithGoogle}

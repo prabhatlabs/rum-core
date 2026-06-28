@@ -54,8 +54,8 @@ function FeatureCard({ feat }: { feat: (typeof loginFeatures)[0] }) {
         <div className="bg-background border p-4 flex gap-4">
             <feat.Icon className="size-10 text-foreground/80 shrink-0" />
             <div>
-                <p className="text-xl">{feat.title}</p>
-                <p className="text-muted-foreground">{feat.description}</p>
+                <p className="text-lg">{feat.title}</p>
+                <p className="text-xs text-muted-foreground">{feat.description}</p>
             </div>
         </div>
     );
@@ -106,7 +106,7 @@ export default function AuthLayout({
                         insights on page performance, request success rates, and
                         user entry speeds the moment you sign in.
                     </TextAnimate>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                         {loginFeatures.map((feat) => (
                             <FeatureCard key={feat.id} feat={feat} />
                         ))}
