@@ -1,46 +1,57 @@
+"use client";
+
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function Navbar() {
     return (
-        <nav className="fixed top-0 left-0 z-50 w-full pt-4 pb-20 md:pb-25 bg-foreground/10 mask-b-from-30% backdrop-blur-lg">
-            <div className="max-w-7xl mx-auto flex items-center justify-between px-6 gap-4 relative">
+        <motion.nav
+            initial={{
+                opacity: 0,
+                filter: "blur(10px)",
+            }}
+            animate={{
+                opacity: 1,
+                filter: "blur(0px)",
+            }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="sticky top-0 z-50 w-full border-b-2 bg-background/10 backdrop-blur-sm"
+        >
+            <div className="flex items-center justify-between px-4 py-2 md:px-6 md:py-4 gap-4 relative">
                 <div className="flex items-center gap-3">
                     <Logo />
                 </div>
 
-                <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] hidden md:flex w-full items-center justify-center gap-2 md:gap-4 text-xs md:text-sm">
-                    <Link
-                        href={"#home"}
-                        className="hover:border-b border-foreground"
-                    >
+                <div className="flex items-center justify-center gap-4 z-10 text-xs md:text-sm">
+                    <Link className="px-2 py-1" href={"#home"}>
                         Home
                     </Link>
-                    <Link
-                        href={"#features"}
-                        className="hover:border-b border-foreground"
-                    >
+                    <Link className="px-2 py-1" href={"#features"}>
                         Features
                     </Link>
-                    <Link
-                        href={"#pricing"}
-                        className="hover:border-b border-foreground"
-                    >
+                    <Link className="px-2 py-1" href={"#how-to-use"}>
+                        How to use?
+                    </Link>
+                    <Link className="px-2 py-1" href={"#pricing"}>
                         Pricing
                     </Link>
-                </div>
-
-                <div className="flex items-center justify-center gap-4 z-10 text-xs md:text-sm">
-                    <Link href={"#how-to-use"}>How to use?</Link>
+                    <Link
+                        className="px-2 py-1"
+                        href={"https://prabhatlabs.dev"}
+                        target="_blank"
+                    >
+                        Contact
+                    </Link>
 
                     <Link href={"/dashboard"}>
-                        <Button variant={"outline"} size="lg">
-                            Login
-                        </Button>
+                        <Button variant={"outline"}>Login</Button>
                     </Link>
+                    <ThemeToggle />
                 </div>
             </div>
-        </nav>
+        </motion.nav>
     );
 }

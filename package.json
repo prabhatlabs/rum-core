@@ -39,6 +39,7 @@
         "typescript": "^5"
     },
     "dependencies": {
-        "@upstash/redis": "^1.37.0"
+        "@upstash/redis": "^1.37.0",
+        "prettier": "^3.9.1"
     }
 }

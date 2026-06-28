@@ -1,3 +1,4 @@
+import { TextAnimate } from "@/components/ui/text-animate";
 import { FaRegCircleCheck } from "react-icons/fa6";
 
 const plans = [
@@ -31,21 +32,32 @@ const plans = [
 
 export default function Pricing() {
     return (
-        <div className="max-w-7xl mx-auto px-6 pt-30 lg:pt-40" id="pricing">
-            <div className="space-y-2 relative h-fit">
-                <h3 className="text-xl sm:text-3xl lg:text-5xl max-w-md md:max-w-xl lg:max-w-3xl leading-tight">
-                    Simple, transparent pricing.
-                </h3>
-                <p className="text-xs md:text-sm lg:text-base text-muted-foreground max-w-lg leading-tight">
-                    Scale your monitoring as you grow.
-                </p>
-            </div>
+        <div
+            className="relative border-y-2 px-4 sm:px-6 py-22 md:py-26"
+            id="pricing"
+        >
+            <TextAnimate
+                animation="blurInDown"
+                by="word"
+                once
+                className="text-xl md:text-3xl lg:text-5xl"
+            >
+                Simple, transparent pricing.
+            </TextAnimate>
+            <TextAnimate
+                animation="blurIn"
+                by="word"
+                once
+                className="mt-1 md:mt-2 lg:mt-4 text-xs md:text-sm lg:text-base max-w-4xl"
+            >
+                Scale your monitoring as you grow.
+            </TextAnimate>
 
-            <div className="flex flex-col gap-6 md:flex-row md:gap-8 lg:gap-10 items-center justify-center pt-10 lg:pt-20">
+            <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col gap-6 md:flex-row md:gap-8 lg:gap-10 items-center justify-center">
                 {plans.map((plan, i) => (
                     <div
                         key={i}
-                        className={`rounded-xl p-6 border w-full max-w-xs sm:max-w-sm ${plan.name === "Pro" ? "bg-primary/20 border-primary scale-105" : "bg-secondary/20"}`}
+                        className={`p-6 border w-full max-w-xs sm:max-w-sm ${plan.name === "Pro" ? "bg-primary/20 border-primary scale-105" : "bg-secondary/20"}`}
                     >
                         <div className="flex items-end justify-between gap-2">
                             <h4 className="relative text-center">
@@ -131,7 +143,7 @@ export default function Pricing() {
 
                         <div className="">
                             <button
-                                className={`rounded-md px-4 py-2 w-full flex items-center justify-center border ${plan.name === "Pro" ? "border-primary bg-primary/10 hover:bg-primary/20" : "bg-border/20 hover:bg-border/30"} `}
+                                className={`px-4 py-2 w-full flex items-center justify-center border ${plan.name === "Pro" ? "border-primary bg-primary/10 hover:bg-primary/20" : "bg-border/20 hover:bg-border/30"} `}
                             >
                                 {plan.buttonText}
                             </button>

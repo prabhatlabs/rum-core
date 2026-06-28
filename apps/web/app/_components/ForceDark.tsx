@@ -9,7 +9,7 @@ export default function ForceDark() {
 
     useEffect(() => {
         previousTheme.current = resolvedTheme;
-        setTheme("dark");
+        setTheme("light");
 
         return () => {
             setTheme(previousTheme.current ?? "system");

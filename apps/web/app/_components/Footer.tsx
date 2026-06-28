@@ -2,19 +2,13 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FaEarthAsia, FaGithub, FaXTwitter } from "react-icons/fa6";
-import { BackgroundVideo } from "./BackgroundVideo";
 
 export default function Footer() {
     return (
-        <footer className="mask-t-from-70% md:mask-t-from-60% lg:mask-t-from-50% h-[30dvh] relative">
-            <BackgroundVideo
-                src="/purple-arura.mp4"
-                className="absolute bottom-0 left-0 inset-0 w-full h-full -z-10 rotate-180"
-            />
-
-            <div className="xl:max-w-7xl w-full mx-auto flex items-end justify-between px-6 gap-4 absolute bottom-10 left-0 right-0">
+        <footer className="border-t-2 relative p-6">
+            <div className="flex items-end justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <Logo />
+                    <Logo mode="transparent" />
                     <span className="text-muted-foreground text-[10px] md:text-xs">
                         rum-core.prabhatlabs.dev &copy; 2026
                     </span>

@@ -1,34 +1,26 @@
-import { Rubik } from "next/font/google";
+import BackgroundPattern from "./_components/BackroundPattern";
 import BottomHero from "./_components/BottomHero";
-import FeaturesSection from "./_components/FeaturesSection";
 import Footer from "./_components/Footer";
-import ForceDark from "./_components/ForceDark";
 import HeroSection from "./_components/HeroSection";
-import HowTo from "./_components/HowTo";
+import HowToUse from "./_components/HowToUse";
 import Navbar from "./_components/Navbar";
 import Pricing from "./_components/Pricing";
 import SecondaryHeroSection from "./_components/SecondaryHeroSection";
-import Steps from "./_components/Steps";
-
-const rubik = Rubik({
-    subsets: ["latin"],
-    variable: "--font-rubik",
-});
 
 export default function Home() {
     return (
-        <div className={rubik.className}>
-            <ForceDark />
-            <Navbar />
-            <div className="relative z-10 min-h-dvh">
-                <HeroSection />
-                <SecondaryHeroSection />
-                <FeaturesSection />
-                <HowTo />
-                <Steps />
-                <Pricing />
-                <BottomHero />
-                <Footer />
+        <div className="relative">
+            <BackgroundPattern />
+            <div className="relative shrink-0 z-10 min-h-dvh md:border-x-2 max-w-7xl mx-auto bg-background">
+                <Navbar />
+                <div className="space-y-20 md:space-y-28 lg:space-y-44">
+                    <HeroSection />
+                    <SecondaryHeroSection />
+                    <HowToUse />
+                    <Pricing />
+                    <BottomHero />
+                    <Footer />
+                </div>
             </div>
         </div>
     );

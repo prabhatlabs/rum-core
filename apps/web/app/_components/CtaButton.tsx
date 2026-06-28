@@ -1,32 +1,24 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { motion } from "motion/react";
 import Link from "next/link";
+import { BsArrowRight } from "react-icons/bs";
+import { motion } from "framer-motion";
 
 export default function CtaButton() {
     return (
-        <Link href="/dashboard">
-            <motion.div
-                initial={{
-                    y: 60,
-                    opacity: 0,
-                    filter: "blur(10px)",
-                }}
-                animate={{
-                    y: 0,
-                    opacity: 1,
-                    filter: "blur(0px)",
-                }}
-            >
-                <Button
-                    variant="outline"
-                    className="w-full h-fit rounded-full backdrop-blur-lg dark:bg-foreground/5 dark:hover:bg-foreground/10 group md:text-base px-6 pt-3 pb-3"
-                    size={"lg"}
+        <motion.div
+            initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+        >
+            <Link href="/dashboard">
+                <button
+                    className={`px-4 py-2 w-fit flex items-center justify-center gap-2 border border-primary bg-primary/10 hover:bg-primary/20`}
                 >
-                    Start Tracking
-                </Button>
-            </motion.div>
-        </Link>
+                    <span>Start Tracking</span>
+                    <BsArrowRight />
+                </button>
+            </Link>
+        </motion.div>
     );
 }
