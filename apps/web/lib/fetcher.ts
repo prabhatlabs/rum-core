@@ -36,7 +36,7 @@ export async function fetcher<T>(
         loadingToastId = toast.loading(message);
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    const res = await fetch(`/api${url}`, {
         method,
         credentials: "include",
         headers: {

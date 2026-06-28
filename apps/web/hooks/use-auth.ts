@@ -53,12 +53,12 @@ export function useLogin() {
     };
 
     const loginWithGoogle = () => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+        const url = `/api/auth/google`;
         router.push(url);
     };
 
     const loginWithGithub = () => {
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
+        const url = `/api/auth/github`;
         router.push(url);
     };
 
