@@ -51,7 +51,7 @@ const loginFeatures = [
 
 function FeatureCard({ feat }: { feat: (typeof loginFeatures)[0] }) {
     return (
-        <div className="bg-background border p-4 flex gap-4">
+        <div className="bg-background border p-4 w-150 flex items-center gap-4">
             <feat.Icon className="size-10 text-foreground/80 shrink-0" />
             <div>
                 <p className="text-lg">{feat.title}</p>
@@ -71,7 +71,7 @@ export default function AuthLayout({
             <div className="relative">
                 <div>
                     <Image
-                        src={"/login-bg.jpg"}
+                        src={"/login-bg.webp"}
                         className="absolute inset-0 w-full h-full object-cover opacity-80"
                         priority
                         width={800}
@@ -106,7 +106,7 @@ export default function AuthLayout({
                         insights on page performance, request success rates, and
                         user entry speeds the moment you sign in.
                     </TextAnimate>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <div className="grid grid-cols-1 gap-6 mt-8">
                         {loginFeatures.map((feat) => (
                             <FeatureCard key={feat.id} feat={feat} />
                         ))}

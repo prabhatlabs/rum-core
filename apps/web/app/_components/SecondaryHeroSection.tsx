@@ -17,7 +17,7 @@ const features = [
         href: "#",
         background: (
             <Image
-                src={"/code-snippet.png"}
+                src={"/code-snippet.webp"}
                 loading="eager"
                 width={700}
                 height={500}
@@ -35,7 +35,7 @@ const features = [
         href: "#",
         background: (
             <Image
-                src={"/earth.jpg"}
+                src={"/earth.webp"}
                 loading="eager"
                 width={500}
                 height={500}
@@ -53,7 +53,7 @@ const features = [
         href: "#",
         background: (
             <Image
-                src={"/flow-line.jpg"}
+                src={"/flow-line.webp"}
                 loading="eager"
                 width={500}
                 height={500}
@@ -71,7 +71,7 @@ const features = [
         href: "#",
         background: (
             <Image
-                src={"/gta-map.jpg"}
+                src={"/gta-map.webp"}
                 loading="eager"
                 width={500}
                 height={500}
@@ -130,7 +130,7 @@ export default function SecondaryHeroSection() {
                 at the edge and built for the modern developer.
             </TextAnimate>
 
-            <BentoGrid className="mt-6 md:mt-8 lg:mt-10">
+            <BentoGrid className="mt-6 md:mt-8 lg:mt-10 gap-6">
                 {features.map((card) => (
                     <BentoCard key={card.name} {...card} />
                 ))}

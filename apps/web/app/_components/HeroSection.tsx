@@ -9,8 +9,8 @@ export default function HeroSection() {
             className="min-h-[calc(100dvh-72px)] md:min-h-[calc(100dvh-88px)] px-6 relative border-b-2"
         >
             <HeroImage
-                srcDark="/dashboard-dark.png"
-                srcLight="/dashboard-light.png"
+                srcDark="/dashboard-dark.webp"
+                srcLight="/dashboard-light.webp"
                 width={1920}
                 height={1080}
             />
