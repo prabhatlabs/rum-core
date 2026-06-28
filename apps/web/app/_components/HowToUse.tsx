@@ -5,7 +5,7 @@ import { TextAnimate } from "@/components/ui/text-animate";
 import Image from "next/image";
 import { RiNumber1, RiNumber2, RiNumber3 } from "react-icons/ri";
 
-const bento = [
+const steps = [
     {
         Icon: RiNumber1,
         name: "The Script",
@@ -20,7 +20,7 @@ const bento = [
                     width={700}
                     height={500}
                     alt="Lightweight Script (~5kb)"
-                    className="h-full object-cover"
+                    className="h-full object-cover invert dark:invert-0"
                 />
             </div>
         ),
@@ -39,7 +39,7 @@ const bento = [
                     width={700}
                     height={500}
                     alt="Project API Key"
-                    className="h-full object-cover"
+                    className="h-full object-cover invert dark:invert-0"
                 />
             </div>
         ),
@@ -58,7 +58,7 @@ const bento = [
                     width={700}
                     height={500}
                     alt="Analytics & Insights"
-                    className="h-full object-cover"
+                    className="h-full object-cover invert dark:invert-0"
                 />
             </div>
         ),
@@ -128,7 +128,7 @@ export default function HowToUse() {
             </TextAnimate>
 
             <BentoGrid className="mt-6 md:mt-8 lg:mt-10 gap-6">
-                {bento.map((card) => (
+                {steps.map((card) => (
                     <BentoCard
                         key={card.name}
                         {...card}

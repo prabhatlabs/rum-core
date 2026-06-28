@@ -7,7 +7,7 @@ import { BsFillLightningFill } from "react-icons/bs";
 import { FaEarthAsia } from "react-icons/fa6";
 import { RiGitBranchLine } from "react-icons/ri";
 
-const bento = [
+const features = [
     {
         Icon: BsFillLightningFill,
         name: "Lightweight Script (~5kb)",
@@ -22,7 +22,7 @@ const bento = [
                 width={700}
                 height={500}
                 alt="Lightweight Script (~5kb)"
-                className="absolute -z-10 top-0 right-0 h-full object-cover mask-l-from-90% mask-r-from-80% mask-b-from-50% opacity-75"
+                className="absolute invert dark:invert-0 -z-10 top-0 right-0 h-full object-cover mask-l-from-90% mask-r-from-80% mask-b-from-50% opacity-75"
             />
         ),
     },
@@ -40,7 +40,7 @@ const bento = [
                 width={500}
                 height={500}
                 alt="Lightweight Script (~5kb)"
-                className="absolute -z-10 top-0 right-0 object-cover"
+                className="absolute invert dark:invert-0 -z-10 top-0 right-0 object-cover mask-l-from-40% mask-b-from-50% opacity-70"
             />
         ),
     },
@@ -58,7 +58,7 @@ const bento = [
                 width={500}
                 height={500}
                 alt="Geo & ISP Enrichment"
-                className="absolute -z-10 top-0 right-0 h-full object-cover mask-l-from-40% mask-b-from-50% opacity-70"
+                className="absolute invert dark:invert-0 -z-10 top-0 right-0 h-full object-cover mask-l-from-40% mask-b-from-50% opacity-70"
             />
         ),
     },
@@ -76,7 +76,7 @@ const bento = [
                 width={500}
                 height={500}
                 alt="Geo & ISP Enrichment"
-                className="absolute -z-10 top-0 right-0 h-full object-cover mask-l-from-60% mask-b-from-50%"
+                className="absolute invert dark:invert-0 -z-10 top-0 right-0 h-full object-cover mask-l-from-60% mask-b-from-50%"
             />
         ),
     },
@@ -131,7 +131,7 @@ export default function SecondaryHeroSection() {
             </TextAnimate>
 
             <BentoGrid className="mt-6 md:mt-8 lg:mt-10">
-                {bento.map((card) => (
+                {features.map((card) => (
                     <BentoCard key={card.name} {...card} />
                 ))}
             </BentoGrid>
