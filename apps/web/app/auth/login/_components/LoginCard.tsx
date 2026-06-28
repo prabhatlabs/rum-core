@@ -106,12 +106,12 @@ export default function LoginCard() {
     return (
         <motion.div
             key={mode}
-            initial={{ opacity: 0, y: 30, filter: "blur(6px)" }}
+            initial={{ opacity: 0, y: -50, filter: "blur(6px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="max-w-100 w-full"
         >
-            <Card className="w-full py-7 bg-background/80 rounded-lg backdrop-blur-lg gap-8">
+            <Card className="w-full py-7 bg-background/90 rounded-lg gap-8">
                 <CardHeader className="px-7">
                     <div className="flex justify-between items-center">
                         <Link href="/" className="group">

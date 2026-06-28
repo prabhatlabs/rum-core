@@ -1,9 +1,65 @@
 import BackgroundPattern from "@/app/_components/BackroundPattern";
-import { HeroImage } from "@/app/_components/HeroImage";
 import { Logo } from "@/components/Logo";
 import { TextAnimate } from "@/components/ui/text-animate";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
+import {
+    RiAlertLine,
+    RiDashboard3Line,
+    RiGlobalLine,
+    RiTerminalBoxLine,
+    RiTimeLine,
+} from "react-icons/ri";
+
+const loginFeatures = [
+    {
+        id: "core-web-vitals",
+        Icon: RiDashboard3Line,
+        title: "Core Web Vitals",
+        description:
+            "Capture LCP, CLS, and INP directly from live user sessions to pinpoint true performance.",
+    },
+    {
+        id: "request-interception",
+        Icon: RiTerminalBoxLine,
+        title: "Request Interception",
+        description:
+            "Automatically track fetch/XHR latency, status codes, and payload sizes with zero code.",
+    },
+    {
+        id: "geo-isp-enrichment",
+        Icon: RiGlobalLine,
+        title: "Geo & ISP Enrichment",
+        description:
+            "Analyze performance by country, city, and ISP to see how network conditions impact users.",
+    },
+    {
+        id: "error-tracking",
+        Icon: RiAlertLine,
+        title: "Error & Failure Tracking",
+        description:
+            "Instantly catch broken API endpoints, failed logins, and client-side exceptions.",
+    },
+    {
+        id: "session-timelines",
+        Icon: RiTimeLine,
+        title: "Session Timelines",
+        description:
+            "Map performance metrics to real user journeys to isolate exact authentication friction points.",
+    },
+];
+
+function FeatureCard({ feat }: { feat: (typeof loginFeatures)[0] }) {
+    return (
+        <div className="bg-background border p-4 flex gap-4">
+            <feat.Icon className="size-10 text-foreground/80 shrink-0" />
+            <div>
+                <p className="text-xl">{feat.title}</p>
+                <p className="text-muted-foreground">{feat.description}</p>
+            </div>
+        </div>
+    );
+}
 
 export default function AuthLayout({
     children,
@@ -30,7 +86,7 @@ export default function AuthLayout({
 
             <div className="hidden xl:block relative">
                 <BackgroundPattern className="absolute" />
-                <div className="absolute bottom-0 left-0 max-w-4xl mr-auto px-6 py-10">
+                <div className="absolute top-0 left-0 max-w-4xl mr-auto px-6 py-10">
                     <Logo mode="transparent" />
                     <TextAnimate
                         animation="blurInDown"
@@ -50,14 +106,12 @@ export default function AuthLayout({
                         insights on page performance, request success rates, and
                         user entry speeds the moment you sign in.
                     </TextAnimate>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                        {loginFeatures.map((feat) => (
+                            <FeatureCard key={feat.id} feat={feat} />
+                        ))}
+                    </div>
                 </div>
-                <HeroImage
-                    srcDark="/overview-dark.png"
-                    srcLight="/overview-light.png"
-                    imageClassName="w-fit h-dvh"
-                    width={800}
-                    height={800}
-                />
             </div>
             <ThemeToggle className="absolute bottom-0 right-0 m-4 md:m-6" />
         </div>
