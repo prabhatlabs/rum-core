@@ -50,7 +50,6 @@ export async function fetcher<T>(
 
     const json: ApiResponse<T> = await res.json();
 
-    console.log(showToast, json);
     if (!res.ok || !json.success) {
         const isLimitExceeded = json.error?.includes("LimitExceeded");
 
