@@ -196,10 +196,6 @@ const authRoutes = new Elysia({ prefix: "/auth" })
             "profile",
         ]);
 
-        if (!cookie.google_state || !cookie.google_verifier) {
-            return failResponse("Missing cookie");
-        }
-
         cookie.google_state.set({ value: state, ...AUTH_COOKIE_CONFIG });
         cookie.google_verifier.set({
             value: codeVerifier,
