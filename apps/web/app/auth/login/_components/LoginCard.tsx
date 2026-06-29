@@ -126,9 +126,7 @@ export default function LoginCard() {
                     {/* welcome */}
                     <div className="text-center mb-10">
                         <h5 className="text-lg">
-                            {mode === "login"
-                                ? "Welcome back"
-                                : "Sign Up"}
+                            {mode === "login" ? "Welcome back" : "Sign Up"}
                         </h5>
                         <p className="text-xs text-foreground/60">
                             {mode === "login"
@@ -146,9 +144,7 @@ export default function LoginCard() {
                                     placeholder="Email"
                                     type="email"
                                     value={email}
-                                    onChange={(e) =>
-                                        setEmail(e.target.value)
-                                    }
+                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                                 <Input
                                     className="w-full rounded-md lg:text-sm"
@@ -174,18 +170,14 @@ export default function LoginCard() {
                                     placeholder="Name"
                                     type="text"
                                     value={name}
-                                    onChange={(e) =>
-                                        setName(e.target.value)
-                                    }
+                                    onChange={(e) => setName(e.target.value)}
                                 />
                                 <Input
                                     className="w-full rounded-md lg:text-sm"
                                     placeholder="Email"
                                     type="email"
                                     value={email}
-                                    onChange={(e) =>
-                                        setEmail(e.target.value)
-                                    }
+                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                                 <Input
                                     className="w-full rounded-md lg:text-sm"
@@ -202,9 +194,7 @@ export default function LoginCard() {
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) =>
-                                        setConfirmPassword(
-                                            e.target.value,
-                                        )
+                                        setConfirmPassword(e.target.value)
                                     }
                                 />
                                 <Button
