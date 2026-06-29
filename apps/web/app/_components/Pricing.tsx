@@ -140,7 +140,7 @@ function PriceCard({
 export default function Pricing() {
     return (
         <div
-            className="relative border-y-2 px-4 sm:px-6 py-22 md:py-26"
+            className="relative border-y px-4 sm:px-6 py-22 md:py-26"
             id="pricing"
         >
             <TextAnimate

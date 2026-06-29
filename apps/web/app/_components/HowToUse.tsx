@@ -68,7 +68,7 @@ const steps = [
 export default function HowToUse() {
     return (
         <div
-            className="relative border-y-2 px-4 sm:px-6 py-22 md:py-26"
+            className="relative border-y px-4 sm:px-6 py-22 md:py-26"
             id="how-to-use"
         >
             <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 lg:gap-x-6">

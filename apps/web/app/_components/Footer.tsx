@@ -5,7 +5,7 @@ import { FaEarthAsia, FaGithub, FaXTwitter } from "react-icons/fa6";
 
 export default function Footer() {
     return (
-        <footer className="border-t-2 relative p-6">
+        <footer className="border-t relative p-6">
             <div className="flex items-end justify-between gap-4">
                 <div className="flex flex-col gap-1">
                     <Logo mode="transparent" />

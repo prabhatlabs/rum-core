@@ -86,7 +86,7 @@ export default function SecondaryHeroSection() {
     return (
         <div
             id="features"
-            className="relative border-y-2 px-4 sm:px-6 py-22 md:py-26"
+            className="relative border-y px-4 sm:px-6 py-22 md:py-26"
         >
             <div className="inline-flex flex-wrap items-center gap-x-2 md:gap-x-4 lg:gap-x-6">
                 <TextAnimate

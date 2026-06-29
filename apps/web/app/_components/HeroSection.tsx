@@ -6,13 +6,14 @@ export default function HeroSection() {
     return (
         <div
             id="home"
-            className="min-h-[calc(100dvh-72px)] md:min-h-[calc(100dvh-88px)] px-6 relative border-b-2"
+            className="aspect-square lg:aspect-auto lg:min-h-[calc(100dvh-88px)] px-6 relative border-b border-t lg:border-t-0 mt-8 md:mt-16 lg:mt-0"
         >
             <HeroImage
                 srcDark="/dashboard-dark.webp"
                 srcLight="/dashboard-light.webp"
                 width={1920}
                 height={1080}
+                className="top-4 lg:top-0 mask-t-from-90% lg:mask-t-from-100%"
             />
             <div className="absolute bottom-0 left-0 w-full px-4 sm:px-6 py-6 md:py-8 lg:py-10">
                 <TextAnimate

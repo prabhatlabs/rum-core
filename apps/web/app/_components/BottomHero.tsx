@@ -3,8 +3,8 @@ import CtaButton from "./CtaButton";
 
 export default function BottomHero() {
     return (
-        <div className="relative border-y-2 px-4 sm:px-6 py-22 md:py-26">
-            <div className="flex flex-col gap-1 md:gap-2 lg:gap-4 items-center justify-center md:mb-2">
+        <div className="relative border-y px-4 sm:px-6 py-22 md:py-26">
+            <div className="flex flex-col gap-1 md:gap-2 lg:gap-4 items-center justify-center mb-2 md:mb-4">
                 <TextAnimate
                     animation="blurInDown"
                     by="word"
@@ -24,8 +24,8 @@ export default function BottomHero() {
                     outage. Stop optimizing for robots and start building for
                     people.
                 </TextAnimate>
-                <CtaButton />
             </div>
+            <CtaButton />
         </div>
     );
 }

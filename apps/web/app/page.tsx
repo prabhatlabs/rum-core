@@ -10,8 +10,8 @@ import SecondaryHeroSection from "./_components/SecondaryHeroSection";
 export default function Home() {
     return (
         <div className="relative">
-            <BackgroundPattern />
-            <div className="relative shrink-0 z-10 min-h-dvh md:border-x-2 max-w-7xl mx-auto bg-background">
+            <BackgroundPattern direction="up" className="hidden lg:block" />
+            <div className="relative shrink-0 z-10 min-h-dvh md:border-x max-w-7xl mx-auto bg-background">
                 <Navbar />
                 <div className="space-y-20 md:space-y-28 lg:space-y-44">
                     <HeroSection />

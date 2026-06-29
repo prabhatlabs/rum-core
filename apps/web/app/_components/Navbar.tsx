@@ -38,6 +38,7 @@ function NavItems() {
     return (
         <>
             <Button
+                className="flex lg:hidden"
                 variant={"outline"}
                 size="icon"
                 onClick={() => setIsOpen((p) => !p)}
@@ -51,7 +52,7 @@ function NavItems() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 w-full flex flex-col justify-center items-center gap-4 py-4 bg-background/90 border-b"
+                        className="absolute top-full left-0 w-full flex lg:hidden flex-col justify-center items-center gap-4 py-4 bg-background/90 border-b"
                     >
                         {links.map((link) => (
                             <Link
@@ -59,6 +60,7 @@ function NavItems() {
                                 className="px-2 py-1"
                                 href={link.href}
                                 target={link.target}
+                                onClick={() => setIsOpen(false)}
                             >
                                 {link.name}
                             </Link>
@@ -82,7 +84,7 @@ export default function Navbar() {
                 filter: "blur(0px)",
             }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="sticky top-0 z-50 w-full border-b-2 bg-background/10 backdrop-blur-sm"
+            className="sticky top-0 z-50 w-full border-b bg-background/10 backdrop-blur-sm"
         >
             <div className="flex items-center justify-between px-4 py-2 md:px-6 md:py-4 gap-4 relative">
                 <div className="flex items-center gap-3">
